@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NOVU — El chat que habla el idioma de tu cerebro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;0,900;1,300;1,700&family=Cabinet+Grotesk:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06060a;
+  --bg2: #0e0e16;
+  --surface: #13131f;
+  --surface2: #1a1a2a;
+  --border: #252538;
+  --border2: #2e2e48;
+  --accent: #8b7cf8;
+  --accent-dim: rgba(139,124,248,0.12);
+  --accent2: #f0b96a;
+  --accent3: #68f0b9;
+  --accent4: #f06868;
+  --text: #ededf5;
+  --text2: #9090b0;
+  --text3: #5a5a7a;
+  --me-bubble: #1e1a3d;
+  --other-bubble: #161622;
+  --r: 20px;
+  --r-sm: 10px;
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Cabinet Grotesk', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%; width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ══════════════════════════════════════════
+   ONBOARDING
+══════════════════════════════════════════ */
+#onboarding {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  z-index: 100;
+  animation: fadeIn .4s ease;
+}
+
+.ob-logo {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 12vw, 96px);
+  font-weight: 900;
+  letter-spacing: -3px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 60%, var(--accent3) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.ob-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(16px, 3vw, 22px);
+  color: var(--text2);
+  font-weight: 300;
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.ob-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 32px;
+  width: 100%; max-width: 400px;
+}
+
+.ob-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.ob-field {
+  margin-bottom: 16px;
+}
+
+.ob-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.ob-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  transition: border-color .2s;
+}
+.ob-input:focus { border-color: var(--accent); }
+.ob-input::placeholder { color: var(--text3); }
+
+.ob-modes {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 24px;
+}
+
+.ob-mode {
+  background: var(--surface2);
+  border: 1.5px solid var(--border2);
+  border-radius: 14px;
+  padding: 14px 12px;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+}
+.ob-mode:hover { border-color: var(--accent); }
+.ob-mode.selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.ob-mode-icon { font-size: 24px; margin-bottom: 4px; }
+.ob-mode-name {
+  font-size: 12px; font-weight: 700;
+  color: var(--text);
+  display: block;
+}
+.ob-mode-desc {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.ob-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  box-shadow: 0 8px 24px rgba(139,124,248,.3);
+}
+.ob-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(139,124,248,.4); }
+.ob-btn:active { transform: translateY(0); }
+
+/* ══════════════════════════════════════════
+   APP SHELL
+══════════════════════════════════════════ */
+#app {
+  display: none;
+  height: 100%;
+  flex-direction: column;
+}
+#app.visible { display: flex; }
+
+/* ── HEADER ── */
+.app-header {
+  display: flex; align-items: center;
+  padding: 12px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.app-header-logo {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
+  flex-shrink: 0;
+}
+
+.app-header-user {
+  flex: 1;
+  display: flex; flex-direction: column;
+}
+.app-header-name {
+  font-size: 13px; font-weight: 700;
+  color: var(--text);
+}
+.app-header-mode {
+  font-size: 11px; color: var(--accent);
+  font-weight: 500;
+}
+
+.header-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.header-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── MAIN AREA ── */
+.app-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 280px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+  transition: transform .3s ease;
+}
+
+@media (max-width: 640px) {
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    width: 85%;
+    max-width: 300px;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay {
+    display: block !important;
+  }
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 49;
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-title {
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 700;
+  color: var(--text);
+}
+
+.new-chat-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  font-weight: 300;
+  transition: all .2s;
+  box-shadow: 0 4px 12px rgba(139,124,248,.3);
+}
+.new-chat-btn:hover { transform: scale(1.1); }
+
+.chat-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.chat-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background .15s;
+  margin-bottom: 2px;
+}
+.chat-item:hover { background: var(--surface); }
+.chat-item.active { background: var(--surface2); }
+
+.chat-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  position: relative;
+}
+
+.chat-avatar .mode-dot {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--bg2);
+  font-size: 7px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.chat-info { flex: 1; min-width: 0; }
+.chat-name {
+  font-size: 13px; font-weight: 700;
+  color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-preview {
+  font-size: 12px; color: var(--text2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.chat-meta {
+  display: flex; flex-direction: column; align-items: flex-end;
+  gap: 4px; flex-shrink: 0;
+}
+.chat-time { font-size: 11px; color: var(--text3); }
+.chat-unread {
+  background: var(--accent);
+  color: white;
+  font-size: 11px; font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 100px;
+  min-width: 18px; text-align: center;
+}
+
+/* ── CHAT AREA ── */
+.chat-area {
+  flex: 1;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.chat-header {
+  padding: 12px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+
+.chat-header-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+  font-family: var(--font-display);
+  flex-shrink: 0;
+}
+
+.chat-header-info { flex: 1; }
+.chat-header-name { font-size: 14px; font-weight: 700; }
+.chat-header-status { font-size: 11px; color: var(--accent3); }
+
+.mode-badge {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.5px;
+  font-family: var(--font-display);
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid rgba(139,124,248,.2);
+  flex-shrink: 0;
+}
+
+/* ── MESSAGES ── */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex; flex-direction: column;
+  gap: 8px;
+}
+
+.msg-date-sep {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text3);
+  margin: 8px 0;
+  font-weight: 500;
+}
+
+.msg-group {
+  display: flex; flex-direction: column;
+}
+.msg-group.me { align-items: flex-end; }
+.msg-group.other { align-items: flex-start; }
+
+.bubble {
+  max-width: min(80%, 340px);
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  position: relative;
+  word-break: break-word;
+}
+
+.me .bubble {
+  background: var(--me-bubble);
+  border-radius: 18px 18px 4px 18px;
+  border: 1px solid rgba(139,124,248,.15);
+  color: var(--text);
+}
+
+.other .bubble {
+  background: var(--other-bubble);
+  border-radius: 18px 18px 18px 4px;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.bubble-time {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 3px;
+  padding: 0 4px;
+}
+
+/* Pictogram bubble */
+.picto-bubble {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border-radius: 18px 18px 18px 4px;
+  background: rgba(104,240,185,.07);
+  border: 1px solid rgba(104,240,185,.2);
+  max-width: min(80%, 280px);
+}
+.picto-bubble .p-emoji { font-size: 24px; }
+.picto-bubble .p-text { font-size: 13px; color: var(--text); }
+
+/* Audio bubble */
+.audio-bubble-wrap {
+  max-width: min(85%, 320px);
+}
+
+.audio-bubble {
+  background: var(--other-bubble);
+  border: 1px solid var(--border);
+  border-radius: 18px 18px 18px 4px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.audio-bubble:hover { border-color: var(--accent); }
+.audio-bubble.me-audio {
+  background: var(--me-bubble);
+  border-radius: 18px 18px 4px 18px;
+  border-color: rgba(139,124,248,.15);
+}
+
+.audio-row {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.play-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none; color: white;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  transition: transform .15s;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(139,124,248,.3);
+}
+.play-btn:hover { transform: scale(1.05); }
+
+.audio-wave {
+  flex: 1; height: 26px;
+  display: flex; align-items: center; gap: 2px;
+}
+.wave-bar {
+  width: 3px; border-radius: 2px;
+  background: var(--border2);
+  transition: background .2s;
+  animation: wavePulse 1.5s ease-in-out infinite;
+}
+@keyframes wavePulse {
+  0%, 100% { opacity: .5; }
+  50% { opacity: 1; }
+}
+
+.audio-dur { font-size: 11px; color: var(--text2); flex-shrink: 0; }
+
+/* NOVU AI Card */
+.novu-card {
+  margin-top: 6px;
+  background: linear-gradient(135deg, rgba(139,124,248,.08), rgba(104,240,185,.04));
+  border: 1px solid rgba(139,124,248,.25);
+  border-radius: 16px;
+  padding: 14px;
+  max-width: min(90%, 360px);
+  animation: slideUp .3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.novu-card-header {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 800;
+  color: var(--accent);
+  font-family: var(--font-display);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.novu-row {
+  display: flex; gap: 10px; margin-bottom: 10px;
+  align-items: flex-start;
+}
+.novu-row:last-child { margin-bottom: 0; }
+.novu-row-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+
+.novu-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: .8px;
+  margin-bottom: 3px;
+}
+
+.novu-value { font-size: 13px; color: var(--text); line-height: 1.4; }
+
+.emotion-chips { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+.chip {
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 11px; font-weight: 600;
+}
+.chip-pos { background: rgba(104,240,185,.15); color: var(--accent3); }
+.chip-urg { background: rgba(240,185,106,.15); color: var(--accent2); }
+.chip-neg { background: rgba(240,104,104,.15); color: var(--accent4); }
+.chip-neu { background: rgba(144,144,176,.1); color: var(--text2); }
+
+.task-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.task-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: 12px; color: var(--text);
+}
+.task-cb {
+  width: 15px; height: 15px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all .2s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+}
+.task-cb.done { background: var(--accent3); border-color: var(--accent3); color: #000; }
+
+.novu-question {
+  background: rgba(240,185,106,.08);
+  border: 1px solid rgba(240,185,106,.2);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+/* Processing indicator */
+.novu-processing {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px;
+  background: rgba(139,124,248,.08);
+  border: 1px solid rgba(139,124,248,.15);
+  border-radius: 10px;
+  font-size: 12px; color: var(--accent);
+  font-weight: 500;
+  margin-top: 6px;
+  max-width: 220px;
+}
+.proc-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: procPulse .8s ease-in-out infinite;
+}
+.proc-dot:nth-child(2) { animation-delay: .15s; }
+.proc-dot:nth-child(3) { animation-delay: .3s; }
+@keyframes procPulse {
+  0%, 100% { transform: scale(.6); opacity: .4; }
+  50% { transform: scale(1); opacity: 1; }
+}
+
+/* Typing indicator */
+.typing-bubble {
+  padding: 10px 14px;
+  background: var(--other-bubble);
+  border: 1px solid var(--border);
+  border-radius: 18px 18px 18px 4px;
+  display: flex; gap: 4px; align-items: center;
+  width: fit-content;
+}
+.t-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text2);
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+.t-dot:nth-child(2) { animation-delay: .2s; }
+.t-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+/* ── TONE WARNING ── */
+.tone-warning {
+  margin: 0 16px 8px;
+  background: rgba(240,104,104,.07);
+  border: 1px solid rgba(240,104,104,.25);
+  border-radius: 14px;
+  padding: 12px 14px;
+  animation: slideUp .25s ease;
+  display: none;
+}
+.tone-warning.show { display: block; }
+
+.tw-title {
+  font-size: 12px; font-weight: 800;
+  color: var(--accent4);
+  display: flex; align-items: center; gap: 5px;
+  margin-bottom: 6px;
+  font-family: var(--font-display);
+}
+
+.tw-msg { font-size: 12px; color: var(--text2); margin-bottom: 6px; line-height: 1.4; }
+.tw-sug {
+  font-size: 12px; color: var(--accent3);
+  font-weight: 600; margin-bottom: 10px;
+}
+
+.tw-btns { display: flex; gap: 8px; }
+.tw-yes {
+  flex: 1; padding: 8px;
+  background: var(--accent);
+  border: none; border-radius: 8px;
+  color: white; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: var(--font-display);
+  transition: all .15s;
+}
+.tw-yes:hover { background: #7a6ce0; }
+.tw-no {
+  flex: 1; padding: 8px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 8px; color: var(--text2);
+  font-size: 12px; cursor: pointer;
+  transition: all .15s;
+}
+.tw-no:hover { border-color: var(--text2); }
+
+/* ── PICTOGRAM PANEL ── */
+.picto-panel {
+  margin: 0 16px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 12px;
+  display: none;
+  animation: slideUp .2s ease;
+}
+.picto-panel.show { display: block; }
+
+.picto-panel-title {
+  font-size: 11px; font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase; letter-spacing: .8px;
+  margin-bottom: 10px;
+  font-family: var(--font-display);
+}
+
+.picto-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.picto-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 3px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 8px 4px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.picto-btn:hover { border-color: var(--accent3); background: rgba(104,240,185,.07); }
+.picto-btn:active { transform: scale(.95); }
+.picto-btn .pe { font-size: 20px; }
+.picto-btn .pl { font-size: 10px; color: var(--text2); text-align: center; line-height: 1.2; }
+
+/* ── INPUT AREA ── */
+.input-area {
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+
+.input-row {
+  display: flex; align-items: flex-end; gap: 8px;
+}
+
+.input-box {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  padding: 10px 16px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  max-height: 100px;
+  line-height: 1.4;
+  transition: border-color .2s;
+  overflow-y: auto;
+}
+.input-box:focus { border-color: var(--accent); }
+.input-box::placeholder { color: var(--text3); }
+
+.input-action-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.input-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.input-action-btn.active { border-color: var(--accent3); color: var(--accent3); background: rgba(104,240,185,.1); }
+
+.send-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none; color: white;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: all .2s;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(139,124,248,.35);
+}
+.send-btn:hover { transform: scale(1.06); box-shadow: 0 6px 20px rgba(139,124,248,.5); }
+.send-btn:active { transform: scale(.97); }
+
+/* ══════════════════════════════════════════
+   SETTINGS PANEL
+══════════════════════════════════════════ */
+.settings-panel {
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 20px 16px;
+  background: var(--bg);
+  flex: 1;
+}
+.settings-panel.show { display: flex; }
+
+.settings-section { margin-bottom: 28px; }
+.settings-section-title {
+  font-size: 11px; font-weight: 800;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 12px;
+  font-family: var(--font-display);
+}
+
+.mode-cards {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; margin-bottom: 8px;
+}
+.mode-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border2);
+  border-radius: 14px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+.mode-card:hover { border-color: var(--accent); }
+.mode-card.selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.mode-card-icon { font-size: 22px; margin-bottom: 4px; }
+.mode-card-name { font-size: 11px; font-weight: 700; color: var(--text); }
+.mode-card-desc { font-size: 10px; color: var(--text2); margin-top: 2px; line-height: 1.2; }
+
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 16px;
+  background: var(--surface);
+  border-radius: 12px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+}
+.setting-row-left { flex: 1; }
+.setting-name { font-size: 14px; font-weight: 500; }
+.setting-desc { font-size: 12px; color: var(--text2); margin-top: 1px; }
+
+.toggle {
+  width: 42px; height: 24px;
+  border-radius: 12px;
+  background: var(--border2);
+  position: relative;
+  cursor: pointer;
+  transition: background .25s;
+  flex-shrink: 0;
+}
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  border-radius: 50%; background: white;
+  top: 3px; left: 3px;
+  transition: transform .25s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.toggle.on::after { transform: translateX(18px); }
+
+/* ══════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════ */
+.empty-state {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+.empty-logo {
+  font-family: var(--font-display);
+  font-size: 56px; font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+  letter-spacing: -2px;
+}
+.empty-desc { font-size: 14px; color: var(--text2); line-height: 1.5; max-width: 280px; }
+
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.hidden { display: none !important; }
+
+/* Noise texture overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999;
+  opacity: .4;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     ONBOARDING
+══════════════════════════════════════════ -->
+<div id="onboarding">
+  <div class="ob-logo">NOVU</div>
+  <div class="ob-tagline">El chat que habla el idioma de tu cerebro</div>
+
+  <div class="ob-card">
+    <div class="ob-title">¿Cómo te llamás?</div>
+
+    <div class="ob-field">
+      <label class="ob-label">Tu nombre</label>
+      <input class="ob-input" id="ob-name" placeholder="Ej: Adriana" maxlength="30">
+    </div>
+
+    <div class="ob-field">
+      <label class="ob-label" style="margin-bottom:10px;display:block;">¿Cómo querés recibir los mensajes?</label>
+      <div class="ob-modes">
+        <div class="ob-mode selected" data-mode="neuro" onclick="selectOBMode(this)">
+          <div class="ob-mode-icon">🧠</div>
+          <span class="ob-mode-name">Neuro</span>
+          <div class="ob-mode-desc">Estructura clara, sin ambigüedad</div>
+        </div>
+        <div class="ob-mode" data-mode="calm" onclick="selectOBMode(this)">
+          <div class="ob-mode-icon">🌿</div>
+          <span class="ob-mode-name">Calma</span>
+          <div class="ob-mode-desc">Suave, sin urgencia</div>
+        </div>
+        <div class="ob-mode" data-mode="direct" onclick="selectOBMode(this)">
+          <div class="ob-mode-icon">⚡</div>
+          <span class="ob-mode-name">Directo</span>
+          <div class="ob-mode-desc">Solo lo esencial</div>
+        </div>
+        <div class="ob-mode" data-mode="normal" onclick="selectOBMode(this)">
+          <div class="ob-mode-icon">💬</div>
+          <span class="ob-mode-name">Normal</span>
+          <div class="ob-mode-desc">Sin adaptación</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="ob-btn" onclick="startApp()">Entrar a NOVU →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     APP
+══════════════════════════════════════════ -->
+<div id="app">
+  <div class="app-header">
+    <button class="header-btn" id="menuBtn" onclick="toggleSidebar()" style="display:none">☰</button>
+    <div class="app-header-logo">NOVU</div>
+    <div class="app-header-user">
+      <div class="app-header-name" id="headerName">—</div>
+      <div class="app-header-mode" id="headerMode">—</div>
+    </div>
+    <button class="header-btn" onclick="toggleSettings()" title="Configuración">⚙️</button>
+  </div>
+
+  <div class="app-body">
+
+    <!-- SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">Conversaciones</div>
+        <button class="new-chat-btn" onclick="newChat()" title="Nueva conversación">+</button>
+      </div>
+      <div class="chat-list" id="chatList"></div>
+    </div>
+
+    <!-- MAIN: EMPTY / CHAT / SETTINGS -->
+    <div class="chat-area" id="chatArea">
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-logo">NOVU</div>
+        <p class="empty-desc">Seleccioná una conversación o creá una nueva para empezar</p>
+      </div>
+
+      <!-- Active chat -->
+      <div id="activeChat" class="hidden" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+
+        <div class="chat-header">
+          <div class="chat-header-avatar" id="chatHeaderAvatar"></div>
+          <div class="chat-header-info">
+            <div class="chat-header-name" id="chatHeaderName"></div>
+            <div class="chat-header-status">● En línea · IA activa</div>
+          </div>
+          <div class="mode-badge" id="chatModeBadge">🧠 NEURO</div>
+        </div>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="tone-warning" id="toneWarning">
+          <div class="tw-title">⚠️ NOVU detectó tono agresivo</div>
+          <div class="tw-msg" id="twMsg"></div>
+          <div class="tw-sug" id="twSug"></div>
+          <div class="tw-btns">
+            <button class="tw-yes" onclick="useSuggestion()">✨ Usar sugerencia</button>
+            <button class="tw-no" onclick="dismissWarning()">Enviar igual</button>
+          </div>
+        </div>
+
+        <div class="picto-panel" id="pictoPanel">
+          <div class="picto-panel-title">📍 Comunicación rápida</div>
+          <div class="picto-grid">
+            <button class="picto-btn" onclick="sendPicto('👍','De acuerdo')"><span class="pe">👍</span><span class="pl">De acuerdo</span></button>
+            <button class="picto-btn" onclick="sendPicto('⏰','Necesito tiempo')"><span class="pe">⏰</span><span class="pl">Necesito tiempo</span></button>
+            <button class="picto-btn" onclick="sendPicto('❓','No entiendo')"><span class="pe">❓</span><span class="pl">No entiendo</span></button>
+            <button class="picto-btn" onclick="sendPicto('😔','Estoy mal')"><span class="pe">😔</span><span class="pl">Estoy mal</span></button>
+            <button class="picto-btn" onclick="sendPicto('✅','Listo')"><span class="pe">✅</span><span class="pl">Listo</span></button>
+            <button class="picto-btn" onclick="sendPicto('🔇','Necesito silencio')"><span class="pe">🔇</span><span class="pl">Silencio</span></button>
+            <button class="picto-btn" onclick="sendPicto('🙏','Gracias')"><span class="pe">🙏</span><span class="pl">Gracias</span></button>
+            <button class="picto-btn" onclick="sendPicto('🤔','Estoy pensando')"><span class="pe">🤔</span><span class="pl">Pensando</span></button>
+          </div>
+        </div>
+
+        <div class="input-area">
+          <div class="input-row">
+            <button class="input-action-btn" id="pictoToggleBtn" onclick="togglePicto()" title="Pictogramas">🖼️</button>
+            <textarea class="input-box" id="inputBox"
+              placeholder="Escribí tu mensaje..."
+              rows="1"
+              oninput="handleInput(this)"
+              onkeydown="handleKey(event)"></textarea>
+            <button class="input-action-btn" id="audioBtn" onclick="sendDemoAudio()" title="Enviar audio demo">🎙️</button>
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Settings panel -->
+      <div class="settings-panel" id="settingsPanel">
+        <div class="settings-section">
+          <div class="settings-section-title">Mi modo de recepción</div>
+          <div class="mode-cards">
+            <div class="mode-card" data-mode="neuro" onclick="setMode(this)">
+              <div class="mode-card-icon">🧠</div>
+              <div class="mode-card-name">Neuro</div>
+              <div class="mode-card-desc">Claro, sin ambigüedad</div>
+            </div>
+            <div class="mode-card" data-mode="calm" onclick="setMode(this)">
+              <div class="mode-card-icon">🌿</div>
+              <div class="mode-card-name">Calma</div>
+              <div class="mode-card-desc">Suave, sin urgencia</div>
+            </div>
+            <div class="mode-card" data-mode="direct" onclick="setMode(this)">
+              <div class="mode-card-icon">⚡</div>
+              <div class="mode-card-name">Directo</div>
+              <div class="mode-card-desc">Solo lo esencial</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">IA Asistente</div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-name">Resumir audios automáticamente</div>
+              <div class="setting-desc">NOVU analiza y resume antes de que escuches</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-name">Detector de tono agresivo</div>
+              <div class="setting-desc">Avisa si tu mensaje puede sonar mal</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-name">Extraer tareas de mensajes</div>
+              <div class="setting-desc">Crea pendientes automáticamente</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-name">Pictogramas rápidos</div>
+              <div class="setting-desc">Panel de comunicación sin texto</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Estímulos</div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-name">Modo bajo estímulo</div>
+              <div class="setting-desc">Reduce animaciones y efectos visuales</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-name">Notificaciones silenciosas</div>
+              <div class="setting-desc">Sin sonidos ni vibraciones</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const state = {
+  user: { name: '', mode: 'neuro' },
+  chats: [],
+  activeChat: null,
+  toneSuggestion: '',
+  pictoOpen: false,
+  settingsOpen: false,
+  audioProcessed: new Set(),
+};
+
+const MODES = {
+  neuro:  { label: '🧠 NEURO',  emoji: '🧠' },
+  calm:   { label: '🌿 CALMA',  emoji: '🌿' },
+  direct: { label: '⚡ DIRECTO', emoji: '⚡' },
+  normal: { label: '💬 NORMAL', emoji: '💬' },
+};
+
+const DEMO_CHATS = [
+  {
+    id: 'luna',
+    name: 'Luna',
+    initials: 'LU',
+    color: 'linear-gradient(135deg,#8b7cf8,#68f0b9)',
+    mode: 'neuro',
+    unread: 1,
+    preview: '✨ Demo interactiva — probá todas las funciones',
+    messages: [
+      { from: 'other', type: 'text', text: '¡Hola! ¿Arrancamos con la demo de NOVU?', time: '10:00' },
+      { from: 'me',    type: 'text', text: 'Sí, quiero ver todo', time: '10:01' },
+      { from: 'other', type: 'text', text: 'Perfecto. Primero mandame un audio largo y NOVU lo resume automáticamente 👇', time: '10:01' },
+      { from: 'other', type: 'audio', duration: '7:23', id: 'demo-audio', time: '10:02' },
+    ]
+  },
+  {
+    id: 'mama',
+    name: 'Mamá',
+    initials: 'MA',
+    color: 'linear-gradient(135deg,#f0b96a,#f06868)',
+    mode: 'calm',
+    unread: 2,
+    preview: '🎙️ Audio 4:12 min — IA resumió: "Visita el domingo..."',
+    messages: [
+      { from: 'other', type: 'text', text: 'Hija, ¿podés venir el domingo?', time: '09:30' },
+      { from: 'me',    type: 'text', text: 'Sí, puedo', time: '09:45' },
+      { from: 'other', type: 'audio', duration: '4:12', id: 'mama-audio', time: '09:50' },
+    ]
+  },
+  {
+    id: 'trabajo',
+    name: 'Equipo trabajo',
+    initials: 'ET',
+    color: 'linear-gradient(135deg,#5b8df0,#8b7cf8)',
+    mode: 'direct',
+    unread: 5,
+    preview: '📋 3 tareas pendientes · Reunión viernes 15hs',
+    messages: [
+      { from: 'other', type: 'text', text: 'Necesito el informe para el viernes.', time: '08:00' },
+      { from: 'other', type: 'text', text: 'También confirmen asistencia a la reunión.', time: '08:01' },
+      { from: 'me',    type: 'text', text: 'Ok, lo tengo', time: '08:15' },
+    ]
+  }
+];
+
+// ══════════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════════
+function selectOBMode(el) {
+  document.querySelectorAll('.ob-mode').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function startApp() {
+  const nameInput = document.getElementById('ob-name').value.trim();
+  const name = nameInput || 'Vos';
+  const modeEl = document.querySelector('.ob-mode.selected');
+  const mode = modeEl ? modeEl.dataset.mode : 'neuro';
+
+  state.user = { name, mode };
+  state.chats = JSON.parse(JSON.stringify(DEMO_CHATS));
+
+  document.getElementById('onboarding').style.display = 'none';
+  const app = document.getElementById('app');
+  app.classList.add('visible');
+
+  document.getElementById('headerName').textContent = name;
+  document.getElementById('headerMode').textContent = `Modo ${MODES[mode].label}`;
+
+  // mobile menu btn
+  if (window.innerWidth <= 640) {
+    document.getElementById('menuBtn').style.display = 'flex';
+  }
+
+  renderChatList();
+  updateModeCards();
+
+  // Auto-open luna on desktop
+  if (window.innerWidth > 640) {
+    openChat('luna');
+  }
+}
+
+// ══════════════════════════════════════════
+// CHAT LIST
+// ══════════════════════════════════════════
+function renderChatList() {
+  const list = document.getElementById('chatList');
+  list.innerHTML = '';
+  state.chats.forEach(chat => {
+    const div = document.createElement('div');
+    div.className = `chat-item${state.activeChat === chat.id ? ' active' : ''}`;
+    div.onclick = () => openChat(chat.id);
+    div.innerHTML = `
+      <div class="chat-avatar" style="background:${chat.color}">
+        ${chat.initials}
+        <div class="mode-dot" style="background:var(--bg2)">${MODES[chat.mode]?.emoji || '💬'}</div>
+      </div>
+      <div class="chat-info">
+        <div class="chat-name">${chat.name}</div>
+        <div class="chat-preview">${chat.preview}</div>
+      </div>
+      <div class="chat-meta">
+        <div class="chat-time">ahora</div>
+        ${chat.unread ? `<div class="chat-unread">${chat.unread}</div>` : ''}
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════
+// OPEN CHAT
+// ══════════════════════════════════════════
+function openChat(id) {
+  const chat = state.chats.find(c => c.id === id);
+  if (!chat) return;
+
+  state.activeChat = id;
+  chat.unread = 0;
+
+  // hide empty, show chat
+  document.getElementById('emptyState').classList.add('hidden');
+  document.getElementById('settingsPanel').classList.remove('show');
+  const ac = document.getElementById('activeChat');
+  ac.style.display = 'flex';
+  ac.classList.remove('hidden');
+  state.settingsOpen = false;
+
+  // header
+  const avatar = document.getElementById('chatHeaderAvatar');
+  avatar.style.background = chat.color;
+  avatar.textContent = chat.initials;
+  document.getElementById('chatHeaderName').textContent = chat.name;
+  const modeBadge = document.getElementById('chatModeBadge');
+  modeBadge.textContent = MODES[chat.mode]?.label || '💬 NORMAL';
+
+  renderMessages(chat);
+  renderChatList();
+  closeSidebar();
+
+  // clear input
+  document.getElementById('inputBox').value = '';
+  document.getElementById('toneWarning').classList.remove('show');
+  document.getElementById('pictoPanel').classList.remove('show');
+  document.getElementById('pictoToggleBtn').classList.remove('active');
+  state.pictoOpen = false;
+}
+
+// ══════════════════════════════════════════
+// RENDER MESSAGES
+// ══════════════════════════════════════════
+function renderMessages(chat) {
+  const container = document.getElementById('messages');
+  container.innerHTML = '';
+
+  // mode tag
+  if (chat.mode !== 'normal') {
+    const sep = document.createElement('div');
+    sep.className = 'msg-date-sep';
+    sep.innerHTML = `${MODES[chat.mode].emoji} Modo ${chat.mode.charAt(0).toUpperCase()+chat.mode.slice(1)} activado`;
+    container.appendChild(sep);
+  }
+
+  chat.messages.forEach(msg => renderMsg(msg, container, chat));
+  scrollBottom();
+}
+
+function renderMsg(msg, container, chat) {
+  if (!container) container = document.getElementById('messages');
+  if (!chat) chat = state.chats.find(c => c.id === state.activeChat);
+
+  const group = document.createElement('div');
+  group.className = `msg-group ${msg.from}`;
+
+  if (msg.type === 'text') {
+    group.innerHTML = `
+      <div class="bubble">${msg.text}</div>
+      <div class="bubble-time">${msg.time || now()}</div>`;
+
+  } else if (msg.type === 'picto') {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <div class="picto-bubble">
+        <span class="p-emoji">${msg.emoji}</span>
+        <span class="p-text">${msg.text}</span>
+      </div>
+      <div class="bubble-time">${msg.time || now()}</div>`;
+    group.appendChild(wrap.children[0]);
+    group.appendChild(wrap.children[0]);
+
+  } else if (msg.type === 'audio') {
+    const alreadyProcessed = state.audioProcessed.has(msg.id);
+    group.innerHTML = `
+      <div class="audio-bubble-wrap">
+        <div class="audio-bubble${msg.from === 'me' ? ' me-audio' : ''}" 
+             onclick="processAudio('${msg.id}', this)" 
+             id="ab-${msg.id}">
+          <div class="audio-row">
+            <button class="play-btn">▶</button>
+            <div class="audio-wave">${waveHTML()}</div>
+            <div class="audio-dur">${msg.duration}</div>
+          </div>
+        </div>
+        <div class="bubble-time">${msg.time || now()}</div>
+        ${alreadyProcessed ? renderNovuCard(msg.summary) : ''}
+      </div>`;
+  }
+
+  container.appendChild(group);
+}
+
+function waveHTML() {
+  const h = [6,10,16,22,18,12,8,14,20,26,22,16,10,7,13,19,24,20,14,9,7,12,17,22,18];
+  return h.map((ht, i) =>
+    `<div class="wave-bar" style="height:${ht}px;animation-delay:${i*0.06}s"></div>`
+  ).join('');
+}
+
+function renderNovuCard(summary) {
+  if (!summary) return '';
+  const emotionChip = `<span class="chip chip-${summary.emotionType}">${summary.emotion}</span>`;
+  const urgentChip = summary.urgent ? `<span class="chip chip-urg">⚡ Urgente</span>` : '';
+  const tasks = (summary.tasks || []).map((t, i) =>
+    `<div class="task-item">
+       <div class="task-cb" onclick="toggleTask(this)" data-i="${i}"></div>
+       <span>${t}</span>
+     </div>`
+  ).join('');
+
+  return `
+    <div class="novu-card">
+      <div class="novu-card-header">⚡ NOVU resumió este audio</div>
+      <div class="novu-row">
+        <span class="novu-row-icon">📝</span>
+        <div><div class="novu-label">Resumen</div><div class="novu-value">${summary.resumen}</div></div>
+      </div>
+      <div class="novu-row">
+        <span class="novu-row-icon">💜</span>
+        <div>
+          <div class="novu-label">Tono emocional</div>
+          <div class="emotion-chips">${emotionChip}${urgentChip}</div>
+        </div>
+      </div>
+      ${tasks ? `<div class="novu-row">
+        <span class="novu-row-icon">✅</span>
+        <div style="flex:1">
+          <div class="novu-label">Tareas detectadas</div>
+          <div class="task-list">${tasks}</div>
+        </div>
+      </div>` : ''}
+      ${summary.pregunta ? `<div class="novu-row">
+        <span class="novu-row-icon">❓</span>
+        <div>
+          <div class="novu-label">Pregunta directa</div>
+          <div class="novu-question">${summary.pregunta}</div>
+        </div>
+      </div>` : ''}
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+// PROCESS AUDIO (demo con simulación IA)
+// ══════════════════════════════════════════
+const AUDIO_SUMMARIES = {
+  'demo-audio': {
+    resumen: 'Luna quiere coordinar la presentación del viernes. Necesita los slides antes del jueves a las 18hs y pide confirmar asistencia del cliente.',
+    emotion: '😊 Positivo',
+    emotionType: 'pos',
+    urgent: true,
+    tasks: ['Enviar slides antes del jueves 18hs', 'Confirmar asistencia del cliente'],
+    pregunta: '¿Podés tener los slides para el jueves a las 18hs?'
+  },
+  'mama-audio': {
+    resumen: 'Mamá pregunta sobre la visita del domingo. Quiere saber a qué hora llegás y si te quedás a comer.',
+    emotion: '❤️ Afectuoso',
+    emotionType: 'pos',
+    urgent: false,
+    tasks: ['Confirmar hora de llegada el domingo'],
+    pregunta: '¿A qué hora llegás el domingo y te quedás a comer?'
+  }
+};
+
+function processAudio(id, el) {
+  if (state.audioProcessed.has(id)) return;
+  state.audioProcessed.add(id);
+
+  // Animate wave bars
+  el.querySelectorAll('.wave-bar').forEach((b, i) => {
+    setTimeout(() => b.style.background = 'var(--accent)', i * 25);
+  });
+
+  // Show processing
+  const wrap = el.closest('.audio-bubble-wrap');
+  const proc = document.createElement('div');
+  proc.className = 'novu-processing';
+  proc.innerHTML = '<div class="proc-dot"></div><div class="proc-dot"></div><div class="proc-dot"></div><span>NOVU analizando audio...</span>';
+  wrap.appendChild(proc);
+  scrollBottom();
+
+  setTimeout(() => {
+    proc.remove();
+    const summary = AUDIO_SUMMARIES[id] || {
+      resumen: 'Mensaje de voz procesado.',
+      emotion: '💬 Neutro', emotionType: 'neu',
+      urgent: false, tasks: [], pregunta: ''
+    };
+
+    // Find the message and store summary
+    const chat = state.chats.find(c => c.id === state.activeChat);
+    if (chat) {
+      const msg = chat.messages.find(m => m.id === id);
+      if (msg) msg.summary = summary;
+    }
+
+    wrap.insertAdjacentHTML('beforeend', renderNovuCard(summary));
+    scrollBottom();
+
+    // Update preview
+    if (chat) {
+      chat.preview = `⚡ IA resumió: "${summary.resumen.slice(0, 40)}..."`;
+      renderChatList();
+    }
+  }, 2000);
+}
+
+// ══════════════════════════════════════════
+// SEND DEMO AUDIO
+// ══════════════════════════════════════════
+let demoAudioCount = 0;
+function sendDemoAudio() {
+  const chat = state.chats.find(c => c.id === state.activeChat);
+  if (!chat) return;
+
+  demoAudioCount++;
+  const id = `my-audio-${demoAudioCount}`;
+  const durations = ['0:42', '1:15', '2:03', '0:28'];
+  const dur = durations[demoAudioCount % durations.length];
+
+  const msg = { from: 'me', type: 'audio', duration: dur, id, time: now() };
+  chat.messages.push(msg);
+  renderMsg(msg, document.getElementById('messages'), chat);
+  scrollBottom();
+
+  // Auto-process after delay
+  setTimeout(() => {
+    const el = document.getElementById(`ab-${id}`);
+    if (el) processAudio(id, el);
+  }, 800);
+}
+
+// ══════════════════════════════════════════
+// TONE DETECTION (local keywords)
+// ══════════════════════════════════════════
+const TONE_TRIGGERS = [
+  { words: ['siempre hacés', 'siempre haces'], motivo: 'Generalización acusatoria', sug: '¿Podemos acordar cómo manejarlo la próxima vez?' },
+  { words: ['nunca'], motivo: 'Generalización negativa', sug: '¿Podemos hablar de esto puntualmente?' },
+  { words: ['culpa', 'tu culpa', 'es tu culpa'], motivo: 'Asignación de culpa directa', sug: '¿Qué pasó y cómo lo resolvemos?' },
+  { words: ['imbécil', 'idiota', 'estúpido'], motivo: 'Lenguaje ofensivo', sug: 'Estoy frustrado/a con esta situación.' },
+  { words: ['no entiendo por qué'], motivo: 'Puede sonar acusatorio o desafiante', sug: '¿Me explicás un poco más cómo llegamos acá?' },
+  { words: ['como siempre', 'como de costumbre'], motivo: 'Tono sarcástico o repetitivo', sug: 'Me gustaría que lo hablemos.' },
+  { words: ['¿para qué', 'para que sirve', 'no sirve'], motivo: 'Puede interpretarse como descalificación', sug: '¿Podemos revisar cómo está funcionando esto?' },
+];
+
+let currentSuggestion = '';
+let toneCheckTimeout = null;
+
+function checkTone(val) {
+  clearTimeout(toneCheckTimeout);
+  if (val.length < 8) {
+    document.getElementById('toneWarning').classList.remove('show');
+    return;
+  }
+  toneCheckTimeout = setTimeout(() => {
+    const lower = val.toLowerCase();
+    for (const t of TONE_TRIGGERS) {
+      if (t.words.some(w => lower.includes(w))) {
+        document.getElementById('twMsg').textContent = `"${val.slice(0,50)}${val.length > 50 ? '...' : ''}" — ${t.motivo}.`;
+        document.getElementById('twSug').textContent = `💡 Sugerencia: "${t.sug}"`;
+        currentSuggestion = t.sug;
+        document.getElementById('toneWarning').classList.add('show');
+        return;
+      }
+    }
+    document.getElementById('toneWarning').classList.remove('show');
+  }, 400);
+}
+
+function useSuggestion() {
+  document.getElementById('inputBox').value = currentSuggestion;
+  document.getElementById('toneWarning').classList.remove('show');
+  document.getElementById('inputBox').focus();
+}
+
+function dismissWarning() {
+  document.getElementById('toneWarning').classList.remove('show');
+  sendMessage(true);
+}
+
+// ══════════════════════════════════════════
+// SEND MESSAGE
+// ══════════════════════════════════════════
+function handleInput(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
+  checkTone(ta.value);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function sendMessage(force = false) {
+  const box = document.getElementById('inputBox');
+  const text = box.value.trim();
+  if (!text) return;
+
+  // Check tone warning
+  if (!force && document.getElementById('toneWarning').classList.contains('show')) return;
+
+  const chat = state.chats.find(c => c.id === state.activeChat);
+  if (!chat) return;
+
+  const msg = { from: 'me', type: 'text', text, time: now() };
+  chat.messages.push(msg);
+  renderMsg(msg, document.getElementById('messages'), chat);
+
+  box.value = '';
+  box.style.height = 'auto';
+  document.getElementById('toneWarning').classList.remove('show');
+  scrollBottom();
+
+  chat.preview = text;
+  renderChatList();
+
+  // Auto reply
+  const replies = [
+    'Perfecto, gracias! 😊',
+    'Entendido 👌',
+    'Dale, lo tengo en cuenta',
+    'Genial, te aviso',
+    '¡Sí! 🎉',
+  ];
+  setTimeout(() => {
+    const typingGroup = document.createElement('div');
+    typingGroup.className = 'msg-group other';
+    typingGroup.innerHTML = `<div class="typing-bubble"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>`;
+    document.getElementById('messages').appendChild(typingGroup);
+    scrollBottom();
+    setTimeout(() => {
+      typingGroup.remove();
+      const reply = replies[Math.floor(Math.random() * replies.length)];
+      const replyMsg = { from: 'other', type: 'text', text: reply, time: now() };
+      chat.messages.push(replyMsg);
+      renderMsg(replyMsg, document.getElementById('messages'), chat);
+      scrollBottom();
+    }, 1400);
+  }, 700);
+}
+
+// ══════════════════════════════════════════
+// PICTOGRAMS
+// ══════════════════════════════════════════
+function togglePicto() {
+  state.pictoOpen = !state.pictoOpen;
+  document.getElementById('pictoPanel').classList.toggle('show', state.pictoOpen);
+  document.getElementById('pictoToggleBtn').classList.toggle('active', state.pictoOpen);
+}
+
+function sendPicto(emoji, text) {
+  const chat = state.chats.find(c => c.id === state.activeChat);
+  if (!chat) return;
+
+  const msg = { from: 'me', type: 'picto', emoji, text, time: now() };
+  chat.messages.push(msg);
+
+  const group = document.createElement('div');
+  group.className = 'msg-group me';
+  group.innerHTML = `
+    <div class="picto-bubble" style="border-radius:18px 18px 4px 18px;background:rgba(139,124,248,.1);border-color:rgba(139,124,248,.25)">
+      <span class="p-emoji">${emoji}</span>
+      <span class="p-text">${text}</span>
+    </div>
+    <div class="bubble-time">${now()}</div>`;
+  document.getElementById('messages').appendChild(group);
+
+  scrollBottom();
+  chat.preview = `${emoji} ${text}`;
+  renderChatList();
+
+  // close picto panel
+  state.pictoOpen = false;
+  document.getElementById('pictoPanel').classList.remove('show');
+  document.getElementById('pictoToggleBtn').classList.remove('active');
+}
+
+// ══════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════
+function toggleSettings() {
+  state.settingsOpen = !state.settingsOpen;
+  const sp = document.getElementById('settingsPanel');
+  const ac = document.getElementById('activeChat');
+  const es = document.getElementById('emptyState');
+
+  if (state.settingsOpen) {
+    sp.classList.add('show');
+    ac.style.display = 'none';
+    es.classList.add('hidden');
+  } else {
+    sp.classList.remove('show');
+    if (state.activeChat) {
+      ac.style.display = 'flex';
+    } else {
+      es.classList.remove('hidden');
+    }
+  }
+}
+
+function setMode(card) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  const mode = card.dataset.mode;
+  state.user.mode = mode;
+  document.getElementById('headerMode').textContent = `Modo ${MODES[mode].label}`;
+  updateModeCards();
+}
+
+function updateModeCards() {
+  document.querySelectorAll('.mode-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.mode === state.user.mode);
+  });
+}
+
+// ══════════════════════════════════════════
+// NEW CHAT
+// ══════════════════════════════════════════
+function newChat() {
+  const name = prompt('Nombre del contacto:');
+  if (!name?.trim()) return;
+  const initials = name.trim().slice(0, 2).toUpperCase();
+  const colors = [
+    'linear-gradient(135deg,#8b7cf8,#f0b96a)',
+    'linear-gradient(135deg,#68f0b9,#8b7cf8)',
+    'linear-gradient(135deg,#f06868,#f0b96a)',
+    'linear-gradient(135deg,#5b8df0,#68f0b9)',
+  ];
+  const color = colors[state.chats.length % colors.length];
+  const id = 'chat-' + Date.now();
+  state.chats.unshift({
+    id, name: name.trim(), initials, color,
+    mode: state.user.mode,
+    unread: 0,
+    preview: 'Nueva conversación',
+    messages: []
+  });
+  renderChatList();
+  openChat(id);
+}
+
+// ══════════════════════════════════════════
+// SIDEBAR (mobile)
+// ══════════════════════════════════════════
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').style.display =
+    document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').style.display = 'none';
+}
+
+// ══════════════════════════════════════════
+// TASK TOGGLE
+// ══════════════════════════════════════════
+function toggleTask(el) {
+  el.classList.toggle('done');
+  if (el.classList.contains('done')) el.innerHTML = '✓';
+  else el.innerHTML = '';
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function now() {
+  return new Date().toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
+}
+
+function scrollBottom() {
+  const m = document.getElementById('messages');
+  if (m) m.scrollTop = m.scrollHeight;
+}
+
+// Responsive
+window.addEventListener('resize', () => {
+  const btn = document.getElementById('menuBtn');
+  if (btn) btn.style.display = window.innerWidth <= 640 ? 'flex' : 'none';
+});
+</script>
+</body>
+</html>
