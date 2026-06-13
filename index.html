@@ -46,6 +46,13 @@ html, body {
   line-height: 1.5;
   overflow: hidden;
 }
+@media (max-width: 640px) {
+  html, body { overflow: hidden; }
+}
+@media (min-width: 641px) {
+  html, body { overflow: auto; min-height: 100vh; }
+  #app { min-height: 100vh; height: 100vh; }
+}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 3px; }
@@ -696,6 +703,76 @@ html, body {
 }
 .contact-chat-btn { color: var(--text2); }
 .contact-chat-btn:hover { border-color: var(--accent); color: var(--accent); }
+.cam-filter-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 100px;
+  background: rgba(255,255,255,.1);
+  color: white;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.cam-filter-btn:hover, .cam-filter-btn.selected {
+  border-color: var(--accent);
+  background: rgba(139,124,248,.3);
+}
+
+/* Brightness overlay */
+#brightnessOverlay {
+  position: fixed; inset: 0;
+  background: black;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.contacts-import-row {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.contacts-import-btn {
+  flex: 1;
+  padding: 9px 10px;
+  background: var(--surface2);
+  border: 1.5px dashed var(--border2);
+  border-radius: 12px;
+  color: var(--text2);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+}
+.contacts-import-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.contact-share-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.contact-share-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+
+.voice-contact-hint {
+  font-size: 11px;
+  color: var(--text3);
+  padding: 8px 12px;
+  background: var(--surface2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.voice-contact-hint strong { color: var(--accent); }
+
 .add-contact-form {
   display: flex; flex-direction: column; gap: 8px;
   margin-top: 14px; padding-top: 14px;
@@ -1356,6 +1433,7 @@ body::after {
             <div class="chat-header-status">● En línea · IA activa</div>
           </div>
           <div class="mode-badge" id="chatModeBadge">🧠 NEURO</div>
+          <button class="header-btn" onclick="startVideoCall()" title="Videollamada">📹</button>
         </div>
 
         <div class="messages" id="messages"></div>
@@ -1396,6 +1474,10 @@ body::after {
         <div class="input-area">
           <div class="input-row">
             <button class="input-action-btn" id="pictoToggleBtn" onclick="togglePicto()" title="Pictogramas">🖼️</button>
+            <label class="input-action-btn" title="Foto / Video" style="cursor:pointer;display:flex;align-items:center;justify-content:center;">
+              📷
+              <input type="file" accept="image/*,video/*" capture="environment" style="display:none" onchange="sendMedia(this)">
+            </label>
             <textarea class="input-box" id="inputBox"
               placeholder="Escribí tu mensaje..."
               rows="1"
@@ -1468,6 +1550,13 @@ body::after {
           <div class="settings-section-title">Accesibilidad visual</div>
           <div class="vs-slider-row">
             <div class="vs-slider-label">
+              <div class="vs-slider-name">☀️ Brillo de pantalla</div>
+              <div class="vs-slider-val" id="brightnessVal">100%</div>
+            </div>
+            <input type="range" class="vs-slider" id="brightnessSlider" min="20" max="100" value="100" oninput="setBrightness(this.value)">
+          </div>
+          <div class="vs-slider-row">
+            <div class="vs-slider-label">
               <div class="vs-slider-name">Tamaño de texto</div>
               <div class="vs-slider-val" id="fontSizeVal">100%</div>
             </div>
@@ -1509,6 +1598,13 @@ body::after {
               <div class="setting-desc">TTS automático al llegar un mensaje nuevo</div>
             </div>
             <div class="toggle on" id="autoTtsToggle" onclick="toggleAutoTts(this)"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-name">🔔 Wake word "NOVU"</div>
+              <div class="setting-desc">Decí "NOVU" para activar el manos libres sin tocar</div>
+            </div>
+            <div class="toggle" id="wakeWordToggle" onclick="toggleWakeWord(this)"></div>
           </div>
           <div class="setting-row">
             <div class="setting-row-left">
@@ -1601,6 +1697,8 @@ body::after {
   </div><!-- end app-body -->
 </div><!-- end app -->
 
+<div id="brightnessOverlay"></div>
+
 <!-- ══════════════════════════════════════════
      VOICE COMMAND OVERLAY
 ══════════════════════════════════════════ -->
@@ -1616,6 +1714,8 @@ body::after {
     <span class="vcmd">"más grande"</span>
     <span class="vcmd">"más chico"</span>
     <span class="vcmd">"listo"</span>
+    <span class="vcmd">"agregar a Nombre, teléfono..."</span>
+    <span class="vcmd">"contactos"</span>
   </div>
   <div class="voice-hint">Hablá o dictá tu mensaje. Decí un comando para controlarlo todo.</div>
   <button class="voice-close-btn" onclick="stopVoiceOverlay()">✕ Cerrar</button>
@@ -1632,8 +1732,24 @@ body::after {
     </div>
 
     <p style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.5;">
-      El navegador no permite leer tu agenda automáticamente por seguridad. Agregalos manualmente — el ⭐ marca tu contacto de emergencia, a quien llega tu pedido de ayuda con ubicación.
+      El ⭐ marca tu contacto de emergencia para el botón 🆘. Podés agregar contactos a mano, importar desde tu teléfono, o por voz.
     </p>
+
+    <!-- Importar / voz -->
+    <div class="contacts-import-row">
+      <label class="contacts-import-btn" title="Importar contactos desde archivo VCF de tu teléfono">
+        📲 Importar del teléfono
+        <input type="file" accept=".vcf,text/vcard" style="display:none" onchange="importVCF(this)">
+      </label>
+      <button class="contacts-import-btn" onclick="startVoiceAddContact()" title="Agregar contacto por comando de voz">
+        🎙️ Agregar por voz
+      </button>
+    </div>
+
+    <div class="voice-contact-hint" id="voiceContactHint" style="display:none">
+      🎙️ Hablá así: <strong>"Agregar a Martín Pérez, teléfono 099 123 456"</strong><br>
+      <span id="voiceContactStatus">Escuchando...</span>
+    </div>
 
     <div id="contactsList"></div>
 
@@ -1642,6 +1758,62 @@ body::after {
       <input type="tel" id="newContactPhone" placeholder="Teléfono (opcional)" maxlength="20">
       <button class="add-contact-btn" onclick="addContact()">+ Agregar contacto</button>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     VIDEOLLAMADA MODAL
+══════════════════════════════════════════ -->
+<div id="videoCallModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:200;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="position:relative;width:100%;max-width:480px;aspect-ratio:9/16;max-height:80vh;border-radius:20px;overflow:hidden;background:#000;">
+    <video id="localVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+    <div style="position:absolute;top:16px;right:16px;width:100px;height:140px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.3);">
+      <video id="remoteVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;background:#1a1a2a;"></video>
+    </div>
+    <div style="position:absolute;top:16px;left:16px;background:rgba(0,0,0,.5);border-radius:10px;padding:6px 12px;">
+      <span id="videoCallName" style="color:white;font-size:13px;font-weight:700;"></span>
+      <span style="color:#68f0b9;font-size:11px;margin-left:8px;" id="videoCallTimer">0:00</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:16px;margin-top:20px;">
+    <button onclick="toggleVideoMute()" id="muteBtn" style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:white;font-size:22px;cursor:pointer;">🎙️</button>
+    <button onclick="endVideoCall()" style="width:64px;height:64px;border-radius:50%;background:#f06868;border:none;color:white;font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(240,104,104,.5);">📵</button>
+    <button onclick="toggleVideoCamera()" id="camBtn" style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:white;font-size:22px;cursor:pointer;">📷</button>
+  </div>
+  <p style="color:rgba(255,255,255,.4);font-size:11px;margin-top:12px;text-align:center;">Demo local — la videollamada real requiere Supabase Realtime</p>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CAMARA CON FILTROS MODAL
+══════════════════════════════════════════ -->
+<div id="cameraModal" style="display:none;position:fixed;inset:0;background:#000;z-index:210;flex-direction:column;">
+  <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;position:relative;z-index:2;">
+    <button onclick="closeCamera()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:white;font-size:18px;cursor:pointer;">✕</button>
+    <span style="color:white;font-size:14px;font-weight:700;flex:1;text-align:center;">Cámara NOVU</span>
+    <button onclick="flipCamera()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:white;font-size:18px;cursor:pointer;">🔄</button>
+  </div>
+  <div style="flex:1;position:relative;overflow:hidden;">
+    <video id="cameraPreview" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;" id="cameraPreview"></video>
+    <canvas id="cameraCanvas" style="display:none;"></canvas>
+    <!-- filtro aplicado via CSS filter en el video -->
+  </div>
+  <!-- Filtros -->
+  <div style="padding:10px 16px;overflow-x:auto;white-space:nowrap;background:rgba(0,0,0,.7);">
+    <div style="display:inline-flex;gap:10px;">
+      <div class="cam-filter-btn selected" data-filter="" onclick="setCamFilter(this,'')">Normal</div>
+      <div class="cam-filter-btn" data-filter="grayscale(100%)" onclick="setCamFilter(this,'grayscale(100%)')">B&N</div>
+      <div class="cam-filter-btn" data-filter="sepia(80%)" onclick="setCamFilter(this,'sepia(80%)')">Retro</div>
+      <div class="cam-filter-btn" data-filter="hue-rotate(60deg) saturate(150%)" onclick="setCamFilter(this,'hue-rotate(60deg) saturate(150%)')">Verde</div>
+      <div class="cam-filter-btn" data-filter="hue-rotate(200deg) saturate(200%)" onclick="setCamFilter(this,'hue-rotate(200deg) saturate(200%)')">Violeta</div>
+      <div class="cam-filter-btn" data-filter="contrast(150%) brightness(110%)" onclick="setCamFilter(this,'contrast(150%) brightness(110%)')">Vivid</div>
+      <div class="cam-filter-btn" data-filter="brightness(130%) contrast(80%) saturate(0%)" onclick="setCamFilter(this,'brightness(130%) contrast(80%) saturate(0%)')">Soft</div>
+      <div class="cam-filter-btn" data-filter="invert(90%) hue-rotate(180deg)" onclick="setCamFilter(this,'invert(90%) hue-rotate(180deg)')">Neon</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:20px;justify-content:center;padding:16px;background:rgba(0,0,0,.8);">
+    <button onclick="startCameraVideo()" id="recordBtn" style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:white;font-size:20px;cursor:pointer;" title="Grabar video">🔴</button>
+    <button onclick="capturePhoto()" style="width:64px;height:64px;border-radius:50%;background:white;border:4px solid rgba(255,255,255,.5);color:#000;font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(255,255,255,.3);">⚪</button>
+    <button onclick="flipCamera()" style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:white;font-size:20px;cursor:pointer;">🔄</button>
   </div>
 </div>
 
@@ -2387,6 +2559,36 @@ function handleVoiceCommand(text) {
     togglePicto();
     return true;
   }
+  // Agregar contacto por voz desde comando en el chat
+  if (text.match(/agreg(?:ar|á)?\s+(?:a\s+)?\w/i) || text.startsWith('nuevo contacto')) {
+    const result = parseVoiceContact(text);
+    if (result) {
+      const colors = [
+        'linear-gradient(135deg,#8b7cf8,#f0b96a)',
+        'linear-gradient(135deg,#68f0b9,#8b7cf8)',
+        'linear-gradient(135deg,#f06868,#f0b96a)',
+        'linear-gradient(135deg,#5b8df0,#68f0b9)',
+      ];
+      state.contacts.push({
+        id: 'c-' + Date.now(),
+        name: result.name,
+        phone: result.phone,
+        initials: result.name.slice(0, 2).toUpperCase(),
+        color: colors[state.contacts.length % colors.length],
+        emergency: false,
+      });
+      savePersistence();
+      speakFeedback(`Contacto ${result.name} agregado.`);
+    } else {
+      openContacts();
+      setTimeout(() => startVoiceAddContact(), 400);
+    }
+    return true;
+  }
+  if (text.includes('contactos') || text.includes('agenda') || text.includes('abrir contactos')) {
+    openContacts();
+    return true;
+  }
   return false;
 }
 
@@ -2579,9 +2781,10 @@ function renderContactsList() {
     <div class="contact-item">
       <div class="contact-avatar" style="background:${c.color}">${c.initials}</div>
       <div class="contact-info">
-        <div class="contact-name">${c.name} ${c.emergency ? '<span title=\"Contacto de emergencia\">🆘</span>' : ''}</div>
+        <div class="contact-name">${c.name} ${c.emergency ? '<span title="Contacto de emergencia">🆘</span>' : ''}</div>
         <div class="contact-phone">${c.phone || 'Sin teléfono'}</div>
       </div>
+      <button class="contact-share-btn" onclick="shareContact('${c.id}')" title="Compartir contacto">🔗</button>
       <button class="contact-emergency-btn${c.emergency ? ' active' : ''}"
               onclick="toggleEmergency('${c.id}')"
               title="Marcar como contacto de emergencia">⭐</button>
@@ -2648,6 +2851,317 @@ function startChatWithContact(id) {
 }
 
 // ══════════════════════════════════════════
+// BRILLO
+// ══════════════════════════════════════════
+function setBrightness(val) {
+  const pct = parseInt(val);
+  document.getElementById('brightnessVal').textContent = pct + '%';
+  // Oscurecer = aumentar opacidad del overlay negro
+  const opacity = (100 - pct) / 100 * 0.85;
+  document.getElementById('brightnessOverlay').style.opacity = opacity;
+  visualSettings.brightness = pct;
+  savePersistence();
+}
+
+// ══════════════════════════════════════════
+// ENVIAR FOTO/VIDEO desde selector de archivos
+// ══════════════════════════════════════════
+function sendMedia(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const chat = state.chats.find(c => c.id === state.activeChat);
+  if (!chat) {
+    // Si no hay chat activo, abrir cámara modal como fallback
+    openCamera();
+    input.value = '';
+    return;
+  }
+
+  const isVideo = file.type.startsWith('video/');
+  const url = URL.createObjectURL(file);
+
+  const msgHtml = isVideo
+    ? `<video src="${url}" controls style="max-width:220px;border-radius:12px;margin-top:4px;"></video>`
+    : `<img src="${url}" style="max-width:220px;border-radius:12px;margin-top:4px;cursor:pointer;" onclick="window.open('${url}')">`;
+
+  const msg = {
+    from: 'me',
+    type: 'media',
+    text: isVideo ? '🎥 Video' : '📷 Foto',
+    mediaHtml: msgHtml,
+    time: now()
+  };
+  chat.messages.push(msg);
+
+  // Render directo
+  const container = document.getElementById('messages');
+  const group = document.createElement('div');
+  group.className = 'msg-group me';
+  group.innerHTML = `${msgHtml}<div class="bubble-time">${msg.time}</div>`;
+  container.appendChild(group);
+  scrollBottom();
+
+  chat.preview = isVideo ? '🎥 Video enviado' : '📷 Foto enviada';
+  renderChatList();
+  input.value = '';
+}
+
+// ══════════════════════════════════════════
+// CÁMARA CON FILTROS
+// ══════════════════════════════════════════
+let cameraStream = null;
+let cameraFacingMode = 'environment';
+let currentCamFilter = '';
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
+let videoCallTimerInterval = null;
+let videoCallSeconds = 0;
+
+function openCamera() {
+  const modal = document.getElementById('cameraModal');
+  modal.style.display = 'flex';
+  modal.style.flexDirection = 'column';
+  startCameraStream();
+}
+
+function closeCamera() {
+  document.getElementById('cameraModal').style.display = 'none';
+  stopCameraStream();
+}
+
+function startCameraStream() {
+  stopCameraStream();
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: cameraFacingMode },
+    audio: false
+  }).then(stream => {
+    cameraStream = stream;
+    const video = document.getElementById('cameraPreview');
+    video.srcObject = stream;
+    video.style.filter = currentCamFilter;
+  }).catch(err => {
+    alert('No se pudo acceder a la cámara: ' + err.message);
+    closeCamera();
+  });
+}
+
+function stopCameraStream() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  if (mediaRecorder && isRecording) {
+    mediaRecorder.stop();
+    isRecording = false;
+  }
+}
+
+function flipCamera() {
+  cameraFacingMode = cameraFacingMode === 'environment' ? 'user' : 'environment';
+  startCameraStream();
+}
+
+function setCamFilter(el, filter) {
+  document.querySelectorAll('.cam-filter-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  currentCamFilter = filter;
+  const video = document.getElementById('cameraPreview');
+  if (video) video.style.filter = filter;
+}
+
+function capturePhoto() {
+  const video = document.getElementById('cameraPreview');
+  const canvas = document.getElementById('cameraCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+
+  // Aplicar filtro en canvas
+  ctx.filter = currentCamFilter || 'none';
+  ctx.drawImage(video, 0, 0);
+
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const chat = state.chats.find(c => c.id === state.activeChat);
+    if (!chat) { alert('Primero abrí una conversación'); return; }
+
+    const msgHtml = `<img src="${url}" style="max-width:220px;border-radius:12px;margin-top:4px;cursor:pointer;" onclick="window.open('${url}')">`;
+    const msg = { from: 'me', type: 'media', text: '📷 Foto', mediaHtml: msgHtml, time: now() };
+    chat.messages.push(msg);
+    const container = document.getElementById('messages');
+    const group = document.createElement('div');
+    group.className = 'msg-group me';
+    group.innerHTML = `${msgHtml}<div class="bubble-time">${msg.time}</div>`;
+    container.appendChild(group);
+    scrollBottom();
+    chat.preview = '📷 Foto enviada';
+    renderChatList();
+    closeCamera();
+  }, 'image/jpeg', 0.9);
+}
+
+function startCameraVideo() {
+  if (!cameraStream) return;
+  const btn = document.getElementById('recordBtn');
+
+  if (isRecording) {
+    mediaRecorder.stop();
+    isRecording = false;
+    btn.textContent = '🔴';
+    btn.style.background = 'rgba(255,255,255,.15)';
+    return;
+  }
+
+  recordedChunks = [];
+  mediaRecorder = new MediaRecorder(cameraStream);
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const chat = state.chats.find(c => c.id === state.activeChat);
+    if (chat) {
+      const msgHtml = `<video src="${url}" controls style="max-width:220px;border-radius:12px;margin-top:4px;"></video>`;
+      const msg = { from: 'me', type: 'media', text: '🎥 Video', mediaHtml: msgHtml, time: now() };
+      chat.messages.push(msg);
+      const container = document.getElementById('messages');
+      const group = document.createElement('div');
+      group.className = 'msg-group me';
+      group.innerHTML = `${msgHtml}<div class="bubble-time">${msg.time}</div>`;
+      container.appendChild(group);
+      scrollBottom();
+      chat.preview = '🎥 Video enviado';
+      renderChatList();
+    }
+    closeCamera();
+  };
+  mediaRecorder.start();
+  isRecording = true;
+  btn.textContent = '⏹️';
+  btn.style.background = 'rgba(240,104,104,.5)';
+}
+
+// ══════════════════════════════════════════
+// VIDEOLLAMADA (demo local)
+// ══════════════════════════════════════════
+let videoStream = null;
+let videoMuted = false;
+let videoCamOff = false;
+
+function startVideoCall() {
+  const chat = state.chats.find(c => c.id === state.activeChat);
+  const modal = document.getElementById('videoCallModal');
+  document.getElementById('videoCallName').textContent = chat?.name || 'Videollamada';
+  modal.style.display = 'flex';
+  modal.style.flexDirection = 'column';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(stream => {
+      videoStream = stream;
+      document.getElementById('localVideo').srcObject = stream;
+      startVideoTimer();
+    })
+    .catch(() => {
+      // Demo sin cámara
+      startVideoTimer();
+    });
+}
+
+function endVideoCall() {
+  document.getElementById('videoCallModal').style.display = 'none';
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+  clearInterval(videoCallTimerInterval);
+  videoCallSeconds = 0;
+}
+
+function toggleVideoMute() {
+  if (!videoStream) return;
+  videoMuted = !videoMuted;
+  videoStream.getAudioTracks().forEach(t => t.enabled = !videoMuted);
+  document.getElementById('muteBtn').textContent = videoMuted ? '🔇' : '🎙️';
+}
+
+function toggleVideoCamera() {
+  if (!videoStream) return;
+  videoCamOff = !videoCamOff;
+  videoStream.getVideoTracks().forEach(t => t.enabled = !videoCamOff);
+  document.getElementById('camBtn').textContent = videoCamOff ? '📷🚫' : '📷';
+}
+
+function startVideoTimer() {
+  videoCallSeconds = 0;
+  videoCallTimerInterval = setInterval(() => {
+    videoCallSeconds++;
+    const m = Math.floor(videoCallSeconds / 60);
+    const s = videoCallSeconds % 60;
+    document.getElementById('videoCallTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
+}
+
+// ══════════════════════════════════════════
+// WAKE WORD — escucha "novu" en background
+// ══════════════════════════════════════════
+let wakeWordActive = false;
+let wakeWordRecog = null;
+
+function toggleWakeWord(el) {
+  el.classList.toggle('on');
+  wakeWordActive = el.classList.contains('on');
+  if (wakeWordActive) {
+    startWakeWordListener();
+    speakFeedback('Wake word activado. Decí NOVU para activar el manos libres.');
+  } else {
+    stopWakeWordListener();
+  }
+  savePersistence();
+}
+
+function startWakeWordListener() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  if (wakeWordRecog) { try { wakeWordRecog.abort(); } catch(e){} }
+
+  wakeWordRecog = new SR();
+  wakeWordRecog.lang = 'es-UY';
+  wakeWordRecog.interimResults = false;
+  wakeWordRecog.continuous = false;
+
+  wakeWordRecog.onresult = (e) => {
+    const text = e.results[0][0].transcript.toLowerCase().trim();
+    if (text.includes('novu') || text.includes('novo')) {
+      // Activar manos libres
+      if (!isHandsFree) toggleHandsFree();
+    }
+  };
+
+  wakeWordRecog.onend = () => {
+    // Re-iniciar si sigue activo
+    if (wakeWordActive) {
+      setTimeout(() => { if (wakeWordActive) startWakeWordListener(); }, 500);
+    }
+  };
+
+  wakeWordRecog.onerror = () => {
+    if (wakeWordActive) {
+      setTimeout(() => { if (wakeWordActive) startWakeWordListener(); }, 2000);
+    }
+  };
+
+  try { wakeWordRecog.start(); } catch(e) {}
+}
+
+function stopWakeWordListener() {
+  wakeWordActive = false;
+  if (wakeWordRecog) {
+    try { wakeWordRecog.abort(); } catch(e) {}
+    wakeWordRecog = null;
+  }
+}
+
+// ══════════════════════════════════════════
 // SOS — pedido de ayuda con ubicación
 // ══════════════════════════════════════════
 function sendSOS() {
@@ -2709,7 +3223,169 @@ function deliverSOS(contact, coords) {
 }
 
 // ══════════════════════════════════════════
-// TASK TOGGLE
+// COMPARTIR CONTACTO
+// ══════════════════════════════════════════
+function shareContact(id) {
+  const c = state.contacts.find(ct => ct.id === id);
+  if (!c) return;
+
+  const text = `📇 Contacto NOVU\nNombre: ${c.name}\nTeléfono: ${c.phone || '—'}`;
+
+  if (navigator.share) {
+    navigator.share({ title: `Contacto: ${c.name}`, text }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(text).then(() => {
+      alert(`✅ Copiado:\n${text}`);
+    }).catch(() => {
+      prompt('Copiá este contacto:', text);
+    });
+  }
+}
+
+// ══════════════════════════════════════════
+// IMPORTAR VCF (contactos del teléfono)
+// ══════════════════════════════════════════
+function importVCF(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const text = e.target.result;
+    const vcards = text.split(/BEGIN:VCARD/i).slice(1);
+    let added = 0;
+
+    const colors = [
+      'linear-gradient(135deg,#8b7cf8,#f0b96a)',
+      'linear-gradient(135deg,#68f0b9,#8b7cf8)',
+      'linear-gradient(135deg,#f06868,#f0b96a)',
+      'linear-gradient(135deg,#5b8df0,#68f0b9)',
+    ];
+
+    vcards.forEach(card => {
+      // Nombre — soporta FN y N
+      let name = '';
+      const fnMatch = card.match(/^FN[;:][^\r\n]*/im);
+      if (fnMatch) {
+        name = fnMatch[0].replace(/^FN[;:]/i, '').replace(/;.*$/, '').trim();
+      }
+      if (!name) {
+        const nMatch = card.match(/^N[;:]([^\r\n]*)/im);
+        if (nMatch) {
+          const parts = nMatch[1].split(';');
+          name = [parts[1], parts[0]].filter(Boolean).join(' ').trim();
+        }
+      }
+      if (!name) return;
+
+      // Teléfono
+      let phone = '';
+      const telMatch = card.match(/^TEL[^\r\n]*/im);
+      if (telMatch) {
+        phone = telMatch[0].replace(/^TEL[^:]*:/i, '').trim();
+      }
+
+      // Evitar duplicados por nombre
+      const exists = state.contacts.some(c => c.name.toLowerCase() === name.toLowerCase());
+      if (!exists) {
+        state.contacts.push({
+          id: 'c-' + Date.now() + added,
+          name,
+          phone,
+          initials: name.slice(0, 2).toUpperCase(),
+          color: colors[state.contacts.length % colors.length],
+          emergency: false,
+        });
+        added++;
+      }
+    });
+
+    input.value = '';
+    renderContactsList();
+    savePersistence();
+    alert(`✅ ${added} contacto${added !== 1 ? 's' : ''} importado${added !== 1 ? 's' : ''}${vcards.length - added > 0 ? ` (${vcards.length - added} duplicado${vcards.length - added !== 1 ? 's' : ''} ignorado${vcards.length - added !== 1 ? 's' : ''})` : ''}.`);
+  };
+
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ══════════════════════════════════════════
+// AGREGAR CONTACTO POR VOZ
+// ══════════════════════════════════════════
+let voiceContactRecog = null;
+
+function startVoiceAddContact() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert('Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');
+    return;
+  }
+
+  const hint = document.getElementById('voiceContactHint');
+  const status = document.getElementById('voiceContactStatus');
+  hint.style.display = 'block';
+  status.textContent = '🎙️ Escuchando...';
+
+  if (voiceContactRecog) { voiceContactRecog.abort(); }
+
+  voiceContactRecog = new SR();
+  voiceContactRecog.lang = 'es-UY';
+  voiceContactRecog.interimResults = false;
+  voiceContactRecog.maxAlternatives = 3;
+
+  voiceContactRecog.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    status.textContent = `"${transcript}"`;
+    const result = parseVoiceContact(transcript);
+    if (result) {
+      document.getElementById('newContactName').value = result.name;
+      document.getElementById('newContactPhone').value = result.phone;
+      status.textContent = `✅ Listo: ${result.name}${result.phone ? ' · ' + result.phone : ''} — ¡Tocá "+ Agregar"!`;
+    } else {
+      status.textContent = `No entendí. Decí: "Agregar a Nombre, teléfono 099..."`;
+    }
+  };
+
+  voiceContactRecog.onerror = (e) => {
+    status.textContent = `Error: ${e.error}. Intentá de nuevo.`;
+  };
+
+  voiceContactRecog.onend = () => {
+    if (status.textContent === '🎙️ Escuchando...') {
+      status.textContent = 'No captó audio. Tocá el botón para intentar de nuevo.';
+    }
+  };
+
+  voiceContactRecog.start();
+}
+
+function parseVoiceContact(text) {
+  text = text.toLowerCase().trim();
+
+  // "agregar a NOMBRE, teléfono NÚMERO"
+  // "agregar NOMBRE teléfono NÚMERO"
+  // "nuevo contacto NOMBRE, número NÚMERO"
+  const patterns = [
+    /agreg(?:ar|á)?\s+(?:a\s+)?(.+?)[,.]?\s+(?:tel[ée]fono|n[úu]mero|cel(?:ular)?)\s+([\d\s\+\-]+)/i,
+    /nuevo\s+contacto\s+(.+?)[,.]?\s+(?:tel[ée]fono|n[úu]mero|cel(?:ular)?)\s+([\d\s\+\-]+)/i,
+    /agreg(?:ar|á)?\s+(?:a\s+)?(.+?)[,.]?\s+([\d\s\+\-]{6,})/i,
+    // Solo nombre sin teléfono
+    /agreg(?:ar|á)?\s+(?:a\s+)?([a-záéíóúüñ\s]+)/i,
+  ];
+
+  for (const pat of patterns) {
+    const m = text.match(pat);
+    if (m) {
+      const name = m[1].trim().replace(/\b\w/g, c => c.toUpperCase());
+      const phone = (m[2] || '').trim().replace(/\s+/g, ' ');
+      if (name.length > 1) return { name, phone };
+    }
+  }
+  return null;
+}
+
+// ══════════════════════════════════════════
+// TAREA TOGGLE
 // ══════════════════════════════════════════
 function toggleTask(el) {
   el.classList.toggle('done');
@@ -3156,6 +3832,13 @@ function loadPersistence() {
     document.querySelectorAll('.lang-opt').forEach(o => {
       o.classList.toggle('selected', o.dataset.lang === currentLang);
     });
+    // Apply brightness
+    if (visualSettings.brightness && visualSettings.brightness !== 100) {
+      const sl = document.getElementById('brightnessSlider');
+      if (sl) { sl.value = visualSettings.brightness; document.getElementById('brightnessVal').textContent = visualSettings.brightness + '%'; }
+      const opacity = (100 - visualSettings.brightness) / 100 * 0.85;
+      document.getElementById('brightnessOverlay').style.opacity = opacity;
+    }
 
     return true;
   } catch(e) { return false; }
