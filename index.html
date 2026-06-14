@@ -409,6 +409,158 @@ html, body {
   flex-shrink: 0;
 }
 
+/* GIF quick tags */
+.gif-tag-btn {
+  padding:4px 10px; border-radius:100px; border:1px solid var(--border2);
+  background:var(--surface2); color:var(--text2); font-size:11px;
+  cursor:pointer; white-space:nowrap; transition:all .15s; flex-shrink:0;
+}
+.gif-tag-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Sticker grid item */
+.sticker-btn {
+  font-size:32px; padding:8px; border-radius:12px; border:none;
+  background:var(--surface2); cursor:pointer; transition:transform .15s;
+  aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+}
+.sticker-btn:hover { transform:scale(1.2); }
+.sticker-cat-tab {
+  padding:5px 12px; border-radius:100px; font-size:12px; font-weight:700;
+  border:1px solid var(--border2); background:var(--surface2); color:var(--text2);
+  cursor:pointer; white-space:nowrap; transition:all .15s;
+}
+.sticker-cat-tab.active { border-color:var(--accent); background:var(--accent-dim); color:var(--accent); }
+
+/* Game launch buttons */
+.game-launch-btn {
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:14px 8px; border-radius:16px;
+  background:var(--surface); border:1.5px solid var(--border2);
+  cursor:pointer; color:var(--text); font-size:13px; font-weight:700;
+  transition:all .2s;
+}
+.game-launch-btn:hover { border-color:var(--accent); background:var(--accent-dim); color:var(--accent); transform:scale(1.03); }
+
+/* Chess */
+.chess-board { display:grid; grid-template-columns:repeat(8,1fr); width:min(100%,360px); aspect-ratio:1; border:3px solid var(--accent); border-radius:8px; overflow:hidden; }
+.chess-cell { display:flex; align-items:center; justify-content:center; font-size:clamp(18px,5vw,36px); cursor:pointer; transition:background .1s; aspect-ratio:1; }
+.chess-cell.light { background:#e8e0f8; }
+.chess-cell.dark  { background:#6b5fa0; }
+.chess-cell.selected { background:#ffdd57 !important; }
+.chess-cell.possible { background:#68f0b9 !important; }
+.chess-cell.check { background:#f06868 !important; }
+
+/* Tic Tac Toe */
+.ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(100%,300px); }
+.ttt-cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:clamp(32px,12vw,64px); border-radius:16px; background:var(--surface); border:2px solid var(--border2); cursor:pointer; transition:all .15s; }
+.ttt-cell:hover { background:var(--surface2); }
+.ttt-cell.win { background:var(--accent-dim); border-color:var(--accent); }
+
+/* Memory */
+.memory-board { display:grid; gap:8px; width:min(100%,380px); }
+.mem-card { aspect-ratio:1; border-radius:14px; font-size:28px; display:flex; align-items:center; justify-content:center; background:var(--surface); border:2px solid var(--border2); cursor:pointer; transition:all .3s; user-select:none; }
+.mem-card.face-up { background:var(--surface2); border-color:var(--accent); }
+.mem-card.matched { background:rgba(104,240,185,.15); border-color:var(--accent3); opacity:.7; pointer-events:none; }
+
+/* Sudoku */
+.sudoku-board { display:grid; grid-template-columns:repeat(9,1fr); border:3px solid var(--text2); border-radius:4px; width:min(100%,360px); }
+.sudoku-cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:clamp(10px,3.5vw,18px); font-weight:700; border:1px solid var(--border2); cursor:pointer; transition:background .1s; color:var(--text); }
+.sudoku-cell:nth-child(3n) { border-right:2px solid var(--text2); }
+.sudoku-cell:nth-child(n+19):nth-child(-n+27), .sudoku-cell:nth-child(n+46):nth-child(-n+54) { border-bottom:2px solid var(--text2); }
+.sudoku-cell.given { color:var(--accent); font-weight:900; background:var(--surface); }
+.sudoku-cell.selected { background:#ffdd5733; }
+.sudoku-cell.error { background:rgba(240,104,104,.2); color:#f06868; }
+.sudoku-numpad { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-top:12px; width:min(100%,360px); }
+.sudoku-num { padding:10px; border-radius:10px; background:var(--surface); border:1px solid var(--border2); color:var(--text); font-size:16px; font-weight:700; cursor:pointer; transition:all .15s; }
+.sudoku-num:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Wordle */
+.wordle-board { display:grid; grid-template-rows:repeat(6,1fr); gap:6px; margin-bottom:16px; }
+.wordle-row { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+.wordle-cell { aspect-ratio:1; width:clamp(42px,11vw,56px); display:flex; align-items:center; justify-content:center; font-size:clamp(16px,5vw,24px); font-weight:900; border:2px solid var(--border2); border-radius:8px; text-transform:uppercase; transition:all .3s; font-family:var(--font-display); }
+.wordle-cell.correct { background:#68f0b9; border-color:#68f0b9; color:#000; }
+.wordle-cell.present { background:#f0b96a; border-color:#f0b96a; color:#000; }
+.wordle-cell.absent  { background:var(--surface2); border-color:var(--surface2); color:var(--text3); }
+.wordle-cell.active  { border-color:var(--accent); }
+.wordle-keyboard { display:grid; grid-template-rows:repeat(3,auto); gap:6px; }
+.wordle-key-row { display:flex; gap:5px; justify-content:center; }
+.wordle-key { padding:12px 6px; min-width:28px; border-radius:6px; background:var(--surface2); border:1px solid var(--border2); color:var(--text); font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; text-transform:uppercase; }
+.wordle-key.correct { background:#68f0b9; color:#000; border-color:#68f0b9; }
+.wordle-key.present { background:#f0b96a; color:#000; border-color:#f0b96a; }
+.wordle-key.absent  { background:var(--surface2); opacity:.5; }
+
+/* Game control buttons */
+.game-ctrl-btn { padding:10px 20px; border-radius:100px; font-size:13px; font-weight:700; cursor:pointer; border:1.5px solid var(--border2); background:var(--surface); color:var(--text); transition:all .2s; }
+.game-ctrl-btn:hover { border-color:var(--accent); color:var(--accent); }
+.game-ctrl-btn.primary { background:var(--accent); border-color:var(--accent); color:white; }
+
+/* ── COGNITIVE ASSISTANCE ── */
+.cog-tab {
+  flex:1; padding:12px 8px; border:none; background:none;
+  color:var(--text2); font-size:12px; font-weight:700;
+  cursor:pointer; border-bottom:2px solid transparent;
+  transition:all .2s; font-family:var(--font-body);
+}
+.cog-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+.cog-routine-card {
+  background:var(--surface); border:1.5px solid var(--border2);
+  border-radius:16px; padding:14px; margin-bottom:10px;
+  transition:border-color .2s;
+}
+.cog-routine-card.active-routine { border-color:var(--accent); }
+
+.cog-step {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--border);
+}
+.cog-step:last-child { border-bottom:none; }
+.cog-step-check {
+  width:26px; height:26px; border-radius:50%; flex-shrink:0;
+  border:2px solid var(--border2); background:var(--surface2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s; font-size:14px;
+}
+.cog-step-check.done { background:var(--accent3); border-color:var(--accent3); }
+.cog-step-text { flex:1; font-size:14px; line-height:1.4; padding-top:3px; }
+.cog-step-text.done { text-decoration:line-through; color:var(--text3); }
+
+.med-card {
+  background:var(--surface); border:1.5px solid var(--border2);
+  border-radius:14px; padding:12px 14px; margin-bottom:8px;
+  display:flex; align-items:center; gap:12px;
+}
+.med-icon { font-size:28px; flex-shrink:0; }
+.med-info { flex:1; }
+.med-name { font-size:14px; font-weight:700; margin-bottom:2px; }
+.med-time { font-size:12px; color:var(--accent); font-weight:600; }
+.med-note { font-size:11px; color:var(--text3); margin-top:2px; }
+.med-check {
+  width:34px; height:34px; border-radius:50%; border:2px solid var(--border2);
+  background:var(--surface2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:18px; transition:all .2s; flex-shrink:0;
+}
+.med-check.taken { background:var(--accent3); border-color:var(--accent3); }
+
+.cog-add-btn {
+  width:100%; padding:12px; border-radius:12px;
+  background:var(--surface2); border:1.5px dashed var(--border2);
+  color:var(--text2); font-size:13px; cursor:pointer;
+  transition:all .2s; margin-top:8px;
+}
+.cog-add-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Game multiplayer state message */
+.game-state-bubble {
+  background:linear-gradient(135deg,rgba(139,124,248,.12),rgba(104,240,185,.08));
+  border:1px solid rgba(139,124,248,.25);
+  border-radius:14px; padding:12px 14px; max-width:280px;
+  cursor:pointer;
+}
+.game-state-bubble:hover { border-color:var(--accent); }
+.game-state-label { font-size:10px; font-weight:800; color:var(--accent); letter-spacing:.5px; margin-bottom:4px; }
+.game-state-preview { font-size:13px; color:var(--text); line-height:1.4; }
+
 .bubble-react-menu {
   position: fixed;
   background: var(--surface2);
@@ -1856,6 +2008,7 @@ body::after {
             <div class="chat-header-status">● En línea · IA activa</div>
           </div>
           <div class="mode-badge" id="chatModeBadge">🧠 NEURO</div>
+          <button class="header-btn" id="cogQuickBtn" onclick="openCogModal()" title="Asistente de memoria" style="display:none;">🧠</button>
           <button class="header-btn" onclick="startVideoCall()" title="Videollamada">📹</button>
         </div>
 
@@ -1894,11 +2047,13 @@ body::after {
           <div class="picto-grid" id="pictoGrid" style="max-height:180px;overflow-y:auto;"></div>
         </div>
 
-        <!-- ── FUN PICKER (Emoji + GIF) ── -->
+        <!-- ── FUN PICKER (Emoji + GIF + Stickers + Juegos) ── -->
         <div class="fun-picker" id="funPicker">
           <div class="fun-picker-tabs">
             <div class="fun-tab active" onclick="switchFunTab('emoji',this)">😄 Emoji</div>
             <div class="fun-tab" onclick="switchFunTab('gif',this)">🎬 GIF</div>
+            <div class="fun-tab" onclick="switchFunTab('sticker',this)">✨ Stickers</div>
+            <div class="fun-tab" onclick="switchFunTab('games',this)">🎮 Juegos</div>
           </div>
 
           <!-- EMOJI PANEL -->
@@ -1906,6 +2061,8 @@ body::after {
             <div class="emoji-search"><input id="emojiSearchInput" placeholder="🔍 Buscar emoji..." oninput="filterEmojis(this.value)"></div>
             <div class="emoji-cats" id="emojiCats"></div>
             <div class="emoji-grid" id="emojiGrid"></div>
+            <div style="padding:8px 10px 4px;font-size:10px;color:var(--text3);font-weight:700;letter-spacing:.5px;">RECIENTES</div>
+            <div class="emoji-grid" id="recentEmojiGrid"></div>
           </div>
 
           <!-- GIF PANEL -->
@@ -1914,21 +2071,71 @@ body::after {
               <input id="gifSearchInput" placeholder="Buscar GIF... (ej: feliz, risa, wow)" onkeydown="if(event.key==='Enter')searchGifs()">
               <button class="gif-search-btn" onclick="searchGifs()">Buscar</button>
             </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 8px 0;">
+              <button class="gif-tag-btn" onclick="quickSearchGif('feliz')">😄 Feliz</button>
+              <button class="gif-tag-btn" onclick="quickSearchGif('risa')">😂 Risa</button>
+              <button class="gif-tag-btn" onclick="quickSearchGif('wow')">😮 Wow</button>
+              <button class="gif-tag-btn" onclick="quickSearchGif('gracias')">🙏 Gracias</button>
+              <button class="gif-tag-btn" onclick="quickSearchGif('baile')">💃 Baile</button>
+              <button class="gif-tag-btn" onclick="quickSearchGif('amor')">❤️ Amor</button>
+            </div>
             <div class="gif-grid" id="gifGrid">
               <div class="gif-loading">✨ Buscá un GIF para empezar</div>
             </div>
-            <div class="gif-powered">Powered by Tenor</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;">
+              <div class="gif-powered">Powered by Tenor</div>
+              <button onclick="showSavedGifs()" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;font-weight:700;">⭐ Guardados</button>
+            </div>
+            <div id="savedGifsGrid" style="display:none;"></div>
+          </div>
+
+          <!-- STICKERS PANEL -->
+          <div class="fun-panel" id="funStickerPanel">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 8px;overflow-x:auto;" id="stickerCats"></div>
+            <div class="emoji-grid" id="stickerGrid" style="grid-template-columns:repeat(5,1fr);gap:8px;padding:8px;"></div>
+            <div style="padding:6px 10px;border-top:1px solid var(--border);margin-top:4px;">
+              <button onclick="addCustomEmoji()" style="width:100%;padding:8px;background:var(--surface2);border:1px dashed var(--border2);border-radius:10px;color:var(--text2);font-size:12px;cursor:pointer;">
+                ➕ Agregar emoji personalizado
+              </button>
+            </div>
+          </div>
+
+          <!-- GAMES PANEL -->
+          <div class="fun-panel" id="funGamesPanel">
+            <div style="padding:10px 8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button class="game-launch-btn" onclick="launchGame('tictactoe')">
+                <span style="font-size:28px;">⭕❌</span>
+                <span>3 en línea</span>
+              </button>
+              <button class="game-launch-btn" onclick="launchGame('memory')">
+                <span style="font-size:28px;">🃏</span>
+                <span>Memoria</span>
+              </button>
+              <button class="game-launch-btn" onclick="launchGame('chess')">
+                <span style="font-size:28px;">♟️</span>
+                <span>Ajedrez</span>
+              </button>
+              <button class="game-launch-btn" onclick="launchGame('sudoku')">
+                <span style="font-size:28px;">🔢</span>
+                <span>Sudoku</span>
+              </button>
+              <button class="game-launch-btn" onclick="launchGame('wordle')" style="grid-column:span 2;">
+                <span style="font-size:28px;">📝</span>
+                <span>Wordle en español</span>
+              </button>
+            </div>
+            <div style="padding:0 10px 10px;font-size:11px;color:var(--text3);text-align:center;">
+              Los juegos se abren en el chat — ¡desafiá a quien tenés enfrente!
+            </div>
           </div>
         </div>
 
         <div class="input-area">
           <div class="input-row">
-            <button class="input-action-btn" id="funPickerBtn" onclick="toggleFunPicker()" title="Emoji y GIFs">😄</button>
+            <button class="input-action-btn" id="funPickerBtn" onclick="toggleFunPicker()" title="Emoji, GIFs y Stickers">😄</button>
             <button class="input-action-btn" id="pictoToggleBtn" onclick="togglePicto()" title="Pictogramas">🖼️</button>
-            <label class="input-action-btn" title="Foto / Video" style="cursor:pointer;display:flex;align-items:center;justify-content:center;">
-              📷
-              <input type="file" accept="image/*,video/*" capture="environment" style="display:none" onchange="sendMedia(this)">
-            </label>
+            <button class="input-action-btn" onclick="openCamera()" title="Cámara con filtros">📷</button>
+            <button class="input-action-btn" onclick="switchFunTab('games', document.querySelector(\`.fun-tab:nth-child(4)\`)); if(!funPickerOpen) toggleFunPicker();" title="Juegos en el chat">🎮</button>
             <textarea class="input-box" id="inputBox"
               placeholder="Escribí tu mensaje..."
               rows="1"
@@ -2147,6 +2354,32 @@ body::after {
           </div>
         </div>
 
+        <div class="settings-section" id="cogSettingsSection">
+          <div class="settings-section-title">🧠 Asistencia cognitiva</div>
+          <div style="background:linear-gradient(135deg,rgba(139,124,248,.1),rgba(104,240,185,.08));border:1px solid rgba(139,124,248,.2);border-radius:14px;padding:14px;margin-bottom:10px;">
+            <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;">
+              Herramientas para ayudar con rutinas diarias, recordatorios de medicación y guía paso a paso. Ideal para personas con Alzheimer u otras necesidades cognitivas.
+            </div>
+            <button onclick="openCogModal()" style="width:100%;padding:12px;border-radius:12px;background:var(--accent);border:none;color:white;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-display);">
+              🧠 Abrir Asistente de memoria
+            </button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-name">Recordatorios automáticos</div>
+              <div class="setting-desc">Alerta de voz cuando toca medicación</div>
+            </div>
+            <div class="toggle on" id="medReminderToggle" onclick="toggleMedReminders(this)"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-name">Botón rápido en chat</div>
+              <div class="setting-desc">Muestra 🧠 en el header para acceso directo</div>
+            </div>
+            <div class="toggle on" id="cogQuickBtnToggle" onclick="toggleCogQuickBtn(this)"></div>
+          </div>
+        </div>
+
         <div class="settings-section">
           <div class="settings-section-title" data-i18n="settings_share">Compartir sala</div>
           <div style="padding:16px;background:var(--surface);border-radius:14px;border:1px solid var(--border);text-align:center;">
@@ -2163,6 +2396,38 @@ body::after {
         </div>
 
       </div><!-- end settings-panel -->
+
+<!-- ══════════════════════════════════════════
+     ALZHEIMER / ASISTENCIA COGNITIVA MODAL
+══════════════════════════════════════════ -->
+<div id="cogModal" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:400;flex-direction:column;overflow:hidden;">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg);">
+    <button onclick="closeCogModal()" style="width:38px;height:38px;border-radius:50%;background:var(--surface2);border:none;color:var(--text);font-size:18px;cursor:pointer;">✕</button>
+    <div>
+      <div style="font-family:var(--font-display);font-size:17px;font-weight:900;color:var(--text);">🧠 Asistente de memoria</div>
+      <div style="font-size:11px;color:var(--text2);">Rutinas, medicación y recordatorios</div>
+    </div>
+    <button onclick="cogVoiceHelp()" style="margin-left:auto;width:42px;height:42px;border-radius:50%;background:var(--accent);border:none;color:white;font-size:20px;cursor:pointer;" title="¿Qué me falta hacer?">🎙️</button>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg);">
+    <button class="cog-tab active" onclick="switchCogTab('routines',this)">📋 Rutinas</button>
+    <button class="cog-tab" onclick="switchCogTab('meds',this)">💊 Medicación</button>
+    <button class="cog-tab" onclick="switchCogTab('manage',this)">⚙️ Editar</button>
+  </div>
+
+  <!-- Body -->
+  <div id="cogBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
+
+  <!-- Bottom voice bar -->
+  <div style="padding:10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;">
+    <button onclick="cogVoiceHelp()" style="width:100%;padding:12px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent3));border:none;color:white;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-display);">
+      🎙️ ¿Qué me falta hacer?
+    </button>
+  </div>
+</div>
     </div><!-- end chatArea -->
   </div><!-- end app-body -->
 </div><!-- end app -->
@@ -3218,6 +3483,12 @@ function sendMessage(force = false) {
   chat.preview = text;
   renderChatList();
   savePersistence();
+
+  // Enviar a Supabase si hay sala activa
+  if (typeof salaActual !== 'undefined' && salaActual) {
+    enviarMensajeSupabase(text);
+  }
+
   const replies = [
     'Perfecto, gracias! 😊',
     'Entendido 👌',
@@ -4577,18 +4848,17 @@ function setLanguage(el) {
 
 function applyI18n() {
   const lang = I18N[currentLang];
-  // Update TTS lang
   visualSettings.ttsLang = lang.lang_tts;
-  // Update recognition lang if active
   if (recognition) recognition.lang = lang.lang_tts;
+  if (typeof voiceContactRecog !== 'undefined' && voiceContactRecog) voiceContactRecog.lang = lang.lang_tts;
 
-  // Update text nodes via data-i18n
+  // data-i18n attributes
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.dataset.i18n;
     if (lang[key]) el.textContent = lang[key];
   });
 
-  // Update specific elements
+  // Onboarding
   const tagline = document.querySelector('.ob-tagline');
   if (tagline) tagline.textContent = lang.app_tagline;
   const obTitle = document.querySelector('.ob-title');
@@ -4597,35 +4867,90 @@ function applyI18n() {
   if (obLabel) obLabel.textContent = lang.ob_name_label;
   const obInput = document.getElementById('ob-name');
   if (obInput) obInput.placeholder = lang.ob_name_placeholder;
+  const obModeLabel = document.querySelector('.ob-mode-label');
+  if (obModeLabel) obModeLabel.textContent = lang.ob_mode_label;
   const obBtn = document.querySelector('.ob-btn');
   if (obBtn) obBtn.textContent = lang.ob_btn;
+
+  // Sidebar
   const sidebarTitle = document.querySelector('.sidebar-title');
   if (sidebarTitle) sidebarTitle.textContent = lang.convos_title;
+
+  // Input
   const inputBox = document.getElementById('inputBox');
   if (inputBox) inputBox.placeholder = lang.input_placeholder;
+
+  // Picto panel
   const pictoPanelTitle = document.getElementById('pictoPanelTitle');
   if (pictoPanelTitle) pictoPanelTitle.textContent = lang.picto_title;
   const pictoSearchEl = document.getElementById('pictoSearch');
   if (pictoSearchEl) pictoSearchEl.placeholder = lang.picto_search;
   const phraseSendBtn = document.getElementById('phraseSendBtn');
   if (phraseSendBtn) phraseSendBtn.textContent = lang.phrase_send;
-  const voiceTranscript = document.getElementById('voiceTranscript');
-  if (voiceTranscript && voiceTranscript.textContent === I18N['es'].voice_listening) {
-    voiceTranscript.textContent = lang.voice_listening;
-  }
-  const voiceHint = document.querySelector('.voice-hint');
-  if (voiceHint) voiceHint.textContent = lang.voice_hint;
+
+  // Voice overlay
+  const voiceTranscriptEl = document.getElementById('voiceTranscript');
+  if (voiceTranscriptEl) voiceTranscriptEl.textContent = lang.voice_listening;
+  const voiceHintEl = document.querySelector('.voice-hint');
+  if (voiceHintEl) voiceHintEl.textContent = lang.voice_hint;
+
+  // Hands-free banner text node
   const hfBanner = document.getElementById('handsfreeBanner');
   if (hfBanner) {
-    const span = hfBanner.querySelector('span[style*="margin-left"]');
     hfBanner.childNodes.forEach(n => {
-      if (n.nodeType === 3) n.textContent = ' ' + lang.hf_banner + ' ';
+      if (n.nodeType === 3 && n.textContent.trim().length > 2) {
+        n.textContent = ' ' + lang.hf_banner + ' ';
+      }
     });
   }
+
+  // Empty state
   const emptyDesc = document.querySelector('.empty-desc');
   if (emptyDesc) emptyDesc.textContent = lang.empty_desc;
 
-  // Re-render pictos with new lang labels
+  // Settings section titles (hardcoded)
+  document.querySelectorAll('.settings-section-title').forEach(el => {
+    const txt = el.textContent.trim();
+    // Map by content
+    const map = {
+      'Mi modo de recepción': lang.settings_mode,
+      'My reception mode': lang.settings_mode,
+      'Meu modo de recepção': lang.settings_mode,
+      'IA Asistente': lang.settings_ai,
+      'AI Assistant': lang.settings_ai,
+      'Assistente IA': lang.settings_ai,
+      'Accesibilidad visual': lang.settings_visual,
+      'Visual accessibility': lang.settings_visual,
+      'Acessibilidade visual': lang.settings_visual,
+      'Voz y accesibilidad': lang.settings_voice_access,
+      'Voice & accessibility': lang.settings_voice_access,
+      'Voz e acessibilidade': lang.settings_voice_access,
+      'Estímulos': lang.settings_stimuli,
+      'Stimuli': lang.settings_stimuli,
+      'Voz y velocidad TTS': lang.settings_tts_voice,
+      'TTS voice & speed': lang.settings_tts_voice,
+      'Voz e velocidade TTS': lang.settings_tts_voice,
+      'Compartir sala': lang.settings_share,
+      'Share room': lang.settings_share,
+      'Compartilhar sala': lang.settings_share,
+    };
+    if (map[txt]) el.textContent = map[txt];
+  });
+
+  // Contacts modal title
+  const contactsTitle = document.querySelector('#contactsModal .modal-title');
+  if (contactsTitle) contactsTitle.textContent = lang.contacts_title || '👥 Contactos';
+  const contactsShareBtn = document.querySelector('#contactsModal [onclick*="shareApp"]');
+  if (contactsShareBtn) contactsShareBtn.textContent = lang.share_app || '🔗 Compartir app';
+
+  // Notify permission toggle label
+  const notifToggleEl = document.getElementById('notifPermBtn');
+  if (notifToggleEl) notifToggleEl.textContent = lang.notif_permission || 'Activar notificaciones';
+
+  // html lang attr
+  document.documentElement.lang = currentLang;
+
+  // Re-render pictos
   renderPictoPanel();
   renderPictoTabs();
 }
@@ -5364,19 +5689,674 @@ async function abrirSalaChat(codigo) {
   }
 }
 
-// Parchear sendMessage para enviar a Supabase si hay sala activa
-const _origSendMessage = sendMessage;
-function sendMessage(force = false) {
-  const box = document.getElementById('inputBox');
-  const text = box.value.trim();
+// ══════════════════════════════════════════
+// FUN PICKER — new tabs (stickers + games)
+// ══════════════════════════════════════════
+const STICKER_CATS = {
+  '🎉 Fiesta': ['🎉','🎊','🥳','🎈','🎁','🎂','🍰','🥂','🎆','🎇','✨','🎀'],
+  '❤️ Amor':   ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','💖','💗','💓','💝','💕','💞','💘','🫶'],
+  '😂 Risas':  ['😂','🤣','😹','😆','🤭','😏','🥲','😅','😜','🤪','😝','🤡'],
+  '🐾 Animales':['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊'],
+  '🌈 Naturaleza':['🌸','🌺','🌻','🌹','🍀','🌈','⭐','🌟','💫','🌙','☀️','🌊','🔥','🌿','🍂'],
+  '🍕 Comida': ['🍕','🍔','🌮','🍜','🍣','🍦','🍩','☕','🧋','🍻','🥤','🍿'],
+  '⚽ Deporte': ['⚽','🏀','🎾','🏐','🏈','⚾','🎱','🏓','🥊','🏋️','🤸','🎯'],
+  '✨ Especial': ['💯','🔥','👑','💎','🏆','🎯','⚡','💥','🌀','🎭','🎪','🎠'],
+};
 
-  _origSendMessage(force);
+let currentStickerCat = Object.keys(STICKER_CATS)[0];
+let savedGifs = JSON.parse(localStorage.getItem('novu_saved_gifs') || '[]');
+let recentEmojis = JSON.parse(localStorage.getItem('novu_recent_emojis') || '[]');
+let customEmojis = JSON.parse(localStorage.getItem('novu_custom_emojis') || '[]');
 
-  // Si hay sala activa, también enviar a Supabase
-  if (salaActual && text) {
-    enviarMensajeSupabase(text);
+function renderStickerCats() {
+  const tabs = document.getElementById('stickerCats');
+  if (!tabs) return;
+  tabs.innerHTML = Object.keys(STICKER_CATS).map(cat =>
+    `<button class="sticker-cat-tab${cat===currentStickerCat?' active':''}" onclick="switchStickerCat('${cat}')">${cat}</button>`
+  ).join('');
+  renderStickerGrid();
+}
+
+function switchStickerCat(cat) {
+  currentStickerCat = cat;
+  renderStickerCats();
+}
+
+function renderStickerGrid() {
+  const grid = document.getElementById('stickerGrid');
+  if (!grid) return;
+  const stickers = [...(STICKER_CATS[currentStickerCat] || []), ...customEmojis];
+  grid.innerHTML = stickers.map(s =>
+    `<button class="sticker-btn" onclick="sendSticker('${s}')">${s}</button>`
+  ).join('');
+}
+
+function sendSticker(emoji) {
+  const chat = state.chats.find(c => c.id === state.activeChat);
+  if (!chat) return;
+  const msg = { from:'me', type:'text', text: emoji, time: now() };
+  chat.messages.push(msg);
+  renderMsg(msg, document.getElementById('messages'), chat);
+  scrollBottom();
+  chat.preview = emoji;
+  renderChatList();
+  savePersistence();
+  closeFunPicker();
+  addRecentEmoji(emoji);
+}
+
+function addRecentEmoji(emoji) {
+  recentEmojis = [emoji, ...recentEmojis.filter(e => e !== emoji)].slice(0, 20);
+  localStorage.setItem('novu_recent_emojis', JSON.stringify(recentEmojis));
+  renderRecentEmojis();
+}
+
+function renderRecentEmojis() {
+  const grid = document.getElementById('recentEmojiGrid');
+  if (!grid) return;
+  if (recentEmojis.length === 0) { grid.style.display = 'none'; return; }
+  grid.style.display = 'grid';
+  grid.innerHTML = recentEmojis.map(e =>
+    `<button class="emoji-btn" onclick="insertEmoji('${e}')">${e}</button>`
+  ).join('');
+}
+
+function addCustomEmoji() {
+  const emoji = prompt('Pegá o escribí tu emoji/símbolo personalizado:');
+  if (!emoji?.trim()) return;
+  customEmojis = [emoji.trim(), ...customEmojis].slice(0, 50);
+  localStorage.setItem('novu_custom_emojis', JSON.stringify(customEmojis));
+  renderStickerGrid();
+  showToast('✅ Emoji guardado');
+}
+
+// GIF guardados
+function saveGif(url, alt) {
+  savedGifs = [{ url, alt, saved: Date.now() }, ...savedGifs.filter(g => g.url !== url)].slice(0, 30);
+  localStorage.setItem('novu_saved_gifs', JSON.stringify(savedGifs));
+  showToast('⭐ GIF guardado');
+}
+
+function showSavedGifs() {
+  const grid = document.getElementById('savedGifsGrid');
+  if (!grid) return;
+  const visible = grid.style.display === 'none' || !grid.style.display;
+  grid.style.display = visible ? 'grid' : 'none';
+  if (visible) {
+    if (savedGifs.length === 0) {
+      grid.innerHTML = '<div class="gif-loading">No tenés GIFs guardados todavía</div>';
+    } else {
+      grid.style.gridTemplateColumns = 'repeat(3,1fr)';
+      grid.style.gap = '6px';
+      grid.style.padding = '8px';
+      grid.innerHTML = savedGifs.map(g =>
+        `<div class="gif-item" style="position:relative;" onclick="sendGif('${g.url}','${g.alt}')">
+          <img src="${g.url}" alt="${g.alt}" loading="lazy">
+        </div>`
+      ).join('');
+    }
   }
 }
+
+// Patch sendGif to show save button
+const _origSendGif = sendGif;
+function sendGif(url, alt) {
+  const chat = state.chats.find(c => c.id === state.activeChat);
+  if (!chat) return;
+  const msg = {
+    from: 'me', type: 'media',
+    text: '🎬 GIF',
+    mediaHtml: `<div style="position:relative;display:inline-block;">
+      <img src="${url}" alt="${alt}" style="max-width:220px;border-radius:12px;margin-top:4px;cursor:pointer;display:block;" onclick="window.open('${url}')">
+      <button onclick="saveGif('${url}','${alt}')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);border:none;border-radius:100px;color:white;font-size:12px;padding:3px 8px;cursor:pointer;">⭐</button>
+    </div>`,
+    time: now()
+  };
+  chat.messages.push(msg);
+  const container = document.getElementById('messages');
+  const group = document.createElement('div');
+  group.className = 'msg-group me';
+  group.innerHTML = `${msg.mediaHtml}<div class="bubble-time">${msg.time}</div>`;
+  container.appendChild(group);
+  scrollBottom();
+  chat.preview = '🎬 GIF enviado';
+  renderChatList();
+  savePersistence();
+  closeFunPicker();
+}
+
+function quickSearchGif(q) {
+  document.getElementById('gifSearchInput').value = q;
+  searchGifs();
+}
+
+// Patch switchFunTab to init stickers
+const _origSwitchFunTab = switchFunTab;
+function switchFunTab(tab, el) {
+  currentFunTab = tab;
+  document.querySelectorAll('.fun-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('funEmojiPanel').classList.toggle('active', tab === 'emoji');
+  document.getElementById('funGifPanel').classList.toggle('active', tab === 'gif');
+  document.getElementById('funStickerPanel').classList.toggle('active', tab === 'sticker');
+  document.getElementById('funGamesPanel').classList.toggle('active', tab === 'games');
+  if (tab === 'emoji') {
+    if (document.getElementById('emojiGrid').children.length === 0) { buildEmojiCats(); renderEmojiCat(0); }
+    renderRecentEmojis();
+  }
+  if (tab === 'sticker') renderStickerCats();
+}
+
+// ══════════════════════════════════════════
+// GAMES ENGINE
+// ══════════════════════════════════════════
+let currentGame = null;
+
+function launchGame(type) {
+  closeFunPicker();
+  currentGame = type;
+  const modal = document.getElementById('gameModal');
+  modal.style.display = 'flex';
+
+  const titles = {
+    tictactoe: '⭕❌ 3 en Línea',
+    memory: '🃏 Memoria',
+    chess: '♟️ Ajedrez',
+    sudoku: '🔢 Sudoku',
+    wordle: '📝 Wordle',
+  };
+  document.getElementById('gameModalTitle').textContent = titles[type] || type;
+  document.getElementById('gameScore').textContent = '';
+  document.getElementById('gameArea').innerHTML = '';
+  document.getElementById('gameControls').innerHTML = '';
+
+  if (type === 'tictactoe') initTicTacToe();
+  else if (type === 'memory')   initMemory();
+  else if (type === 'chess')    initChess();
+  else if (type === 'sudoku')   initSudoku();
+  else if (type === 'wordle')   initWordle();
+}
+
+function closeGame() {
+  document.getElementById('gameModal').style.display = 'none';
+  currentGame = null;
+}
+
+function gameCtrlBtn(label, fn, primary = false) {
+  const b = document.createElement('button');
+  b.className = 'game-ctrl-btn' + (primary ? ' primary' : '');
+  b.textContent = label;
+  b.onclick = fn;
+  document.getElementById('gameControls').appendChild(b);
+}
+
+function shareGameResult(text) {
+  const chat = state.chats.find(c => c.id === state.activeChat);
+  if (!chat) { closeGame(); return; }
+  const msg = { from: 'me', type: 'text', text: `🎮 ${text}`, time: now() };
+  chat.messages.push(msg);
+  renderMsg(msg, document.getElementById('messages'), chat);
+  scrollBottom();
+  chat.preview = `🎮 ${text}`;
+  renderChatList();
+  savePersistence();
+  closeGame();
+}
+
+// ── TIC TAC TOE ──
+let tttBoard = [], tttTurn = 'X', tttOver = false;
+
+function initTicTacToe() {
+  tttBoard = Array(9).fill('');
+  tttTurn = 'X';
+  tttOver = false;
+  renderTTT();
+  gameCtrlBtn('🔄 Reiniciar', initTicTacToe);
+  gameCtrlBtn('📤 Compartir', () => shareGameResult('¡Jugué 3 en línea!'));
+}
+
+function renderTTT() {
+  const area = document.getElementById('gameArea');
+  const wins = checkTTT();
+  document.getElementById('gameScore').textContent = tttOver
+    ? (wins ? `¡Ganó ${tttOver}! 🏆` : '¡Empate! 🤝')
+    : `Turno: ${tttTurn}`;
+
+  area.innerHTML = `
+    <div style="text-align:center;margin-bottom:12px;font-size:13px;color:var(--text2);">
+      ${tttOver ? '' : `Jugador ${tttTurn === 'X' ? '❌' : '⭕'} — tu turno`}
+    </div>
+    <div class="ttt-board">
+      ${tttBoard.map((cell, i) => `
+        <div class="ttt-cell${wins?.includes(i) ? ' win' : ''}"
+          onclick="tttClick(${i})">
+          ${cell === 'X' ? '❌' : cell === 'O' ? '⭕' : ''}
+        </div>`).join('')}
+    </div>`;
+}
+
+function tttClick(i) {
+  if (tttBoard[i] || tttOver) return;
+  tttBoard[i] = tttTurn;
+  const wins = checkTTT();
+  if (wins) {
+    tttOver = tttTurn;
+    renderTTT();
+    return;
+  }
+  if (tttBoard.every(c => c)) { tttOver = 'draw'; renderTTT(); return; }
+  tttTurn = tttTurn === 'X' ? 'O' : 'X';
+  renderTTT();
+  // Auto CPU move if playing solo
+  if (tttTurn === 'O') {
+    setTimeout(() => {
+      const empty = tttBoard.map((c,i) => c ? null : i).filter(i => i !== null);
+      if (empty.length) {
+        // Simple AI: try to win, then block, then random
+        const move = bestTTTMove();
+        tttBoard[move] = 'O';
+        const w = checkTTT();
+        if (w) tttOver = 'O';
+        else if (tttBoard.every(c => c)) tttOver = 'draw';
+        else tttTurn = 'X';
+        renderTTT();
+      }
+    }, 400);
+  }
+}
+
+function bestTTTMove() {
+  const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for (const p of ['O','X']) {
+    for (const line of lines) {
+      const [a,b,c] = line;
+      const vals = [tttBoard[a],tttBoard[b],tttBoard[c]];
+      if (vals.filter(v=>v===p).length === 2 && vals.includes('')) {
+        return line[vals.indexOf('')];
+      }
+    }
+  }
+  if (!tttBoard[4]) return 4;
+  const corners = [0,2,6,8].filter(i => !tttBoard[i]);
+  if (corners.length) return corners[Math.floor(Math.random()*corners.length)];
+  return tttBoard.findIndex(c => !c);
+}
+
+function checkTTT() {
+  const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for (const line of lines) {
+    const [a,b,c] = line;
+    if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) return line;
+  }
+  return null;
+}
+
+// ── MEMORY ──
+const MEMORY_EMOJIS = ['🌸','🎯','🦊','🍕','⭐','🎸','🚀','🦄','🎃','🌈','🎭','🏆','🦋','🌺','💎','🎪'];
+let memCards = [], memFlipped = [], memMatched = 0, memLocked = false, memMoves = 0, memStartTime = null;
+
+function initMemory(size = 4) {
+  const n = size * size / 2;
+  const emojis = MEMORY_EMOJIS.slice(0, n);
+  memCards = [...emojis, ...emojis].sort(() => Math.random() - .5).map((e, i) => ({ id: i, emoji: e, up: false, matched: false }));
+  memFlipped = []; memMatched = 0; memMoves = 0; memLocked = false;
+  memStartTime = Date.now();
+  document.getElementById('gameScore').textContent = `Movimientos: 0`;
+
+  const area = document.getElementById('gameArea');
+  area.innerHTML = `<div class="memory-board" id="memBoard" style="grid-template-columns:repeat(${size},1fr);"></div>`;
+  renderMemory();
+
+  const ctrl = document.getElementById('gameControls');
+  ctrl.innerHTML = '';
+  gameCtrlBtn('4×4', () => initMemory(4));
+  gameCtrlBtn('6×6 🔥', () => initMemory(6));
+  gameCtrlBtn('📤 Compartir', () => shareGameResult(`Memoria: ${memMoves} movimientos`));
+}
+
+function renderMemory() {
+  const board = document.getElementById('memBoard');
+  if (!board) return;
+  board.innerHTML = memCards.map((c, i) => `
+    <div class="mem-card${c.up ? ' face-up' : ''}${c.matched ? ' matched' : ''}"
+      onclick="memFlip(${i})">
+      ${c.up || c.matched ? c.emoji : ''}
+    </div>`).join('');
+}
+
+function memFlip(i) {
+  if (memLocked || memCards[i].up || memCards[i].matched) return;
+  memCards[i].up = true;
+  memFlipped.push(i);
+  renderMemory();
+
+  if (memFlipped.length === 2) {
+    memMoves++;
+    document.getElementById('gameScore').textContent = `Movimientos: ${memMoves}`;
+    memLocked = true;
+    const [a, b] = memFlipped;
+    if (memCards[a].emoji === memCards[b].emoji) {
+      memCards[a].matched = memCards[b].matched = true;
+      memMatched++;
+      memFlipped = [];
+      memLocked = false;
+      renderMemory();
+      if (memMatched === memCards.length / 2) {
+        const secs = Math.round((Date.now() - memStartTime) / 1000);
+        document.getElementById('gameScore').textContent = `🏆 ¡${memMoves} mov · ${secs}s!`;
+        showToast(`🏆 ¡Completaste memoria en ${memMoves} movimientos!`);
+      }
+    } else {
+      setTimeout(() => {
+        memCards[a].up = memCards[b].up = false;
+        memFlipped = [];
+        memLocked = false;
+        renderMemory();
+      }, 900);
+    }
+  }
+}
+
+// ── CHESS ──
+const CHESS_PIECES = {
+  wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',
+  bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟',
+};
+let chessBoard = [], chessSelected = null, chessTurn = 'w', chessPossible = [], chessOver = false;
+
+function initChess() {
+  chessOver = false; chessTurn = 'w'; chessSelected = null; chessPossible = [];
+  chessBoard = [
+    ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+    ['bP','bP','bP','bP','bP','bP','bP','bP'],
+    ['','','','','','','',''],
+    ['','','','','','','',''],
+    ['','','','','','','',''],
+    ['','','','','','','',''],
+    ['wP','wP','wP','wP','wP','wP','wP','wP'],
+    ['wR','wN','wB','wQ','wK','wB','wN','wR'],
+  ];
+  renderChess();
+  const ctrl = document.getElementById('gameControls');
+  ctrl.innerHTML = '';
+  gameCtrlBtn('🔄 Reiniciar', initChess);
+  gameCtrlBtn('📤 Compartir partida', () => shareGameResult('Jugué una partida de Ajedrez ♟️'));
+}
+
+function renderChess() {
+  const area = document.getElementById('gameArea');
+  area.innerHTML = `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-align:center;">
+      ${chessOver ? `¡${chessOver}! 🏆` : `Turno: ${chessTurn === 'w' ? '⬜ Blancas' : '⬛ Negras'}`}
+    </div>
+    <div class="chess-board" id="chessBoard"></div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">Tocá una pieza para seleccionar · Verde = movimientos posibles</div>`;
+  const board = document.getElementById('chessBoard');
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const cell = document.createElement('div');
+      const isLight = (r + c) % 2 === 0;
+      cell.className = 'chess-cell ' + (isLight ? 'light' : 'dark');
+      if (chessSelected && chessSelected[0] === r && chessSelected[1] === c) cell.classList.add('selected');
+      if (chessPossible.some(p => p[0]===r && p[1]===c)) cell.classList.add('possible');
+      const piece = chessBoard[r][c];
+      if (piece) cell.textContent = CHESS_PIECES[piece] || '';
+      cell.onclick = () => chessClick(r, c);
+      board.appendChild(cell);
+    }
+  }
+}
+
+function chessClick(r, c) {
+  if (chessOver) return;
+  const piece = chessBoard[r][c];
+  if (chessSelected) {
+    const [sr, sc] = chessSelected;
+    if (chessPossible.some(p => p[0]===r && p[1]===c)) {
+      // Move
+      const captured = chessBoard[r][c];
+      chessBoard[r][c] = chessBoard[sr][sc];
+      chessBoard[sr][sc] = '';
+      // Check win
+      if (captured === 'bK') { chessOver = 'Blancas ganan'; }
+      if (captured === 'wK') { chessOver = 'Negras ganan'; }
+      // Pawn promotion
+      if (chessBoard[r][c] === 'wP' && r === 0) chessBoard[r][c] = 'wQ';
+      if (chessBoard[r][c] === 'bP' && r === 7) chessBoard[r][c] = 'bQ';
+      chessSelected = null; chessPossible = [];
+      chessTurn = chessTurn === 'w' ? 'b' : 'w';
+      renderChess();
+      // Simple CPU (black)
+      if (chessTurn === 'b' && !chessOver) setTimeout(chessCpuMove, 500);
+      return;
+    }
+    chessSelected = null; chessPossible = [];
+  }
+  if (piece && piece[0] === chessTurn) {
+    chessSelected = [r, c];
+    chessPossible = getChessMoves(r, c);
+  }
+  renderChess();
+}
+
+function getChessMoves(r, c) {
+  const piece = chessBoard[r][c];
+  if (!piece) return [];
+  const color = piece[0];
+  const type = piece[1];
+  const moves = [];
+  const enemy = color === 'w' ? 'b' : 'w';
+  const add = (nr, nc) => {
+    if (nr < 0 || nr > 7 || nc < 0 || nc > 7) return false;
+    if (chessBoard[nr][nc]?.[0] === color) return false;
+    moves.push([nr, nc]);
+    return !chessBoard[nr][nc];
+  };
+  const slide = (dr, dc) => { let nr=r+dr,nc=c+dc; while(add(nr,nc) && !chessBoard[nr][nc]) { nr+=dr; nc+=dc; } };
+
+  if (type === 'P') {
+    const dir = color === 'w' ? -1 : 1;
+    const start = color === 'w' ? 6 : 1;
+    if (!chessBoard[r+dir]?.[c]) { moves.push([r+dir,c]); if (r===start && !chessBoard[r+2*dir]?.[c]) moves.push([r+2*dir,c]); }
+    [[r+dir,c-1],[r+dir,c+1]].forEach(([nr,nc]) => { if (chessBoard[nr]?.[nc]?.[0]===enemy) moves.push([nr,nc]); });
+  } else if (type === 'N') {
+    [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr,dc]) => add(r+dr,c+dc));
+  } else if (type === 'B') {
+    [[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dr,dc]) => slide(dr,dc));
+  } else if (type === 'R') {
+    [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr,dc]) => slide(dr,dc));
+  } else if (type === 'Q') {
+    [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr,dc]) => slide(dr,dc));
+  } else if (type === 'K') {
+    [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr,dc]) => add(r+dr,c+dc));
+  }
+  return moves;
+}
+
+function chessCpuMove() {
+  // Find all black pieces and pick a random legal move
+  const allMoves = [];
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    if (chessBoard[r][c]?.[0] === 'b') {
+      const moves = getChessMoves(r, c);
+      moves.forEach(m => allMoves.push({ from:[r,c], to:m, piece:chessBoard[r][c] }));
+    }
+  }
+  if (!allMoves.length) { chessOver = 'Blancas ganan (sin movimientos)'; renderChess(); return; }
+  // Prioritize captures
+  const captures = allMoves.filter(m => chessBoard[m.to[0]][m.to[1]]);
+  const move = captures.length ? captures[Math.floor(Math.random()*captures.length)] : allMoves[Math.floor(Math.random()*allMoves.length)];
+  const captured = chessBoard[move.to[0]][move.to[1]];
+  chessBoard[move.to[0]][move.to[1]] = move.piece;
+  chessBoard[move.from[0]][move.from[1]] = '';
+  if (captured === 'wK') chessOver = '¡Negras ganan!';
+  if (move.piece === 'bP' && move.to[0] === 7) chessBoard[move.to[0]][move.to[1]] = 'bQ';
+  chessTurn = 'w';
+  renderChess();
+}
+
+// ── SUDOKU ──
+let sudokuGrid = [], sudokuGiven = [], sudokuSelected = null, sudokuErrors = 0;
+const SUDOKU_PUZZLES = [
+  '530070000600195000098000060800060003400803001700020006060000280000419005000080079',
+  '020300040600000700000000000007040050000600200000000000000000000090000600000000001',
+  '800000000003600000070090200060005300400803001300010060006000048530000700000020000',
+];
+
+function initSudoku() {
+  const puzzle = SUDOKU_PUZZLES[Math.floor(Math.random() * SUDOKU_PUZZLES.length)];
+  sudokuGrid = puzzle.split('').map(Number);
+  sudokuGiven = sudokuGrid.map(n => n !== 0);
+  sudokuSelected = null; sudokuErrors = 0;
+  document.getElementById('gameScore').textContent = 'Errores: 0';
+  renderSudoku();
+  const ctrl = document.getElementById('gameControls');
+  ctrl.innerHTML = '';
+  gameCtrlBtn('🔄 Nueva partida', initSudoku);
+  gameCtrlBtn('💡 Pista', sudokuHint);
+  gameCtrlBtn('📤 Compartir', () => shareGameResult(`Sudoku: ${sudokuErrors} errores`));
+}
+
+function renderSudoku() {
+  const area = document.getElementById('gameArea');
+  area.innerHTML = `
+    <div class="sudoku-board" id="sudokuBoard">
+      ${sudokuGrid.map((n, i) => `
+        <div class="sudoku-cell${sudokuGiven[i] ? ' given' : ''}${sudokuSelected===i ? ' selected' : ''}"
+          onclick="sudokuSelect(${i})">
+          ${n || ''}
+        </div>`).join('')}
+    </div>
+    <div class="sudoku-numpad">
+      ${[1,2,3,4,5,6,7,8,9,'✕'].map(n =>
+        `<button class="sudoku-num" onclick="sudokuInput(${JSON.stringify(n)})">${n}</button>`
+      ).join('')}
+    </div>`;
+}
+
+function sudokuSelect(i) {
+  if (sudokuGiven[i]) { sudokuSelected = null; } else { sudokuSelected = i; }
+  renderSudoku();
+}
+
+function sudokuInput(n) {
+  if (sudokuSelected === null) return;
+  if (n === '✕') { sudokuGrid[sudokuSelected] = 0; renderSudoku(); return; }
+  sudokuGrid[sudokuSelected] = n;
+  // Validate
+  const correct = isSudokuCorrect(sudokuSelected, n);
+  if (!correct) {
+    sudokuErrors++;
+    document.getElementById('gameScore').textContent = `Errores: ${sudokuErrors}`;
+    const board = document.getElementById('sudokuBoard');
+    if (board) board.children[sudokuSelected]?.classList.add('error');
+    setTimeout(() => renderSudoku(), 600);
+  } else {
+    renderSudoku();
+    if (sudokuGrid.every(n => n !== 0)) {
+      showToast(`🏆 ¡Sudoku resuelto! ${sudokuErrors} errores`);
+      shareGameResult(`¡Resolví el Sudoku con ${sudokuErrors} errores! 🔢`);
+    }
+  }
+}
+
+function isSudokuCorrect(idx, val) {
+  const r = Math.floor(idx / 9), c = idx % 9;
+  for (let i = 0; i < 9; i++) {
+    if (i !== c && sudokuGrid[r * 9 + i] === val) return false;
+    if (i !== r && sudokuGrid[i * 9 + c] === val) return false;
+  }
+  const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+  for (let dr = 0; dr < 3; dr++) for (let dc = 0; dc < 3; dc++) {
+    const ni = (br + dr) * 9 + (bc + dc);
+    if (ni !== idx && sudokuGrid[ni] === val) return false;
+  }
+  return true;
+}
+
+function sudokuHint() {
+  const empty = sudokuGrid.map((n,i) => n===0?i:null).filter(i=>i!==null);
+  if (!empty.length) return;
+  const i = empty[Math.floor(Math.random()*empty.length)];
+  for (let n = 1; n <= 9; n++) { if (isSudokuCorrect(i, n)) { sudokuGrid[i] = n; sudokuGiven[i] = true; break; } }
+  renderSudoku();
+}
+
+// ── WORDLE ──
+const WORDLE_WORDS = ['PERRO','GATOS','PLAYA','FUEGO','VOLAR','NOCHE','CIELO','LIBRO','VERDE','NOVIA','JUEGO','BRAVO','ANGEL','DULCE','FLOTA','MAGNO','OPERA','PRIMO','TRUCO','VIAJE','CLIMA','DISCO','FRASE','GLOBO','HUMOR','LIMON','MARCO','NIEVE','OSCAR','PIANO','QUESO','RADIO','SALSA','TANGO','UNION','VENUS','WAFLE','YENDO','ZORRO','CLAVE'];
+let wordleAnswer = '', wordleGuesses = [], wordleCurrent = '', wordleOver = false, wordleKeyStates = {};
+
+function initWordle() {
+  wordleAnswer = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+  wordleGuesses = []; wordleCurrent = ''; wordleOver = false; wordleKeyStates = {};
+  renderWordle();
+  const ctrl = document.getElementById('gameControls');
+  ctrl.innerHTML = '';
+  gameCtrlBtn('🔄 Nueva palabra', initWordle);
+  gameCtrlBtn('📤 Compartir resultado', () => {
+    const emoji = wordleGuesses.map(g => g.map(l => l.state === 'correct' ? '🟩' : l.state === 'present' ? '🟨' : '⬛').join('')).join('\n');
+    shareGameResult(`Wordle NOVU ${wordleGuesses.length}/6\n${emoji}`);
+  });
+}
+
+function renderWordle() {
+  const area = document.getElementById('gameArea');
+  const rows = [];
+  for (let r = 0; r < 6; r++) {
+    const cells = [];
+    for (let c = 0; c < 5; c++) {
+      const guess = wordleGuesses[r];
+      let cls = '', letter = '';
+      if (guess) { cls = guess[c]?.state || ''; letter = guess[c]?.letter || ''; }
+      else if (r === wordleGuesses.length) { letter = wordleCurrent[c] || ''; cls = letter ? 'active' : ''; }
+      cells.push(`<div class="wordle-cell ${cls}">${letter}</div>`);
+    }
+    rows.push(`<div class="wordle-row">${cells.join('')}</div>`);
+  }
+
+  const keys = [
+    ['Q','W','E','R','T','Y','U','I','O','P'],
+    ['A','S','D','F','G','H','J','K','L'],
+    ['ENTER','Z','X','C','V','B','N','M','⌫'],
+  ];
+
+  area.innerHTML = `
+    <div class="wordle-board">${rows.join('')}</div>
+    ${wordleOver ? `<div style="text-align:center;font-size:14px;font-weight:700;color:var(--accent);margin-bottom:8px;">${wordleOver}</div>` : ''}
+    <div class="wordle-keyboard">
+      ${keys.map(row => `<div class="wordle-key-row">
+        ${row.map(k => `<button class="wordle-key ${wordleKeyStates[k]||''}" onclick="wordleKey('${k}')" style="${k.length>1?'font-size:10px;padding:12px 4px;':''}">
+          ${k}
+        </button>`).join('')}
+      </div>`).join('')}
+    </div>`;
+}
+
+function wordleKey(k) {
+  if (wordleOver) return;
+  if (k === '⌫') { wordleCurrent = wordleCurrent.slice(0, -1); }
+  else if (k === 'ENTER') {
+    if (wordleCurrent.length !== 5) { showToast('Completá las 5 letras'); return; }
+    const result = wordleCurrent.split('').map((letter, i) => {
+      let state = 'absent';
+      if (letter === wordleAnswer[i]) state = 'correct';
+      else if (wordleAnswer.includes(letter)) state = 'present';
+      // Update key states
+      const prev = wordleKeyStates[letter];
+      if (!prev || (prev === 'absent' && state !== 'absent') || (prev === 'present' && state === 'correct')) wordleKeyStates[letter] = state;
+      return { letter, state };
+    });
+    wordleGuesses.push(result);
+    if (wordleCurrent === wordleAnswer) wordleOver = `🏆 ¡Correcto en ${wordleGuesses.length} intentos!`;
+    else if (wordleGuesses.length === 6) wordleOver = `😔 Era: ${wordleAnswer}`;
+    wordleCurrent = '';
+  } else if (wordleCurrent.length < 5) {
+    wordleCurrent += k;
+  }
+  renderWordle();
+}
+
+
 
 // ══════════════════════════════════════════
 // FILTROS DE GALERÍA
@@ -5719,5 +6699,997 @@ function renderMsg(msg, container, chat) {
 
 
 </script>
-</body>
-</html>
+<!-- ══════════════════════════════════════════
+     GAMES MODAL
+══════════════════════════════════════════ -->
+<div id="gameModal" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;">
+  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0;">
+    <button onclick="closeGame()" style="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:none;color:var(--text);font-size:18px;cursor:pointer;">✕</button>
+    <span id="gameModalTitle" style="font-family:var(--font-display);font-size:16px;font-weight:800;color:var(--text);flex:1;"></span>
+    <span id="gameScore" style="font-size:13px;font-weight:700;color:var(--accent);"></span>
+    <button onclick="saveGameState()" title="Guardar y salir" style="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:16px;cursor:pointer;">💾</button>
+    <button onclick="shareGameToChat()" title="Enviar al chat para jugar juntos" style="width:36px;height:36px;border-radius:50%;background:var(--accent-dim);border:1px solid rgba(139,124,248,.3);color:var(--accent);font-size:16px;cursor:pointer;">📤</button>
+  </div>
+  <div id="gameSavedBanner" style="display:none;background:rgba(104,240,185,.1);border-bottom:1px solid rgba(104,240,185,.3);padding:6px 16px;font-size:12px;color:var(--accent3);font-weight:700;flex-shrink:0;">
+    💾 Partida guardada — podés cerrar y seguir el chat
+  </div>
+  <div id="gameArea" style="flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:16px;"></div>
+  <div id="gameControls" style="padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--border);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;flex-shrink:0;"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// GAME SAVE / PAUSE / MULTIPLAYER
+// ══════════════════════════════════════════
+let savedGames = JSON.parse(localStorage.getItem('novu_saved_games') || '{}');
+
+function saveGameState() {
+  if (!currentGame) return;
+  const state_data = getGameState();
+  if (!state_data) return;
+  savedGames[currentGame] = { type: currentGame, data: state_data, saved: Date.now() };
+  localStorage.setItem('novu_saved_games', JSON.stringify(savedGames));
+  document.getElementById('gameSavedBanner').style.display = 'block';
+  showToast('💾 Partida guardada — continuá cuando quieras');
+  setTimeout(() => {
+    document.getElementById('gameSavedBanner').style.display = 'none';
+  }, 3000);
+}
+
+function getGameState() {
+  if (currentGame === 'tictactoe') return { board: tttBoard, turn: tttTurn, over: tttOver };
+  if (currentGame === 'chess')     return { board: JSON.parse(JSON.stringify(chessBoard)), turn: chessTurn, over: chessOver, selected: chessSelected };
+  if (currentGame === 'memory')    return { cards: memCards, flipped: memFlipped, matched: memMatched, moves: memMoves, locked: memLocked };
+  if (currentGame === 'sudoku')    return { grid: sudokuGrid.slice(), given: sudokuGiven.slice(), selected: sudokuSelected, errors: sudokuErrors };
+  if (currentGame === 'wordle')    return { answer: wordleAnswer, guesses: wordleGuesses, current: wordleCurrent, over: wordleOver, keys: wordleKeyStates };
+  return null;
+}
+
+function restoreGameState(type, data) {
+  currentGame = type;
+  document.getElementById('gameModal').style.display = 'flex';
+  const titles = { tictactoe:'⭕❌ 3 en Línea', memory:'🃏 Memoria', chess:'♟️ Ajedrez', sudoku:'🔢 Sudoku', wordle:'📝 Wordle' };
+  document.getElementById('gameModalTitle').textContent = titles[type] || type;
+  document.getElementById('gameArea').innerHTML = '';
+  document.getElementById('gameControls').innerHTML = '';
+
+  if (type === 'tictactoe') {
+    tttBoard = data.board; tttTurn = data.turn; tttOver = data.over;
+    renderTTT();
+    gameCtrlBtn('🔄 Reiniciar', initTicTacToe);
+    gameCtrlBtn('📤 Compartir', () => shareGameResult('¡Jugué 3 en línea!'));
+  } else if (type === 'chess') {
+    chessBoard = data.board; chessTurn = data.turn; chessOver = data.over; chessSelected = data.selected; chessPossible = [];
+    renderChess();
+    gameCtrlBtn('🔄 Reiniciar', initChess);
+    gameCtrlBtn('📤 Compartir', () => shareGameResult('Jugué ajedrez ♟️'));
+  } else if (type === 'memory') {
+    memCards = data.cards; memFlipped = data.flipped; memMatched = data.matched; memMoves = data.moves; memLocked = data.locked;
+    document.getElementById('gameScore').textContent = `Movimientos: ${memMoves}`;
+    const area = document.getElementById('gameArea');
+    const cols = Math.sqrt(memCards.length);
+    area.innerHTML = `<div class="memory-board" id="memBoard" style="grid-template-columns:repeat(${cols},1fr);"></div>`;
+    renderMemory();
+    gameCtrlBtn('🔄 Nueva', () => initMemory(4));
+    gameCtrlBtn('📤 Compartir', () => shareGameResult(`Memoria: ${memMoves} movimientos`));
+  } else if (type === 'sudoku') {
+    sudokuGrid = data.grid; sudokuGiven = data.given; sudokuSelected = data.selected; sudokuErrors = data.errors;
+    document.getElementById('gameScore').textContent = `Errores: ${sudokuErrors}`;
+    renderSudoku();
+    gameCtrlBtn('🔄 Nueva', initSudoku);
+    gameCtrlBtn('💡 Pista', sudokuHint);
+  } else if (type === 'wordle') {
+    wordleAnswer = data.answer; wordleGuesses = data.guesses; wordleCurrent = data.current; wordleOver = data.over; wordleKeyStates = data.keys;
+    renderWordle();
+    gameCtrlBtn('🔄 Nueva', initWordle);
+  }
+}
+
+// Share game state to chat so the other person can play
+function shareGameToChat() {
+  const chat = state?.chats?.find(c => c.id === state.activeChat);
+  if (!chat) { showToast('Abrí un chat primero'); return; }
+  const state_data = getGameState();
+  if (!state_data) return;
+
+  const previews = {
+    tictactoe: `⭕❌ ${tttBoard.map(c=>c||'·').join(' ')} — Turno: ${tttTurn}`,
+    chess: `♟️ Turno de ${chessTurn === 'w' ? 'blancas' : 'negras'}`,
+    memory: `🃏 ${memMatched}/${memCards.length/2} pares encontrados · ${memMoves} movimientos`,
+    sudoku: `🔢 Sudoku en progreso · ${sudokuErrors} errores`,
+    wordle: `📝 Wordle · ${wordleGuesses.length}/6 intentos`,
+  };
+
+  const serialized = JSON.stringify({ game: currentGame, data: state_data });
+  const msg = {
+    from: 'me', type: 'gamestate',
+    gameType: currentGame,
+    gameData: state_data,
+    preview: previews[currentGame] || '🎮 Juego compartido',
+    text: previews[currentGame] || '🎮 Juego compartido',
+    time: now()
+  };
+  chat.messages.push(msg);
+
+  // Render game bubble in chat
+  const container = document.getElementById('messages');
+  const group = document.createElement('div');
+  group.className = 'msg-group me';
+  group.innerHTML = `
+    <div class="game-state-bubble" onclick="restoreGameState('${currentGame}', ${JSON.stringify(state_data).replace(/'/g,"&#39;")})">
+      <div class="game-state-label">🎮 PARTIDA COMPARTIDA — tocá para jugar</div>
+      <div class="game-state-preview">${previews[currentGame]}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">Tu turno en el chat 👆</div>
+    </div>
+    <div class="bubble-time">${msg.time}</div>`;
+  container.appendChild(group);
+  scrollBottom();
+  chat.preview = `🎮 ${previews[currentGame]}`;
+  renderChatList();
+  savePersistence();
+  closeGame();
+  showToast('🎮 Partida compartida al chat');
+}
+
+// Render game state bubble when loading messages
+const _origRenderMsg = renderMsg;
+function renderMsg(msg, container, chat) {
+  if (msg.type === 'gamestate') {
+    if (!container) container = document.getElementById('messages');
+    const group = document.createElement('div');
+    group.className = `msg-group ${msg.from}`;
+    group.innerHTML = `
+      <div class="game-state-bubble" onclick="restoreGameState('${msg.gameType}', ${JSON.stringify(msg.gameData).replace(/'/g,"&#39;")})">
+        <div class="game-state-label">🎮 PARTIDA — tocá para continuar</div>
+        <div class="game-state-preview">${msg.preview || msg.text}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Tocá para jugar 👆</div>
+      </div>
+      <div class="bubble-time">${msg.time}</div>`;
+    container.appendChild(group);
+    return;
+  }
+  _origRenderMsg(msg, container, chat);
+}
+
+// Check for saved games on game launch
+const _origLaunchGame = launchGame;
+function launchGame(type) {
+  const saved = savedGames[type];
+  if (saved) {
+    const ago = Math.round((Date.now() - saved.saved) / 60000);
+    const agoStr = ago < 60 ? `hace ${ago} min` : `hace ${Math.round(ago/60)}h`;
+    if (confirm(`💾 Tenés una partida guardada (${agoStr}). ¿Continuarla?`)) {
+      restoreGameState(type, saved.data);
+      return;
+    } else {
+      delete savedGames[type];
+      localStorage.setItem('novu_saved_games', JSON.stringify(savedGames));
+    }
+  }
+  _origLaunchGame(type);
+}
+
+// ══════════════════════════════════════════
+// COGNITIVE ASSISTANCE MODULE
+// ══════════════════════════════════════════
+let cogData = JSON.parse(localStorage.getItem('novu_cog_data') || JSON.stringify({
+  routines: [
+    {
+      id: 'cafe', title: '☕ Preparar café', icon: '☕',
+      steps: [
+        { id: 1, text: 'Llenar la cafetera con agua hasta la marca', done: false },
+        { id: 2, text: 'Poner el filtro de papel en la cafetera', done: false },
+        { id: 3, text: 'Agregar 2 cucharadas de café molido', done: false },
+        { id: 4, text: 'Encender la cafetera', done: false },
+        { id: 5, text: 'Esperar que termine de pasar (luz verde)', done: false },
+        { id: 6, text: 'Servir en tu taza favorita', done: false },
+        { id: 7, text: 'Apagar la cafetera', done: false },
+      ]
+    },
+    {
+      id: 'manana', title: '🌅 Rutina de la mañana', icon: '🌅',
+      steps: [
+        { id: 1, text: 'Levantarme y apagar la alarma', done: false },
+        { id: 2, text: 'Ir al baño y lavarme la cara', done: false },
+        { id: 3, text: 'Cepillarme los dientes', done: false },
+        { id: 4, text: 'Tomar la medicación del desayuno', done: false },
+        { id: 5, text: 'Desayunar', done: false },
+        { id: 6, text: 'Vestirme', done: false },
+        { id: 7, text: 'Revisar qué tengo hoy en el calendario', done: false },
+      ]
+    },
+    {
+      id: 'noche', title: '🌙 Rutina de la noche', icon: '🌙',
+      steps: [
+        { id: 1, text: 'Cenar', done: false },
+        { id: 2, text: 'Tomar la medicación de la noche', done: false },
+        { id: 3, text: 'Preparar la ropa para mañana', done: false },
+        { id: 4, text: 'Cepillarme los dientes', done: false },
+        { id: 5, text: 'Apagar las luces y cerrar puertas', done: false },
+        { id: 6, text: 'Acostarme', done: false },
+      ]
+    }
+  ],
+  medications: [],
+}));
+
+let cogTab = 'routines';
+let medReminderInterval = null;
+
+function saveCogData() {
+  localStorage.setItem('novu_cog_data', JSON.stringify(cogData));
+}
+
+function openCogModal() {
+  document.getElementById('cogModal').style.display = 'flex';
+  renderCogTab(cogTab);
+}
+
+function closeCogModal() {
+  document.getElementById('cogModal').style.display = 'none';
+}
+
+function switchCogTab(tab, el) {
+  cogTab = tab;
+  document.querySelectorAll('.cog-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderCogTab(tab);
+}
+
+function renderCogTab(tab) {
+  const body = document.getElementById('cogBody');
+  if (tab === 'routines') renderCogRoutines(body);
+  else if (tab === 'meds') renderCogMeds(body);
+  else if (tab === 'manage') renderCogManage(body);
+}
+
+// ── ROUTINES ──
+function renderCogRoutines(body) {
+  body.innerHTML = `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5;">
+      Tocá ✓ cuando completás cada paso. Podés preguntar por voz "¿qué me falta?" y NOVU te lo leerá.
+    </div>
+    ${cogData.routines.map(r => renderRoutineCard(r)).join('')}
+    <button class="cog-add-btn" onclick="addRoutine()">➕ Nueva rutina personalizada</button>`;
+}
+
+function renderRoutineCard(r) {
+  const done = r.steps.filter(s => s.done).length;
+  const total = r.steps.length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const allDone = done === total;
+  return `
+    <div class="cog-routine-card${allDone ? '' : ' active-routine'}" id="routine-${r.id}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="font-size:24px;">${r.icon}</span>
+        <div style="flex:1;">
+          <div style="font-weight:800;font-size:15px;">${r.title}</div>
+          <div style="font-size:11px;color:${allDone?'var(--accent3)':'var(--accent)'};font-weight:700;margin-top:2px;">
+            ${allDone ? '✅ ¡Completado!' : `${done}/${total} pasos · ${pct}%`}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button onclick="cogReadRoutine('${r.id}')" style="width:32px;height:32px;border-radius:50%;background:var(--accent-dim);border:1px solid rgba(139,124,248,.3);color:var(--accent);font-size:14px;cursor:pointer;" title="Leer en voz alta">🔊</button>
+          <button onclick="resetRoutine('${r.id}')" style="width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);color:var(--text3);font-size:14px;cursor:pointer;" title="Reiniciar">↩️</button>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border-radius:100px;height:4px;margin-bottom:10px;">
+        <div style="background:${allDone?'var(--accent3)':'var(--accent)'};height:4px;border-radius:100px;width:${pct}%;transition:width .3s;"></div>
+      </div>
+      ${r.steps.map(s => `
+        <div class="cog-step">
+          <div class="cog-step-check${s.done?' done':''}" onclick="toggleStep('${r.id}',${s.id})">
+            ${s.done ? '✓' : ''}
+          </div>
+          <div class="cog-step-text${s.done?' done':''}">${s.text}</div>
+          <button onclick="readStep('${s.text}')" style="width:24px;height:24px;border-radius:50%;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;flex-shrink:0;" title="Leer este paso">🔊</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+function toggleStep(routineId, stepId) {
+  const r = cogData.routines.find(r => r.id === routineId);
+  if (!r) return;
+  const s = r.steps.find(s => s.id === stepId);
+  if (!s) return;
+  s.done = !s.done;
+  saveCogData();
+  renderCogTab(cogTab);
+  if (s.done) {
+    speakFeedback(s.text + '. ¡Listo!');
+    // Check if all done
+    if (r.steps.every(s => s.done)) {
+      setTimeout(() => speakFeedback(`¡Completaste ${r.title}! ¡Muy bien!`), 800);
+      showToast(`🎉 ¡Completaste ${r.title}!`);
+    } else {
+      // Read next step
+      const next = r.steps.find(s => !s.done);
+      if (next) setTimeout(() => speakFeedback('Siguiente: ' + next.text), 1200);
+    }
+  }
+}
+
+function readStep(text) {
+  speakFeedback(text);
+}
+
+function cogReadRoutine(routineId) {
+  const r = cogData.routines.find(r => r.id === routineId);
+  if (!r) return;
+  const pending = r.steps.filter(s => !s.done);
+  if (pending.length === 0) { speakFeedback(`¡Ya completaste toda la rutina ${r.title}!`); return; }
+  const text = `En ${r.title} te falta: ` + pending.map(s => s.text).join('. Después, ');
+  speakFeedback(text);
+}
+
+function resetRoutine(routineId) {
+  const r = cogData.routines.find(r => r.id === routineId);
+  if (!r) return;
+  if (!confirm(`¿Reiniciar "${r.title}"?`)) return;
+  r.steps.forEach(s => s.done = false);
+  saveCogData();
+  renderCogTab(cogTab);
+}
+
+function addRoutine() {
+  const title = prompt('Nombre de la rutina (ej: Preparar mate):');
+  if (!title?.trim()) return;
+  const icon = prompt('Icono/emoji (ej: 🧉):') || '📋';
+  const stepsRaw = prompt('Escribí los pasos separados por punto y coma (;):\nEj: Hervir agua; Poner yerba; Cebar el primer mate');
+  if (!stepsRaw?.trim()) return;
+  const steps = stepsRaw.split(';').map((t, i) => ({ id: i + 1, text: t.trim(), done: false })).filter(s => s.text);
+  const id = 'custom-' + Date.now();
+  cogData.routines.push({ id, title: icon + ' ' + title, icon, steps });
+  saveCogData();
+  renderCogTab(cogTab);
+  showToast('✅ Rutina agregada');
+}
+
+// ── MEDICATIONS ──
+function renderCogMeds(body) {
+  const today = new Date().toLocaleDateString('es-UY', { weekday:'long', day:'numeric', month:'long' });
+  body.innerHTML = `
+    <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px;">📅 ${today}</div>
+    ${cogData.medications.length === 0 ?
+      `<div style="text-align:center;padding:30px 0;color:var(--text3);">
+        <div style="font-size:40px;margin-bottom:12px;">💊</div>
+        <div style="font-size:14px;">No tenés medicación cargada todavía</div>
+      </div>` :
+      cogData.medications.map(m => renderMedCard(m)).join('')
+    }
+    <button class="cog-add-btn" onclick="addMedication()">➕ Agregar medicación</button>
+    <div style="margin-top:12px;padding:10px 12px;background:var(--surface);border-radius:12px;border:1px solid var(--border);font-size:12px;color:var(--text2);">
+      💡 Decí "¿tomé mis medicamentos?" para que NOVU te diga cuáles faltan
+    </div>`;
+}
+
+function renderMedCard(m) {
+  const takenToday = m.takenDates?.includes(todayStr()) || false;
+  return `
+    <div class="med-card" id="med-${m.id}">
+      <div class="med-icon">${m.icon || '💊'}</div>
+      <div class="med-info">
+        <div class="med-name">${m.name}</div>
+        <div class="med-time">🕐 ${m.times?.join(', ') || 'Sin horario'}</div>
+        ${m.dose ? `<div class="med-note">📏 ${m.dose}</div>` : ''}
+        ${m.note ? `<div class="med-note">📝 ${m.note}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:center;">
+        <div class="med-check${takenToday?' taken':''}" onclick="toggleMed('${m.id}')" title="${takenToday?'Marcar como no tomada':'Marcar como tomada'}">
+          ${takenToday ? '✓' : ''}
+        </div>
+        <div style="font-size:10px;color:${takenToday?'var(--accent3)':'var(--text3)'};font-weight:700;white-space:nowrap;">
+          ${takenToday ? 'Tomada' : 'Pendiente'}
+        </div>
+      </div>
+    </div>`;
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function toggleMed(id) {
+  const m = cogData.medications.find(m => m.id === id);
+  if (!m) return;
+  if (!m.takenDates) m.takenDates = [];
+  const today = todayStr();
+  if (m.takenDates.includes(today)) {
+    m.takenDates = m.takenDates.filter(d => d !== today);
+    speakFeedback(`${m.name} marcado como pendiente`);
+  } else {
+    m.takenDates.push(today);
+    speakFeedback(`¡Muy bien! ${m.name} registrado como tomado`);
+    showToast(`✅ ${m.name} — tomado`);
+  }
+  saveCogData();
+  renderCogTab(cogTab);
+}
+
+function addMedication() {
+  const name = prompt('Nombre del medicamento:');
+  if (!name?.trim()) return;
+  const dose = prompt('Dosis (ej: 1 comprimido, 5ml):') || '';
+  const timesRaw = prompt('Horarios (separados por coma, ej: 08:00, 14:00, 21:00):') || '';
+  const note = prompt('Nota adicional (opcional, ej: con el desayuno):') || '';
+  const icon = prompt('Ícono (ej: 💊, 💉, 🩺, 🧴):') || '💊';
+  const times = timesRaw.split(',').map(t => t.trim()).filter(Boolean);
+  const id = 'med-' + Date.now();
+  cogData.medications.push({ id, name: name.trim(), dose, times, note, icon, takenDates: [] });
+  saveCogData();
+  renderCogTab(cogTab);
+  showToast('✅ Medicación agregada');
+  if (times.length) setupMedReminders();
+}
+
+// ── MANAGE (edit/delete) ──
+function renderCogManage(body) {
+  body.innerHTML = `
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">Rutinas</div>
+    ${cogData.routines.map(r => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:22px;">${r.icon}</span>
+        <span style="flex:1;font-size:14px;font-weight:600;">${r.title}</span>
+        <button onclick="editRoutineSteps('${r.id}')" style="padding:5px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;">✏️ Editar</button>
+        <button onclick="deleteRoutine('${r.id}')" style="padding:5px 10px;border-radius:8px;background:rgba(240,104,104,.1);border:1px solid rgba(240,104,104,.3);color:#f06868;font-size:12px;cursor:pointer;">🗑️</button>
+      </div>`).join('')}
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin:18px 0 12px;">Medicación</div>
+    ${cogData.medications.map(m => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:22px;">${m.icon||'💊'}</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:600;">${m.name}</div>
+          <div style="font-size:11px;color:var(--text3);">${m.times?.join(', ')||'Sin horario'} ${m.dose?'· '+m.dose:''}</div>
+        </div>
+        <button onclick="editMedication('${m.id}')" style="padding:5px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;">✏️</button>
+        <button onclick="deleteMedication('${m.id}')" style="padding:5px 10px;border-radius:8px;background:rgba(240,104,104,.1);border:1px solid rgba(240,104,104,.3);color:#f06868;font-size:12px;cursor:pointer;">🗑️</button>
+      </div>`).join('')}
+    ${cogData.medications.length===0?'<div style="color:var(--text3);font-size:13px;padding:8px 0;">Sin medicación cargada</div>':''}
+    <button class="cog-add-btn" style="margin-top:16px;" onclick="addRoutine()">➕ Nueva rutina</button>
+    <button class="cog-add-btn" onclick="addMedication()">➕ Nueva medicación</button>
+    <button class="cog-add-btn" style="margin-top:16px;border-color:rgba(240,104,104,.3);color:#f06868;" onclick="if(confirm('¿Borrar TODOS los datos de asistencia?')){cogData={routines:[],medications:[]};saveCogData();renderCogTab(cogTab);}">
+      🗑️ Borrar todos los datos
+    </button>`;
+}
+
+function deleteRoutine(id) {
+  if (!confirm('¿Eliminar esta rutina?')) return;
+  cogData.routines = cogData.routines.filter(r => r.id !== id);
+  saveCogData();
+  renderCogTab(cogTab);
+}
+
+function deleteMedication(id) {
+  if (!confirm('¿Eliminar esta medicación?')) return;
+  cogData.medications = cogData.medications.filter(m => m.id !== id);
+  saveCogData();
+  renderCogTab(cogTab);
+}
+
+function editRoutineSteps(id) {
+  const r = cogData.routines.find(r => r.id === id);
+  if (!r) return;
+  const stepsStr = r.steps.map(s => s.text).join('; ');
+  const newSteps = prompt(`Editá los pasos de "${r.title}" (separados por ;):`, stepsStr);
+  if (!newSteps) return;
+  r.steps = newSteps.split(';').map((t, i) => ({ id: i + 1, text: t.trim(), done: false })).filter(s => s.text);
+  saveCogData();
+  renderCogTab(cogTab);
+  showToast('✅ Rutina actualizada');
+}
+
+function editMedication(id) {
+  const m = cogData.medications.find(m => m.id === id);
+  if (!m) return;
+  const name  = prompt('Nombre:', m.name) || m.name;
+  const dose  = prompt('Dosis:', m.dose) ?? m.dose;
+  const times = prompt('Horarios (separados por coma):', m.times?.join(', ')) ?? m.times?.join(', ');
+  const note  = prompt('Nota:', m.note) ?? m.note;
+  m.name = name; m.dose = dose;
+  m.times = times.split(',').map(t => t.trim()).filter(Boolean);
+  m.note = note;
+  saveCogData();
+  renderCogTab(cogTab);
+  showToast('✅ Medicación actualizada');
+  setupMedReminders();
+}
+
+// ── VOICE HELP ──
+function cogVoiceHelp() {
+  // Build complete pending summary
+  const parts = [];
+
+  // Pending routine steps
+  cogData.routines.forEach(r => {
+    const pending = r.steps.filter(s => !s.done);
+    if (pending.length > 0 && pending.length < r.steps.length) {
+      parts.push(`En ${r.title} te faltan ${pending.length} pasos: ${pending.slice(0,3).map(s=>s.text).join(', ')}${pending.length>3?', y más...':''}`);
+    } else if (pending.length === r.steps.length) {
+      parts.push(`Todavía no empezaste ${r.title}`);
+    }
+  });
+
+  // Pending medications
+  const today = todayStr();
+  const pendingMeds = cogData.medications.filter(m => !m.takenDates?.includes(today));
+  if (pendingMeds.length > 0) {
+    parts.push(`Te falta tomar: ${pendingMeds.map(m => m.name).join(', ')}`);
+  }
+
+  if (parts.length === 0) {
+    speakFeedback('¡Todo al día! Tomaste tu medicación y completaste tus rutinas. ¡Muy bien!');
+    showToast('✅ ¡Todo al día!');
+    return;
+  }
+
+  const text = 'Te cuento qué te falta. ' + parts.join('. ');
+  speakFeedback(text);
+  showToast('🎙️ Leyendo pendientes...');
+}
+
+// ── MED REMINDERS ──
+function setupMedReminders() {
+  if (medReminderInterval) clearInterval(medReminderInterval);
+  medReminderInterval = setInterval(() => {
+    if (!document.getElementById('medReminderToggle')?.classList.contains('on')) return;
+    const now = new Date();
+    const hhmm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    const today = todayStr();
+    cogData.medications.forEach(m => {
+      if (m.times?.includes(hhmm) && !m.takenDates?.includes(today)) {
+        speakFeedback(`Recordatorio: es hora de tomar ${m.name}`);
+        sendNotification('💊 Medicación', `Es hora de tomar ${m.name}`);
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      }
+    });
+  }, 60000); // check every minute
+}
+
+function toggleMedReminders(el) {
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) setupMedReminders();
+  else if (medReminderInterval) { clearInterval(medReminderInterval); medReminderInterval = null; }
+  savePersistence();
+}
+
+function toggleCogQuickBtn(el) {
+  el.classList.toggle('on');
+  const btn = document.getElementById('cogQuickBtn');
+  if (btn) btn.style.display = el.classList.contains('on') ? 'flex' : 'none';
+  savePersistence();
+}
+
+// Init reminders on load
+setTimeout(() => {
+  if (document.getElementById('medReminderToggle')?.classList.contains('on')) setupMedReminders();
+  // Show cogQuickBtn if toggle is on
+  if (document.getElementById('cogQuickBtnToggle')?.classList.contains('on')) {
+    const btn = document.getElementById('cogQuickBtn');
+    if (btn) btn.style.display = 'flex';
+  }
+}, 2000);
+
+// ══════════════════════════════════════════
+// MODAL DE EDICIÓN VISUAL (reemplaza prompt())
+// ══════════════════════════════════════════
+function showModal(config) {
+  // config: { title, fields: [{id, label, type, value, placeholder}], onSave, onDelete }
+  const existing = document.getElementById('novuEditModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'novuEditModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);';
+
+  const fieldsHTML = config.fields.map(f => `
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">${f.label}</label>
+      ${f.type === 'textarea'
+        ? `<textarea id="nef-${f.id}" rows="3" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;resize:none;font-family:var(--font-body);" placeholder="${f.placeholder||''}">${f.value||''}</textarea>`
+        : f.type === 'emoji-picker'
+        ? `<div style="display:flex;gap:8px;flex-wrap:wrap;" id="nef-${f.id}-wrap">
+            ${['💊','💉','🩺','🧴','💙','🌿','⭕','🔴','🩷','🫀'].map(e =>
+              `<button onclick="selectModalEmoji('${f.id}','${e}')" style="font-size:24px;padding:6px;border-radius:8px;border:2px solid ${(f.value||'💊')===e?'var(--accent)':'var(--border2)'};background:var(--surface2);cursor:pointer;" data-emoji="${e}">${e}</button>`
+            ).join('')}
+            <input type="hidden" id="nef-${f.id}" value="${f.value||'💊'}">
+          </div>`
+        : `<input id="nef-${f.id}" type="${f.type||'text'}" value="${f.value||''}" placeholder="${f.placeholder||''}"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;font-family:var(--font-body);">`
+      }
+    </div>`).join('');
+
+  modal.innerHTML = `
+    <div style="background:var(--bg);border-radius:24px 24px 0 0;padding:20px 18px;padding-bottom:max(20px,env(safe-area-inset-bottom));width:100%;max-width:500px;max-height:85vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <div style="font-family:var(--font-display);font-size:17px;font-weight:900;color:var(--text);">${config.title}</div>
+        <button onclick="document.getElementById('novuEditModal').remove()" style="width:32px;height:32px;border-radius:50%;background:var(--surface2);border:none;color:var(--text2);font-size:16px;cursor:pointer;">✕</button>
+      </div>
+      ${fieldsHTML}
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        ${config.onDelete ? `<button onclick="(${config.onDelete.toString()})()" style="padding:12px 16px;border-radius:14px;background:rgba(240,104,104,.1);border:1px solid rgba(240,104,104,.3);color:#f06868;font-size:13px;font-weight:700;cursor:pointer;">🗑️ Borrar</button>` : ''}
+        <button onclick="document.getElementById('novuEditModal').remove()" style="flex:1;padding:12px;border-radius:14px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:14px;font-weight:700;cursor:pointer;">Cancelar</button>
+        <button onclick="(${config.onSave.toString()})()" style="flex:2;padding:12px;border-radius:14px;background:var(--accent);border:none;color:white;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-display);">✓ Guardar</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  // Focus first input
+  setTimeout(() => modal.querySelector('input,textarea')?.focus(), 100);
+}
+
+function selectModalEmoji(fieldId, emoji) {
+  document.getElementById(`nef-${fieldId}`).value = emoji;
+  document.querySelectorAll(`#nef-${fieldId}-wrap button`).forEach(b => {
+    b.style.borderColor = b.dataset.emoji === emoji ? 'var(--accent)' : 'var(--border2)';
+  });
+}
+
+function getModalField(id) {
+  return document.getElementById(`nef-${id}`)?.value || '';
+}
+
+// ── Reemplazar addRoutine con modal visual ──
+function addRoutine() {
+  showModal({
+    title: '➕ Nueva rutina',
+    fields: [
+      { id:'icon', label:'Ícono', type:'text', value:'📋', placeholder:'📋' },
+      { id:'title', label:'Nombre de la rutina', type:'text', placeholder:'Ej: Preparar mate' },
+      { id:'steps', label:'Pasos (uno por línea)', type:'textarea', placeholder:'Hervir agua\nPoner yerba\nCebar el primer mate' },
+    ],
+    onSave: function() {
+      const icon = getModalField('icon') || '📋';
+      const title = getModalField('title').trim();
+      const stepsRaw = getModalField('steps');
+      if (!title) { showToast('⚠️ Escribí un nombre'); return; }
+      if (!stepsRaw.trim()) { showToast('⚠️ Agregá al menos un paso'); return; }
+      const steps = stepsRaw.split('\n').map((t,i) => ({ id:i+1, text:t.trim(), done:false })).filter(s=>s.text);
+      const id = 'custom-' + Date.now();
+      cogData.routines.push({ id, title: icon + ' ' + title, icon, steps });
+      saveCogData();
+      renderCogTab(cogTab);
+      document.getElementById('novuEditModal').remove();
+      showToast('✅ Rutina agregada');
+    }
+  });
+}
+
+// ── Reemplazar editRoutineSteps con modal visual ──
+function editRoutineSteps(id) {
+  const r = cogData.routines.find(r => r.id === id);
+  if (!r) return;
+  showModal({
+    title: `✏️ Editar ${r.title}`,
+    fields: [
+      { id:'icon', label:'Ícono', type:'text', value: r.icon },
+      { id:'title', label:'Nombre', type:'text', value: r.title.replace(r.icon+' ','') },
+      { id:'steps', label:'Pasos (uno por línea)', type:'textarea', value: r.steps.map(s=>s.text).join('\n') },
+    ],
+    onSave: function() {
+      const icon = getModalField('icon') || r.icon;
+      const title = getModalField('title').trim() || r.title;
+      const stepsRaw = getModalField('steps');
+      r.icon = icon;
+      r.title = icon + ' ' + title;
+      r.steps = stepsRaw.split('\n').map((t,i) => ({ id:i+1, text:t.trim(), done:false })).filter(s=>s.text);
+      saveCogData();
+      renderCogTab(cogTab);
+      document.getElementById('novuEditModal').remove();
+      showToast('✅ Rutina actualizada');
+    },
+    onDelete: function() {
+      if (!confirm(`¿Eliminar "${r.title}"?`)) return;
+      cogData.routines = cogData.routines.filter(x => x.id !== id);
+      saveCogData();
+      renderCogTab(cogTab);
+      document.getElementById('novuEditModal').remove();
+    }
+  });
+}
+
+// ── Reemplazar addMedication con modal visual ──
+function addMedication() {
+  showModal({
+    title: '💊 Nueva medicación',
+    fields: [
+      { id:'icon', label:'Ícono', type:'emoji-picker', value:'💊' },
+      { id:'name', label:'Nombre del medicamento', type:'text', placeholder:'Ej: Aspirina, Enalapril...' },
+      { id:'dose', label:'Dosis', type:'text', placeholder:'Ej: 1 comprimido, 5ml' },
+      { id:'times', label:'Horarios (separados por coma)', type:'text', placeholder:'Ej: 08:00, 14:00, 21:00' },
+      { id:'note', label:'Nota (opcional)', type:'text', placeholder:'Ej: con el desayuno, antes de dormir' },
+    ],
+    onSave: function() {
+      const icon  = getModalField('icon') || '💊';
+      const name  = getModalField('name').trim();
+      const dose  = getModalField('dose').trim();
+      const times = getModalField('times').split(',').map(t=>t.trim()).filter(Boolean);
+      const note  = getModalField('note').trim();
+      if (!name) { showToast('⚠️ Escribí el nombre del medicamento'); return; }
+      const medId = 'med-' + Date.now();
+      cogData.medications.push({ id:medId, name, dose, times, note, icon, takenDates:[] });
+      saveCogData();
+      renderCogTab(cogTab);
+      document.getElementById('novuEditModal').remove();
+      showToast('✅ Medicación agregada');
+      if (times.length) setupMedReminders();
+    }
+  });
+}
+
+// ── Reemplazar editMedication con modal visual ──
+function editMedication(id) {
+  const m = cogData.medications.find(m => m.id === id);
+  if (!m) return;
+  showModal({
+    title: `✏️ Editar ${m.name}`,
+    fields: [
+      { id:'icon', label:'Ícono', type:'emoji-picker', value: m.icon||'💊' },
+      { id:'name', label:'Nombre', type:'text', value: m.name },
+      { id:'dose', label:'Dosis', type:'text', value: m.dose, placeholder:'Ej: 1 comprimido' },
+      { id:'times', label:'Horarios (separados por coma)', type:'text', value: m.times?.join(', '), placeholder:'08:00, 14:00' },
+      { id:'note', label:'Nota', type:'text', value: m.note, placeholder:'Opcional' },
+    ],
+    onSave: function() {
+      m.icon  = getModalField('icon') || m.icon;
+      m.name  = getModalField('name').trim() || m.name;
+      m.dose  = getModalField('dose').trim();
+      m.times = getModalField('times').split(',').map(t=>t.trim()).filter(Boolean);
+      m.note  = getModalField('note').trim();
+      saveCogData();
+      renderCogTab(cogTab);
+      document.getElementById('novuEditModal').remove();
+      showToast('✅ Medicación actualizada');
+      setupMedReminders();
+    },
+    onDelete: function() {
+      if (!confirm(`¿Eliminar ${m.name}?`)) return;
+      cogData.medications = cogData.medications.filter(x => x.id !== id);
+      saveCogData();
+      renderCogTab(cogTab);
+      document.getElementById('novuEditModal').remove();
+      showToast('🗑️ Medicación eliminada');
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+// JUEGOS MULTIJUGADOR — turnos en el chat
+// ══════════════════════════════════════════
+// Mejora: cuando se comparte la partida, el mensaje del chat muestra
+// claramente de quién es el turno y tiene botón para jugar.
+// Al terminar el turno, "Enviar turno" manda el estado al chat.
+
+function sendTurnToChat() {
+  // Save current state and send as message
+  const state_data = getGameState();
+  if (!state_data) return;
+
+  const chat = state?.chats?.find(c => c.id === state.activeChat);
+  if (!chat) { showToast('Abrí un chat primero'); return; }
+
+  const whosTurn = {
+    tictactoe: `Turno de ${tttTurn === 'X' ? '❌' : '⭕'}`,
+    chess: `Turno de ${chessTurn === 'w' ? '⬜ Blancas' : '⬛ Negras'}`,
+    memory: `${memMoves} movimientos · ${memMatched} pares encontrados`,
+    sudoku: `Sudoku · ${sudokuErrors} errores`,
+    wordle: `Wordle · intento ${wordleGuesses.length}/6`,
+  };
+
+  const msg = {
+    from: 'me',
+    type: 'gamestate',
+    gameType: currentGame,
+    gameData: state_data,
+    preview: `🎮 ${whosTurn[currentGame] || 'Tu turno'}`,
+    text: `🎮 ${whosTurn[currentGame] || 'Tu turno'}`,
+    time: now(),
+  };
+
+  chat.messages.push(msg);
+  const container = document.getElementById('messages');
+  const group = document.createElement('div');
+  group.className = 'msg-group me';
+  const safeData = JSON.stringify(state_data).replace(/'/g, "&#39;").replace(/"/g,'&quot;');
+  group.innerHTML = `
+    <div class="game-state-bubble" onclick="restoreGameState('${currentGame}', JSON.parse(this.dataset.state));" data-state="${safeData}">
+      <div class="game-state-label">🎮 ES TU TURNO — tocá para jugar</div>
+      <div class="game-state-preview">${msg.preview}</div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <span style="font-size:11px;background:var(--accent-dim);color:var(--accent);padding:3px 10px;border-radius:100px;font-weight:700;">
+          ${currentGame === 'tictactoe' ? (tttTurn==='X'?'❌':'⭕') :
+            currentGame === 'chess' ? (chessTurn==='w'?'⬜':'⬛') : '🎮'} Jugar
+        </span>
+        <span style="font-size:11px;color:var(--text3);">Tocá para abrir</span>
+      </div>
+    </div>
+    <div class="bubble-time">${msg.time}</div>`;
+  container.appendChild(group);
+  scrollBottom();
+  chat.preview = msg.preview;
+  renderChatList();
+  savePersistence();
+  closeGame();
+  showToast('🎮 Turno enviado al chat');
+}
+
+// Agregar botón "Enviar turno" en los controles del juego
+// Parchear initTicTacToe, initChess, initMemory, initSudoku, initWordle
+// para agregar el botón "Enviar turno al chat"
+const _baseInitTTT = initTicTacToe;
+function initTicTacToe() {
+  _baseInitTTT();
+  // Remove old share btn and add turn btn
+  const ctrl = document.getElementById('gameControls');
+  // Add send-turn button
+  gameCtrlBtn('📲 Enviar turno', sendTurnToChat, true);
+}
+
+const _baseInitChess = initChess;
+function initChess() {
+  _baseInitChess();
+  gameCtrlBtn('📲 Enviar turno', sendTurnToChat, true);
+}
+
+const _baseInitMemory = initMemory;
+function initMemory(size = 4) {
+  _baseInitMemory(size);
+  gameCtrlBtn('📲 Enviar turno', sendTurnToChat, true);
+}
+
+const _baseInitSudoku = initSudoku;
+function initSudoku() {
+  _baseInitSudoku();
+  gameCtrlBtn('📲 Enviar turno', sendTurnToChat, true);
+}
+
+const _baseInitWordle = initWordle;
+function initWordle() {
+  _baseInitWordle();
+  gameCtrlBtn('📲 Enviar turno', sendTurnToChat, true);
+}
+
+// ══════════════════════════════════════════
+// HISTORIAL DE MEDICACIÓN — ver historial
+// ══════════════════════════════════════════
+function showMedHistory(medId) {
+  const m = cogData.medications.find(m => m.id === medId);
+  if (!m) return;
+
+  const last14 = Array.from({length:14}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    return d.toISOString().slice(0,10);
+  }).reverse();
+
+  const histHTML = last14.map(d => {
+    const taken = m.takenDates?.includes(d) || false;
+    const label = new Date(d + 'T12:00:00').toLocaleDateString('es-UY', {weekday:'short', day:'numeric', month:'short'});
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <div style="width:28px;height:28px;border-radius:50%;background:${taken?'var(--accent3)':'var(--surface2)'};border:2px solid ${taken?'var(--accent3)':'var(--border2)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${taken?'#000':'var(--text3)'};">
+        ${taken?'✓':''}
+      </div>
+      <span style="font-size:13px;color:${taken?'var(--text)':'var(--text3)'};">${label}</span>
+      <span style="margin-left:auto;font-size:11px;color:${taken?'var(--accent3)':'var(--accent4)'};font-weight:700;">${taken?'Tomada':'No tomada'}</span>
+    </div>`;
+  }).join('');
+
+  const taken14 = last14.filter(d => m.takenDates?.includes(d)).length;
+
+  showModal({
+    title: `📊 ${m.icon||'💊'} Historial — ${m.name}`,
+    fields: [],
+    onSave: function() { document.getElementById('novuEditModal').remove(); }
+  });
+  // Inject history HTML into modal
+  setTimeout(() => {
+    const modal = document.getElementById('novuEditModal');
+    if (!modal) return;
+    const content = modal.querySelector('[id^="nef"]')?.closest('div') || modal.querySelector('div > div:last-child');
+    const histDiv = document.createElement('div');
+    histDiv.innerHTML = `
+      <div style="background:var(--surface);border-radius:12px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:13px;color:var(--text2);font-weight:700;">Últimos 14 días</div>
+        <div style="font-size:24px;font-weight:900;color:var(--accent);margin:4px 0;">${taken14}/14</div>
+        <div style="font-size:11px;color:var(--text3);">días tomada</div>
+      </div>
+      <div style="max-height:300px;overflow-y:auto;">${histHTML}</div>`;
+    modal.querySelector('[style*="margin-bottom:18px"]')?.insertAdjacentElement('afterend', histDiv);
+  }, 50);
+}
+
+// ══════════════════════════════════════════
+// MEJORA: renderMedCard con historial
+// ══════════════════════════════════════════
+// Reescribir renderMedCard para incluir botón de historial
+const _origRenderMedCard = renderMedCard;
+function renderMedCard(m) {
+  const takenToday = m.takenDates?.includes(todayStr()) || false;
+  const taken7 = Array.from({length:7}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    return m.takenDates?.includes(d.toISOString().slice(0,10)) ? 1 : 0;
+  }).reverse();
+  const dotsHTML = taken7.map(t =>
+    `<div style="width:8px;height:8px;border-radius:50%;background:${t?'var(--accent3)':'var(--surface2)'};border:1px solid ${t?'var(--accent3)':'var(--border2)'};" title="${t?'Tomada':'No tomada'}"></div>`
+  ).join('');
+
+  return `
+    <div class="med-card" id="med-${m.id}">
+      <div class="med-icon" style="cursor:pointer;" onclick="editMedication('${m.id}')" title="Editar">${m.icon || '💊'}</div>
+      <div class="med-info">
+        <div class="med-name">${m.name}</div>
+        <div class="med-time">🕐 ${m.times?.join(', ') || 'Sin horario'}</div>
+        ${m.dose ? `<div class="med-note">📏 ${m.dose}</div>` : ''}
+        ${m.note ? `<div class="med-note">📝 ${m.note}</div>` : ''}
+        <div style="display:flex;gap:4px;margin-top:6px;" title="Últimos 7 días">${dotsHTML}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:center;">
+        <div class="med-check${takenToday?' taken':''}" onclick="toggleMed('${m.id}')" title="${takenToday?'Desmarcar':'Marcar tomada'}">
+          ${takenToday ? '✓' : ''}
+        </div>
+        <div style="font-size:10px;color:${takenToday?'var(--accent3)':'var(--text3)'};font-weight:700;white-space:nowrap;">
+          ${takenToday ? 'Tomada' : 'Pendiente'}
+        </div>
+        <button onclick="showMedHistory('${m.id}')" style="font-size:10px;color:var(--accent);background:none;border:none;cursor:pointer;font-weight:700;">📊</button>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+// MEJORA cogVoiceHelp — más detallada y amigable
+// ══════════════════════════════════════════
+function cogVoiceHelp() {
+  const parts = [];
+  const today = todayStr();
+
+  cogData.routines.forEach(r => {
+    const pending = r.steps.filter(s => !s.done);
+    const done = r.steps.filter(s => s.done).length;
+    if (pending.length === 0) return; // all done, skip
+    if (done === 0) {
+      parts.push(`Todavía no empezaste ${r.title}. El primer paso es: ${r.steps[0]?.text}`);
+    } else {
+      const next = pending[0];
+      parts.push(`En ${r.title} ya hiciste ${done} de ${r.steps.length} pasos. El siguiente es: ${next.text}`);
+    }
+  });
+
+  const pendingMeds = cogData.medications.filter(m => !m.takenDates?.includes(today));
+  if (pendingMeds.length > 0) {
+    parts.push(`Te falta tomar ${pendingMeds.length === 1 ? '' : pendingMeds.length + ' medicamentos: '}${pendingMeds.map(m => m.name).join(', ')}`);
+  }
+
+  if (parts.length === 0) {
+    const text = '¡Todo al día! Tomaste tu medicación y completaste tus rutinas. ¡Muy bien!';
+    speakFeedback(text);
+    showToast('✅ ¡Todo al día!');
+
+    // Show in modal too
+    const body = document.getElementById('cogBody');
+    if (body) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:rgba(104,240,185,.1);border:1px solid rgba(104,240,185,.3);border-radius:14px;padding:16px;text-align:center;margin-bottom:16px;';
+      banner.innerHTML = '<div style="font-size:32px;">🎉</div><div style="font-weight:800;color:var(--accent3);font-size:15px;margin-top:6px;">¡Todo al día!</div>';
+      body.insertBefore(banner, body.firstChild);
+      setTimeout(() => banner.remove(), 4000);
+    }
+    return;
+  }
+
+  speakFeedback('Te cuento qué te falta. ' + parts.join('. '));
+  showToast('🎙️ Leyendo pendientes...');
+}
+
+
+function handleVoiceCommand(text) {
+  if (text.includes('qué me falta') || text.includes('que me falta') || text.includes('me falta') || text.includes('medicamento') || text.includes('pastilla') || text.includes('rutina')) {
+    cogVoiceHelp();
+    return true;
+  }
+  if (text.includes('abrir asistente') || text.includes('memoria')) {
+    openCogModal();
+    return true;
+  }
+  return _prevHandleVoiceCommand(text);
+}
+</script>
+</body></html>
