@@ -1893,7 +1893,7 @@ body::after {
 
     <div class="ob-field">
       <label class="ob-label">Tu nombre</label>
-      <input class="ob-input" id="ob-name" placeholder="Ej: Adriana" maxlength="30">
+      <input class="ob-input" id="ob-name" placeholder="Escribí tu nombre aquí..." maxlength="30" autocomplete="given-name">
     </div>
 
     <div class="ob-field">
@@ -1902,22 +1902,22 @@ body::after {
         <div class="ob-mode selected" data-mode="neuro" onclick="selectOBMode(this)">
           <div class="ob-mode-icon">🧠</div>
           <span class="ob-mode-name">Neuro</span>
-          <div class="ob-mode-desc">Claro, sin ambigüedad</div>
+          <div class="ob-mode-desc">Mensajes claros y directos</div>
         </div>
         <div class="ob-mode" data-mode="calm" onclick="selectOBMode(this)">
           <div class="ob-mode-icon">🌿</div>
           <span class="ob-mode-name">Calma</span>
-          <div class="ob-mode-desc">Suave, sin urgencia</div>
+          <div class="ob-mode-desc">Mensajes suaves y tranquilos</div>
         </div>
         <div class="ob-mode" data-mode="direct" onclick="selectOBMode(this)">
           <div class="ob-mode-icon">⚡</div>
           <span class="ob-mode-name">Directo</span>
-          <div class="ob-mode-desc">Solo lo esencial</div>
+          <div class="ob-mode-desc">Solo las palabras necesarias</div>
         </div>
         <div class="ob-mode" data-mode="normal" onclick="selectOBMode(this)">
           <div class="ob-mode-icon">💧</div>
           <span class="ob-mode-name">Fluido</span>
-          <div class="ob-mode-desc">A tu manera</div>
+          <div class="ob-mode-desc">Como vos preferís</div>
         </div>
       </div>
     </div>
@@ -2008,7 +2008,7 @@ body::after {
             <div class="chat-header-status">● En línea · IA activa</div>
           </div>
           <div class="mode-badge" id="chatModeBadge">🧠 NEURO</div>
-          <button class="header-btn" id="cogQuickBtn" onclick="openCogModal()" title="Asistente de memoria" style="display:none;">🧠</button>
+          <button class="header-btn" id="cogQuickBtn" onclick="openCogModal()" title="Asistente de memoria" style="display:flex;">🧠</button>
           <button class="header-btn" onclick="startVideoCall()" title="Videollamada">📹</button>
         </div>
 
@@ -2168,22 +2168,22 @@ body::after {
             <div class="mode-card" data-mode="neuro" onclick="setMode(this)">
               <div class="mode-card-icon">🧠</div>
               <div class="mode-card-name">Neuro</div>
-              <div class="mode-card-desc">Claro, sin ambigüedad</div>
+              <div class="mode-card-desc">Mensajes claros y directos</div>
             </div>
             <div class="mode-card" data-mode="calm" onclick="setMode(this)">
               <div class="mode-card-icon">🌿</div>
               <div class="mode-card-name">Calma</div>
-              <div class="mode-card-desc">Suave, sin urgencia</div>
+              <div class="mode-card-desc">Mensajes suaves y tranquilos</div>
             </div>
             <div class="mode-card" data-mode="direct" onclick="setMode(this)">
               <div class="mode-card-icon">⚡</div>
               <div class="mode-card-name">Directo</div>
-              <div class="mode-card-desc">Solo lo esencial</div>
+              <div class="mode-card-desc">Solo las palabras necesarias</div>
             </div>
             <div class="mode-card" data-mode="normal" onclick="setMode(this)">
               <div class="mode-card-icon">💧</div>
               <div class="mode-card-name">Fluido</div>
-              <div class="mode-card-desc">A tu manera</div>
+              <div class="mode-card-desc">Como vos preferís</div>
             </div>
           </div>
         </div>
@@ -3611,163 +3611,202 @@ function toggleAutoTts(el) {
 }
 
 // ══════════════════════════════════════════
-// VOICE DICTATION + COMMANDS
+// VOICE DICTATION + COMMANDS — versión robusta
 // ══════════════════════════════════════════
 let recognition = null;
-let voiceMode = 'dictation'; // 'dictation' | 'command'
 let isHandsFree = false;
 let handsFreeLoop = null;
-
+let _hfBusy = false;
 
 function buildRecognition() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return null;
   const r = new SR();
-  r.lang = 'es-UY';
+  r.lang = I18N[currentLang]?.lang_tts || 'es-UY';
   r.interimResults = true;
   r.continuous = false;
+  r.maxAlternatives = 1;
   return r;
+}
+
+function _killRecognition() {
+  if (recognition) {
+    recognition.onstart = null;
+    recognition.onresult = null;
+    recognition.onerror = null;
+    recognition.onend = null;
+    try { recognition.abort(); } catch(e) {}
+    recognition = null;
+  }
+  if (handsFreeLoop) { clearTimeout(handsFreeLoop); handsFreeLoop = null; }
+  _hfBusy = false;
+}
+
+function _showVoiceOverlay(show) {
+  const overlay = document.getElementById('voiceOverlay');
+  const btn = document.getElementById('audioBtn');
+  if (overlay) overlay.classList.toggle('show', show);
+  if (btn) btn.classList.toggle('recording', show);
 }
 
 function startVoiceDictation() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { alert('Tu navegador no soporta dictado por voz. Usá Chrome o Edge.'); return; }
+  if (!SR) {
+    alert('Voz no soportada. Usá Chrome en Android.');
+    if (isHandsFree) { isHandsFree = false; _updateHFUI(); }
+    return;
+  }
 
-  if (recognition) { recognition.abort(); recognition = null; }
+  _killRecognition();
+  _hfBusy = true;
 
-  voiceMode = 'dictation';
-  document.getElementById('voiceOverlay').classList.add('show');
-  document.getElementById('voiceTranscript').textContent = 'Escuchando...';
-  document.getElementById('audioBtn').classList.add('recording');
+  const transcriptEl = document.getElementById('voiceTranscript');
+  _showVoiceOverlay(true);
+  if (transcriptEl) transcriptEl.textContent = t('voice_listening') || 'Escuchando...';
 
   recognition = buildRecognition();
-  recognition.lang = I18N[currentLang]?.lang_tts || 'es-UY';
+  if (!recognition) { _hfBusy = false; return; }
+
   recognition.onresult = (e) => {
     let interim = '', final = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) final += t;
-      else interim += t;
+      const txt = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += txt; else interim += txt;
     }
-    document.getElementById('voiceTranscript').textContent = final || interim || '...';
-    if (final) {
-      // check for commands first
-      if (handleVoiceCommand(final.trim().toLowerCase())) {
-        stopVoiceOverlay();
-        return;
-      }
-      // otherwise put text in input
+    if (transcriptEl) transcriptEl.textContent = final || interim || '...';
+    if (!final) return;
+
+    const cmd = final.trim().toLowerCase();
+    const isCmd = handleVoiceCommand(cmd);
+    if (!isCmd) {
       const box = document.getElementById('inputBox');
-      box.value = (box.value + ' ' + final).trim();
-      handleInput(box);
-      stopVoiceOverlay();
+      if (box) { box.value = (box.value + ' ' + final).trim(); handleInput(box); }
+    }
+    // Cerrar overlay pero NO detener el loop en manos libres
+    _showVoiceOverlay(false);
+    if (!isHandsFree) {
+      _killRecognition();
     }
   };
-  recognition.onerror = () => stopVoiceOverlay();
-  recognition.onend = () => {
-    document.getElementById('audioBtn').classList.remove('recording');
+
+  recognition.onerror = (e) => {
+    console.warn('[NOVU Voz]', e.error);
+    _showVoiceOverlay(false);
+    _hfBusy = false;
+    if (e.error === 'not-allowed') {
+      _killRecognition();
+      if (isHandsFree) { isHandsFree = false; _updateHFUI(); }
+      alert('Permiso de micrófono denegado.');
+      return;
+    }
+    // Error recuperable: reiniciar si es manos libres
     if (isHandsFree) {
-      // re-listen after a short pause
-      handsFreeLoop = setTimeout(startVoiceDictation, 1200);
+      handsFreeLoop = setTimeout(() => { handsFreeLoop = null; startVoiceDictation(); }, 1500);
     }
   };
-  recognition.start();
+
+  recognition.onend = () => {
+    _showVoiceOverlay(false);
+    _hfBusy = false;
+    if (isHandsFree && !handsFreeLoop) {
+      handsFreeLoop = setTimeout(() => { handsFreeLoop = null; startVoiceDictation(); }, 800);
+    }
+  };
+
+  try { recognition.start(); }
+  catch(e) {
+    console.warn('[NOVU Voz] start error:', e);
+    _hfBusy = false;
+    if (isHandsFree) {
+      handsFreeLoop = setTimeout(() => { handsFreeLoop = null; startVoiceDictation(); }, 1500);
+    }
+  }
 }
 
 function stopVoiceOverlay() {
-  document.getElementById('voiceOverlay').classList.remove('show');
-  document.getElementById('audioBtn').classList.remove('recording');
-  if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+  _showVoiceOverlay(false);
+  if (!isHandsFree) _killRecognition();
+}
+
+function _updateHFUI() {
+  const banner = document.getElementById('handsfreeBanner');
+  const btn = document.getElementById('handsfreeBtn');
+  const toggle = document.getElementById('handsfreeToggle');
+  if (banner) banner.classList.toggle('show', isHandsFree);
+  if (btn) btn.classList.toggle('active', isHandsFree);
+  if (toggle) toggle.classList.toggle('on', isHandsFree);
+}
+
+function toggleHandsFree() {
+  isHandsFree = !isHandsFree;
+  _updateHFUI();
+  if (isHandsFree) {
+    speakFeedback(t('cmd_hf_on'));
+    setTimeout(startVoiceDictation, 600);
+  } else {
+    _killRecognition();
+    speakFeedback(t('cmd_hf_off'));
+  }
+}
+
+function toggleHandsFreeFromSettings(el) {
+  isHandsFree = !el.classList.contains('on');
+  el.classList.toggle('on', isHandsFree);
+  _updateHFUI();
+  if (isHandsFree) {
+    speakFeedback(t('cmd_hf_on'));
+    setTimeout(startVoiceDictation, 600);
+  } else {
+    _killRecognition();
+  }
 }
 
 // ── COMMAND HANDLER ──
 function handleVoiceCommand(text) {
-  if (!visualSettings.voiceCmds) return false;
+  if (!isHandsFree && !visualSettings.voiceCmds) return false;
 
-  // enviar
-  if (text.includes('enviar') || text.includes('mandar') || text.includes('send') || text.includes('enviar') || text.includes('mandar')) {
-    sendMessage(true);
-    speakFeedback(t('cmd_sent'));
-    return true;
+  if (text.includes('enviar') || text.includes('mandar') || text.includes('send')) {
+    sendMessage(true); speakFeedback(t('cmd_sent')); return true;
   }
   if (text.includes('leer') || text.includes('lee') || text.includes('read') || text.includes('ler')) {
-    readLastMessages();
-    return true;
+    readLastMessages(); return true;
   }
-  if (text.includes('más grande') || text.includes('mas grande') || text.includes('letra grande') || text.includes('bigger') || text.includes('maior')) {
+  if (text.includes('más grande') || text.includes('mas grande') || text.includes('bigger') || text.includes('maior')) {
     const s = document.getElementById('fontSizeSlider');
-    s.value = Math.min(160, parseInt(s.value) + 20);
-    setFontSize(s.value);
-    speakFeedback(t('cmd_bigger'));
-    return true;
+    if (s) { s.value = Math.min(160, parseInt(s.value)+20); setFontSize(s.value); }
+    speakFeedback(t('cmd_bigger')); return true;
   }
-  if (text.includes('más chico') || text.includes('mas chico') || text.includes('letra chica') || text.includes('smaller') || text.includes('menor')) {
+  if (text.includes('más chico') || text.includes('mas chico') || text.includes('smaller') || text.includes('menor')) {
     const s = document.getElementById('fontSizeSlider');
-    s.value = Math.max(80, parseInt(s.value) - 20);
-    setFontSize(s.value);
-    speakFeedback(t('cmd_smaller'));
-    return true;
+    if (s) { s.value = Math.max(80, parseInt(s.value)-20); setFontSize(s.value); }
+    speakFeedback(t('cmd_smaller')); return true;
   }
   if (text.includes('manos libres') || text.includes('hands free') || text.includes('mãos livres')) {
-    toggleHandsFree();
-    return true;
+    toggleHandsFree(); return true;
   }
-  if (text.includes('siguiente') || text.includes('próxima') || text.includes('next') || text.includes('próxima')) {
-    navigateChat(1);
-    return true;
+  if (text.includes('cerrar') || text.includes('apagar') || text.includes('parar') || text.includes('stop')) {
+    if (isHandsFree) { toggleHandsFree(); return true; }
   }
-  if (text.includes('anterior') || text.includes('atrás') || text.includes('previous') || text.includes('anterior')) {
-    navigateChat(-1);
-    return true;
-  }
+  if (text.includes('siguiente') || text.includes('next')) { navigateChat(1); return true; }
+  if (text.includes('anterior') || text.includes('atrás') || text.includes('previous')) { navigateChat(-1); return true; }
   if (text === 'listo' || text === 'ok' || text === 'aceptar' || text === 'done' || text === 'pronto') {
-    sendMessage(true);
-    return true;
+    sendMessage(true); speakFeedback(t('cmd_sent')); return true;
   }
-  if (text.includes('borrar') || text.includes('limpiar') || text.includes('clear') || text.includes('apagar')) {
-    document.getElementById('inputBox').value = '';
-    speakFeedback(t('cmd_cleared'));
-    return true;
+  if (text.includes('borrar') || text.includes('limpiar') || text.includes('clear')) {
+    const box = document.getElementById('inputBox');
+    if (box) box.value = '';
+    speakFeedback(t('cmd_cleared')); return true;
   }
-  if (text.includes('pictograma') || text.includes('pictogram') || text.includes('comunicación rápida')) {
-    togglePicto();
-    return true;
-  }
-  // Agregar contacto por voz desde comando en el chat
+  if (text.includes('pictograma') || text.includes('pictogram')) { togglePicto(); return true; }
+  if (text.includes('contactos') || text.includes('agenda')) { openContacts(); return true; }
   if (text.match(/agreg(?:ar|á)?\s+(?:a\s+)?\w/i) || text.startsWith('nuevo contacto')) {
     const result = parseVoiceContact(text);
     if (result) {
-      const colors = [
-        'linear-gradient(135deg,#8b7cf8,#f0b96a)',
-        'linear-gradient(135deg,#68f0b9,#8b7cf8)',
-        'linear-gradient(135deg,#f06868,#f0b96a)',
-        'linear-gradient(135deg,#5b8df0,#68f0b9)',
-      ];
-      state.contacts.push({
-        id: 'c-' + Date.now(),
-        name: result.name,
-        phone: normalizePhone(result.phone),
-        initials: result.name.slice(0, 2).toUpperCase(),
-        color: colors[state.contacts.length % colors.length],
-        emergency: false,
-      });
-      savePersistence();
-      speakFeedback(`Contacto ${result.name} agregado.`);
-      // Abrir contactos para confirmar visualmente
-      openContacts();
-    } else {
-      openContacts();
-      setTimeout(() => startVoiceAddContact(), 400);
-    }
+      const colors = ['linear-gradient(135deg,#8b7cf8,#f0b96a)','linear-gradient(135deg,#68f0b9,#8b7cf8)','linear-gradient(135deg,#f06868,#f0b96a)','linear-gradient(135deg,#5b8df0,#68f0b9)'];
+      state.contacts.push({ id:'c-'+Date.now(), name:result.name, phone:normalizePhone(result.phone||''), initials:result.name.slice(0,2).toUpperCase(), color:colors[state.contacts.length%4], emergency:false });
+      savePersistence(); speakFeedback('Contacto '+result.name+' agregado.'); openContacts();
+    } else { openContacts(); setTimeout(()=>startVoiceAddContact(),400); }
     return true;
-  }
-  if (text.includes('contactos') || text.includes('agenda') || text.includes('abrir contactos')) {
-    openContacts();
-    return true;
-  }
-  // Cognitive assistant commands
-  if (typeof handleCogVoiceCommands === 'function') {
-    return handleCogVoiceCommands(text);
   }
   return false;
 }
@@ -3803,44 +3842,7 @@ function navigateChat(dir) {
 }
 
 // ── HANDS-FREE MODE ──
-function toggleHandsFree() {
-  isHandsFree = !isHandsFree;
-  const banner = document.getElementById('handsfreeBanner');
-  const btn = document.getElementById('handsfreeBtn');
-  const toggle = document.getElementById('handsfreeToggle');
-  if (isHandsFree) {
-    banner.classList.add('show');
-    btn.classList.add('active');
-    if (toggle) toggle.classList.add('on');
-    speakFeedback(t('cmd_hf_on'));
-    setTimeout(startVoiceDictation, 800);
-  } else {
-    banner.classList.remove('show');
-    btn.classList.remove('active');
-    if (toggle) toggle.classList.remove('on');
-    clearTimeout(handsFreeLoop);
-    stopVoiceOverlay();
-    speakFeedback(t('cmd_hf_off'));
-  }
-}
-
-function toggleHandsFreeFromSettings(el) {
-  el.classList.toggle('on');
-  isHandsFree = el.classList.contains('on');
-  const banner = document.getElementById('handsfreeBanner');
-  const btn = document.getElementById('handsfreeBtn');
-  if (isHandsFree) {
-    banner.classList.add('show');
-    btn.classList.add('active');
-    speakFeedback('Modo manos libres activado');
-    setTimeout(startVoiceDictation, 800);
-  } else {
-    banner.classList.remove('show');
-    btn.classList.remove('active');
-    clearTimeout(handsFreeLoop);
-    stopVoiceOverlay();
-  }
-}
+// toggleHandsFree y toggleHandsFreeFromSettings movidos al módulo de voz
 
 function toggleVoiceCmds(el) {
   el.classList.toggle('on');
@@ -4692,7 +4694,7 @@ const I18N = {
     app_tagline: 'El chat que habla el idioma de tu cerebro',
     ob_title: '¿Cómo te llamás?',
     ob_name_label: 'Tu nombre',
-    ob_name_placeholder: 'Ej: Adriana',
+    ob_name_placeholder: 'Tu nombre...',
     ob_mode_label: '¿Cómo querés recibir los mensajes?',
     ob_btn: 'Entrar a NOVU →',
     convos_title: 'Conversaciones',
@@ -4743,7 +4745,7 @@ const I18N = {
     app_tagline: 'O chat que fala a língua do seu cérebro',
     ob_title: 'Como você se chama?',
     ob_name_label: 'Seu nome',
-    ob_name_placeholder: 'Ex: Maria',
+    ob_name_placeholder: 'Seu nome...',
     ob_mode_label: 'Como quer receber as mensagens?',
     ob_btn: 'Entrar no NOVU →',
     convos_title: 'Conversas',
@@ -4794,7 +4796,7 @@ const I18N = {
     app_tagline: 'The chat that speaks your brain\'s language',
     ob_title: 'What\'s your name?',
     ob_name_label: 'Your name',
-    ob_name_placeholder: 'E.g.: Alex',
+    ob_name_placeholder: 'Your name...',
     ob_mode_label: 'How do you want to receive messages?',
     ob_btn: 'Enter NOVU →',
     convos_title: 'Conversations',
@@ -5534,14 +5536,14 @@ async function crearOUnirSala(codigo) {
 
   try {
     // Buscar sala existente
-    const res = await fetch(`${NOVU_SUPABASE_URL}/rest/v1/novu_salas?codigo=eq.${codigo}&activa=eq.true`, {
+    const res = await fetch(`${NOVU_SUPABASE_URL}/rest/v1/salas?codigo=eq.${codigo}&activa=eq.true`, {
       headers: { 'apikey': NOVU_SUPABASE_KEY, 'Authorization': `Bearer ${NOVU_SUPABASE_KEY}` }
     });
     const salas = await res.json();
 
     if (salas.length === 0) {
       // Crear sala nueva
-      const crear = await fetch(`${NOVU_SUPABASE_URL}/rest/v1/novu_salas`, {
+      const crear = await fetch(`${NOVU_SUPABASE_URL}/rest/v1/salas`, {
         method: 'POST',
         headers: {
           'apikey': NOVU_SUPABASE_KEY,
@@ -5565,7 +5567,7 @@ async function crearOUnirSala(codigo) {
     const poll = setInterval(async () => {
       if (!salaActual) return;
       const r = await fetch(
-        `${NOVU_SUPABASE_URL}/rest/v1/novu_mensajes?sala_id=eq.${salaActual.id}&created_at=gt.${ultimoCheck}&order=created_at.asc`,
+        `${NOVU_SUPABASE_URL}/rest/v1/mensajes?sala_id=eq.${salaActual.id}&created_at=gt.${ultimoCheck}&order=created_at.asc`,
         { headers: { 'apikey': NOVU_SUPABASE_KEY, 'Authorization': `Bearer ${NOVU_SUPABASE_KEY}` } }
       );
       const nuevos = await r.json();
@@ -5587,7 +5589,7 @@ async function crearOUnirSala(codigo) {
 
 async function enviarMensajeSupabase(contenido, tipo = 'texto') {
   if (!salaActual || !NOVU_SUPABASE_URL) return;
-  await fetch(`${NOVU_SUPABASE_URL}/rest/v1/novu_mensajes`, {
+  await fetch(`${NOVU_SUPABASE_URL}/rest/v1/mensajes`, {
     method: 'POST',
     headers: {
       'apikey': NOVU_SUPABASE_KEY,
@@ -5669,7 +5671,7 @@ async function abrirSalaChat(codigo) {
 
     // Cargar mensajes anteriores
     const r = await fetch(
-      `${NOVU_SUPABASE_URL}/rest/v1/novu_mensajes?sala_id=eq.${salaActual.id}&order=created_at.asc`,
+      `${NOVU_SUPABASE_URL}/rest/v1/mensajes?sala_id=eq.${salaActual.id}&order=created_at.asc`,
       { headers: { 'apikey': NOVU_SUPABASE_KEY, 'Authorization': `Bearer ${NOVU_SUPABASE_KEY}` } }
     );
     const anteriores = await r.json();
