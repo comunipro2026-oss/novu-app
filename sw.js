@@ -1,80 +1,78 @@
-// NOVU Service Worker — offline completo
-const CACHE = 'novu-v1';
-const ASSETS = [
-  './novu-app.html',
+// NOVU Service Worker © 2026 Hadrion · Adriana Soba
+const CACHE_NAME = 'novu-v3';
+const OFFLINE_ASSETS = [
+  './',
+  './index.html',
   './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;0,900;1,300;1,700&family=Cabinet+Grotesk:wght@300;400;500;700;800&display=swap'
+  './android-chrome-192x192.png',
 ];
 
-// Instalar: cachear recursos principales
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS))
-  );
+// ── Instalación: cachear recursos estáticos ──
+self.addEventListener('install', event => {
   self.skipWaiting();
-});
-
-// Activar: limpiar caches viejos
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(OFFLINE_ASSETS).catch(() => {}))
   );
-  self.clients.claim();
 });
 
-// Fetch: cache-first para assets, network-first para Supabase
-self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
+// ── Activación: limpiar cachés viejos ──
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
 
-  // Supabase siempre va a la red
-  if (url.hostname.includes('supabase.co')) {
-    e.respondWith(
-      fetch(e.request).catch(() =>
-        new Response(JSON.stringify({ error: 'Sin conexión' }), {
-          headers: { 'Content-Type': 'application/json' }
-        })
-      )
-    );
+// ── Fetch: servir desde caché con fallback a red ──
+self.addEventListener('fetch', event => {
+  // No interceptar peticiones a Supabase ni a APIs externas
+  if (event.request.url.includes('supabase.co') ||
+      event.request.url.includes('api.anthropic.com') ||
+      event.request.url.includes('tenor.googleapis.com')) {
     return;
   }
+  event.respondWith(
+    caches.match(event.request).then(cached => cached || fetch(event.request))
+  );
+});
 
-  // Fonts de Google: cache-first
-  if (url.hostname.includes('fonts.')) {
-    e.respondWith(
-      caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      }))
-    );
-    return;
-  }
-
-  // Todo lo demás: cache-first
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      });
+// ── Notificaciones push (si se implementa Web Push en el futuro) ──
+self.addEventListener('push', event => {
+  if (!event.data) return;
+  let data = {};
+  try { data = event.data.json(); } catch(e) { data = { title: 'NOVU', body: event.data.text() }; }
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'NOVU', {
+      body: data.body || 'Nuevo mensaje',
+      icon: './android-chrome-192x192.png',
+      badge: './android-chrome-192x192.png',
+      tag: 'novu-msg',
+      renotify: true,
+      vibrate: [100, 50, 100],
+      data: data
     })
   );
 });
 
-// Push notifications (para futura integración)
-self.addEventListener('push', e => {
-  if (!e.data) return;
-  const data = e.data.json();
-  self.registration.showNotification(data.title || 'NOVU', {
-    body: data.body || '',
-    icon: './icons/icon-192.png',
-    badge: './icons/icon-192.png',
-    vibrate: [100, 50, 100]
-  });
+// ── Click en notificación: abrir/enfocar la app ──
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+      // Si ya hay una ventana abierta, enfocarla
+      for (const client of clients) {
+        if ('focus' in client) {
+          client.focus();
+          // Notificar a la app que fue un click de notificación
+          client.postMessage({ type: 'NOTIFICATION_CLICK', data: event.notification.data });
+          return;
+        }
+      }
+      // Si no hay ventana, abrir una nueva
+      if (self.clients.openWindow) {
+        return self.clients.openWindow('./');
+      }
+    })
+  );
 });
