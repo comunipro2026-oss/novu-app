@@ -244,10 +244,19 @@ html, body {
 }
 
 @media (min-width: 641px) {
-  html, body { overflow: auto; min-height: 100vh; }
-  #app { min-height: 100vh; height: 100vh; display: flex; flex-direction: column; }
+  html, body { overflow: hidden; height: 100%; width: 100%; }
+  #app { 
+    width: 100%; height: 100vh; 
+    display: none; 
+    flex-direction: column; 
+  }
   #app.visible { display: flex; }
-  .app-body { height: 0; flex: 1; }
+  .app-body { height: 0; flex: 1; overflow: hidden; }
+  
+  /* Tablet (641–900px): sidebar más angosta */
+  @media (max-width: 900px) {
+    .sidebar { width: 220px; }
+  }
 }
 
 /* Menu button: solo en móvil */
@@ -1893,7 +1902,19 @@ body::after {
 
     <div class="ob-field">
       <label class="ob-label">Tu nombre</label>
-      <input class="ob-input" id="ob-name" placeholder="Escribí tu nombre aquí..." maxlength="30" autocomplete="given-name">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="ob-input" id="ob-name" placeholder="Ej: Martín, Ana..." maxlength="30" autocomplete="given-name" style="flex:1;">
+        <button onclick="voiceInputField('ob-name')" title="Ingresar por voz" style="padding:10px 12px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:12px;font-size:18px;cursor:pointer;color:var(--accent);">🎙️</button>
+      </div>
+    </div>
+
+    <div class="ob-field">
+      <label class="ob-label">Tu número de celular <span style="color:var(--text3);font-size:11px;">(opcional — para que te encuentren)</span></label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="ob-input" id="ob-phone" placeholder="+598 09X XXX XXX" maxlength="20" type="tel" autocomplete="tel" style="flex:1;">
+        <button onclick="voiceInputField('ob-phone')" title="Ingresar por voz" style="padding:10px 12px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:12px;font-size:18px;cursor:pointer;color:var(--accent);">🎙️</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">Tu número solo se usa para que tus contactos te encuentren en NOVU. No se comparte con nadie más.</div>
     </div>
 
     <div class="ob-field">
@@ -1976,7 +1997,7 @@ body::after {
             oninput="filterChatList(this.value)">
         </div>
         <div style="display:flex;gap:6px;margin-top:10px;">
-          <button class="new-chat-btn" onclick="abrirModalSala()" title="Chat en vivo" style="background:var(--surface2);box-shadow:none;border:1px solid var(--border2);font-size:14px;padding:6px 12px;border-radius:22px;width:auto;height:auto;">🔴 En vivo</button>
+          <button class="new-chat-btn" onclick="abrirModalSala()" title="Invitar a chatear en vivo — genera un link para compartir" style="background:var(--surface2);box-shadow:none;border:1px solid var(--border2);font-size:14px;padding:6px 12px;border-radius:22px;width:auto;height:auto;">🔴 En vivo</button>
           <button class="new-chat-btn" onclick="newChat()" style="padding:6px 14px;border-radius:22px;width:auto;height:auto;font-size:13px;">+ Nuevo</button>
         </div>
       </div>
@@ -2502,8 +2523,14 @@ body::after {
     <div id="contactsList"></div>
 
     <div class="add-contact-form">
-      <input type="text" id="newContactName" placeholder="Nombre" maxlength="30">
-      <input type="tel" id="newContactPhone" placeholder="Teléfono (opcional)" maxlength="20">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="text" id="newContactName" placeholder="Nombre" maxlength="30" style="flex:1;">
+        <button onclick="voiceInputField('newContactName')" title="Nombre por voz" style="padding:8px 10px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;font-size:16px;cursor:pointer;color:var(--accent);">🎙️</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:6px;">
+        <input type="tel" id="newContactPhone" placeholder="Teléfono (opcional)" maxlength="20" style="flex:1;">
+        <button onclick="voiceInputField('newContactPhone')" title="Teléfono por voz" style="padding:8px 10px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;font-size:16px;cursor:pointer;color:var(--accent);">🎙️</button>
+      </div>
       <button class="add-contact-btn" onclick="addContact()">+ Agregar contacto</button>
     </div>
   </div>
@@ -2550,6 +2577,7 @@ body::after {
      VIDEOLLAMADA MODAL
 ══════════════════════════════════════════ -->
 <div id="videoCallModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:200;flex-direction:column;align-items:center;justify-content:center;">
+  <button onclick="endVideoCall()" style="position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:white;font-size:18px;cursor:pointer;z-index:2;">✕</button>
   <div style="position:relative;width:100%;max-width:480px;aspect-ratio:9/16;max-height:80vh;border-radius:20px;overflow:hidden;background:#000;">
     <video id="localVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>
     <div style="position:absolute;top:16px;right:16px;width:100px;height:140px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.3);">
@@ -2572,92 +2600,115 @@ body::after {
      CAMARA CON FILTROS MODAL
 ══════════════════════════════════════════ -->
 <div id="cameraModal" style="display:none;position:fixed;inset:0;background:#000;z-index:210;flex-direction:column;">
+  <!-- Header -->
   <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));position:relative;z-index:2;">
     <button onclick="closeCamera()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:white;font-size:18px;cursor:pointer;">✕</button>
-    <span style="color:white;font-size:14px;font-weight:700;flex:1;text-align:center;">📸 Cámara NOVU</span>
+    <span style="color:white;font-size:14px;font-weight:700;flex:1;text-align:center;" id="camFilterLabel">📸 Cámara NOVU</span>
     <button onclick="flipCamera()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:white;font-size:18px;cursor:pointer;">🔄</button>
   </div>
 
-  <!-- Video preview + emoji overlay -->
-  <div style="flex:1;position:relative;overflow:hidden;">
+  <!-- Video preview + overlays -->
+  <div style="flex:1;position:relative;overflow:hidden;" id="camPreviewWrap">
     <video id="cameraPreview" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;transition:filter .25s;"></video>
     <canvas id="cameraCanvas" style="display:none;"></canvas>
-    <!-- Emoji overlay sticker -->
-    <div id="camEmojiOverlay" style="position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:48px;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.4);display:none;"></div>
-    <!-- Color overlay for fun filters -->
-    <div id="camColorOverlay" style="position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;mix-blend-mode:color;"></div>
+
+    <!-- Frame SVG overlay -->
+    <div id="camFrameOverlay" style="position:absolute;inset:0;pointer-events:none;z-index:3;"></div>
+    <!-- Color tint overlay -->
+    <div id="camColorOverlay" style="position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;z-index:2;"></div>
+    <!-- Emoji sticker (draggable) -->
+    <div id="camEmojiOverlay" style="position:absolute;top:18%;left:50%;transform:translateX(-50%);font-size:56px;pointer-events:none;text-shadow:0 2px 12px rgba(0,0,0,.5);display:none;z-index:4;cursor:move;user-select:none;"></div>
+    <!-- Text overlay -->
+    <div id="camTextOverlay" style="position:absolute;bottom:18%;left:50%;transform:translateX(-50%);pointer-events:none;display:none;z-index:4;white-space:nowrap;"></div>
     <!-- Marca NOVU -->
-    <div style="position:absolute;bottom:12px;left:12px;font-family:'Fraunces',serif;font-size:13px;font-weight:900;color:rgba(255,255,255,.4);pointer-events:none;">NOVU</div>
-    <!-- Snap-style frame overlay -->
-    <div id="camFrameOverlay" style="position:absolute;inset:0;pointer-events:none;display:none;"></div>
+    <div style="position:absolute;bottom:10px;left:12px;font-family:'Fraunces',serif;font-size:12px;font-weight:900;color:rgba(255,255,255,.35);pointer-events:none;z-index:5;">NOVU</div>
   </div>
 
-  <!-- Filtros tipo Snapchat - dos filas: filtros CSS + stickers emoji -->
-  <div style="background:rgba(0,0,0,.9);padding:8px 0 0;">
-    <!-- Fila 1: Filtros visuales -->
-    <div style="overflow-x:auto;white-space:nowrap;padding:0 12px 6px;-webkit-overflow-scrolling:touch;">
+  <!-- Tabs: Filtros / Marcos / Stickers / Texto -->
+  <div style="background:rgba(0,0,0,.95);">
+    <div style="display:flex;border-bottom:1px solid rgba(255,255,255,.1);">
+      <button onclick="camTab('filters',this)" id="camTabFilters" style="flex:1;padding:8px 4px;background:none;border:none;color:white;font-size:11px;font-weight:700;cursor:pointer;border-bottom:2px solid #8b7cf8;opacity:1;">🎨 Filtros</button>
+      <button onclick="camTab('frames',this)" id="camTabFrames" style="flex:1;padding:8px 4px;background:none;border:none;color:rgba(255,255,255,.5);font-size:11px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;">🖼️ Marcos</button>
+      <button onclick="camTab('stickers',this)" id="camTabStickers" style="flex:1;padding:8px 4px;background:none;border:none;color:rgba(255,255,255,.5);font-size:11px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;">✨ Stickers</button>
+      <button onclick="camTab('text',this)" id="camTabText" style="flex:1;padding:8px 4px;background:none;border:none;color:rgba(255,255,255,.5);font-size:11px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;">✍️ Texto</button>
+    </div>
+
+    <!-- PANEL FILTROS -->
+    <div id="camPanelFilters" style="overflow-x:auto;white-space:nowrap;padding:8px 12px;-webkit-overflow-scrolling:touch;">
       <div style="display:inline-flex;gap:8px;align-items:center;">
-        <span style="color:rgba(255,255,255,.4);font-size:10px;font-weight:700;white-space:nowrap;">FILTROS</span>
-        <div class="cam-filter-btn selected" onclick="setSnapFilter(this,'','','')" data-filter="">
-          <div style="font-size:14px;">🌅</div><div>Normal</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'grayscale(100%)','','')" data-filter="grayscale(100%)">
-          <div style="font-size:14px;">⬛</div><div>B&N</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'sepia(100%) contrast(110%)','','')" data-filter="sepia">
-          <div style="font-size:14px;">📜</div><div>Retro</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'saturate(250%) contrast(110%)','','')" data-filter="vivid">
-          <div style="font-size:14px;">🌈</div><div>Vivid</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'brightness(120%) contrast(80%) saturate(70%)','','')" data-filter="soft">
-          <div style="font-size:14px;">🌸</div><div>Soft</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'hue-rotate(200deg) saturate(250%) brightness(90%)','rgba(100,50,255,.18)','')" data-filter="purple">
-          <div style="font-size:14px;">💜</div><div>Vibes</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'brightness(130%) contrast(120%) saturate(0%)','','')" data-filter="drama">
-          <div style="font-size:14px;">🎞️</div><div>Drama</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'hue-rotate(300deg) saturate(200%)','rgba(255,100,180,.15)','')" data-filter="rose">
-          <div style="font-size:14px;">🌹</div><div>Rosa</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'hue-rotate(160deg) saturate(180%) brightness(95%)','rgba(0,200,150,.12)','')" data-filter="cyber">
-          <div style="font-size:14px;">🌿</div><div>Cyber</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'contrast(140%) brightness(105%) hue-rotate(180deg)','rgba(0,150,255,.15)','')" data-filter="ice">
-          <div style="font-size:14px;">🧊</div><div>Frío</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'sepia(50%) hue-rotate(330deg) saturate(200%)','rgba(255,140,0,.12)','')" data-filter="sunset">
-          <div style="font-size:14px;">🌄</div><div>Sunset</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'invert(85%) hue-rotate(180deg) saturate(120%)','','')" data-filter="neon">
-          <div style="font-size:14px;">🔆</div><div>Neon</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'brightness(90%) contrast(150%) saturate(120%)','rgba(255,50,50,.1)','')" data-filter="cinema">
-          <div style="font-size:14px;">🎬</div><div>Cine</div>
-        </div>
-        <div class="cam-filter-btn" onclick="setSnapFilter(this,'blur(3px) brightness(110%) saturate(130%)','','')" data-filter="dream">
-          <div style="font-size:14px;">✨</div><div>Sueño</div>
-        </div>
+        ${[
+          {id:'',icon:'🌅',label:'Normal',css:'',tint:''},
+          {id:'bw',icon:'⬛',label:'B&N',css:'grayscale(100%)',tint:''},
+          {id:'retro',icon:'📜',label:'Retro',css:'sepia(100%) contrast(110%)',tint:''},
+          {id:'vivid',icon:'🌈',label:'Vivid',css:'saturate(250%) contrast(110%)',tint:''},
+          {id:'soft',icon:'🌸',label:'Soft',css:'brightness(120%) contrast(80%) saturate(70%)',tint:''},
+          {id:'vibes',icon:'💜',label:'Vibes',css:'hue-rotate(200deg) saturate(250%) brightness(90%)',tint:'rgba(100,50,255,.2)'},
+          {id:'drama',icon:'🎞️',label:'Drama',css:'brightness(130%) contrast(120%) saturate(0%)',tint:''},
+          {id:'rosa',icon:'🌹',label:'Rosa',css:'hue-rotate(300deg) saturate(200%)',tint:'rgba(255,100,180,.18)'},
+          {id:'cyber',icon:'💚',label:'Cyber',css:'hue-rotate(160deg) saturate(180%) brightness(95%)',tint:'rgba(0,200,150,.15)'},
+          {id:'frio',icon:'🧊',label:'Frío',css:'contrast(140%) brightness(105%) hue-rotate(180deg)',tint:'rgba(0,150,255,.18)'},
+          {id:'sunset',icon:'🌄',label:'Sunset',css:'sepia(50%) hue-rotate(330deg) saturate(200%)',tint:'rgba(255,140,0,.15)'},
+          {id:'neon',icon:'🔆',label:'Neon',css:'invert(85%) hue-rotate(180deg) saturate(120%)',tint:''},
+          {id:'cine',icon:'🎬',label:'Cine',css:'brightness(90%) contrast(150%) saturate(120%)',tint:'rgba(255,50,50,.1)'},
+          {id:'sueño',icon:'✨',label:'Sueño',css:'blur(2px) brightness(110%) saturate(130%)',tint:''},
+          {id:'oro',icon:'✨',label:'Oro',css:'sepia(80%) saturate(300%) hue-rotate(10deg)',tint:'rgba(255,200,0,.15)'},
+          {id:'luna',icon:'🌙',label:'Luna',css:'brightness(60%) saturate(150%) hue-rotate(220deg)',tint:'rgba(80,80,200,.2)'},
+        ].map((f,i) => `<div class="cam-filter-btn${i===0?' selected':''}" onclick="setSnapFilter(this,'${f.css}','${f.tint}','')" style="cursor:pointer;">
+          <div style="font-size:20px;">${f.icon}</div><div style="font-size:9px;">${f.label}</div>
+        </div>`).join('')}
       </div>
     </div>
 
-    <!-- Fila 2: Stickers emoji tipo Snapchat -->
-    <div style="overflow-x:auto;white-space:nowrap;padding:4px 12px 8px;border-top:1px solid rgba(255,255,255,.08);-webkit-overflow-scrolling:touch;">
+    <!-- PANEL MARCOS -->
+    <div id="camPanelFrames" style="display:none;overflow-x:auto;white-space:nowrap;padding:8px 12px;-webkit-overflow-scrolling:touch;">
+      <div style="display:inline-flex;gap:10px;align-items:center;">
+        <button onclick="setCamFrame('')" style="padding:6px 12px;border-radius:100px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;font-size:12px;cursor:pointer;">✕ Sin marco</button>
+        ${[
+          {id:'hearts',label:'💕 Corazones'},
+          {id:'stars',label:'⭐ Estrellas'},
+          {id:'rainbow',label:'🌈 Arco iris'},
+          {id:'flowers',label:'🌸 Flores'},
+          {id:'fire',label:'🔥 Fuego'},
+          {id:'snow',label:'❄️ Nieve'},
+          {id:'confetti',label:'🎉 Confetti'},
+          {id:'galaxy',label:'🌌 Galaxia'},
+          {id:'neon_frame',label:'💜 Neón'},
+          {id:'polaroid',label:'🖼️ Polaroid'},
+        ].map(f => `<button onclick="setCamFrame('${f.id}')" style="padding:6px 14px;border-radius:100px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;font-size:12px;cursor:pointer;white-space:nowrap;">${f.label}</button>`).join('')}
+      </div>
+    </div>
+
+    <!-- PANEL STICKERS -->
+    <div id="camPanelStickers" style="display:none;overflow-x:auto;white-space:nowrap;padding:8px 12px;-webkit-overflow-scrolling:touch;">
       <div style="display:inline-flex;gap:8px;align-items:center;">
-        <span style="color:rgba(255,255,255,.4);font-size:10px;font-weight:700;white-space:nowrap;">STICKERS</span>
-        <button onclick="setCamEmoji('')" style="padding:4px 10px;border-radius:100px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:11px;cursor:pointer;">✕ Sin sticker</button>
-        ${['🌸','⭐','🔥','💜','😂','🥹','💀','👑','🌈','🎉','💎','🫶','🤩','🦋','🌙','❄️','🎯','🌺','🎸','🌊'].map(e =>
-          `<button onclick="setCamEmoji('${e}')" style="font-size:24px;padding:4px 6px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);cursor:pointer;">${e}</button>`
+        <button onclick="setCamEmoji('')" style="padding:4px 10px;border-radius:100px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:11px;cursor:pointer;">✕</button>
+        ${['🌸','⭐','🔥','💜','😂','🥹','💀','👑','🌈','🎉','💎','🫶','🤩','🦋','🌙','❄️','🎯','🌺','🎸','🌊','🐱','🦊','🐸','👻','🎃','🦄','🍀','🌻','🎀','💫','🕶️','🎤'].map(e =>
+          `<button onclick="setCamEmoji('${e}')" style="font-size:28px;padding:4px 6px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);cursor:pointer;">${e}</button>`
         ).join('')}
+      </div>
+    </div>
+
+    <!-- PANEL TEXTO -->
+    <div id="camPanelText" style="display:none;padding:10px 14px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="camTextInput" type="text" placeholder="Escribí algo..." maxlength="40"
+          style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 12px;color:white;font-size:14px;outline:none;"
+          oninput="updateCamText()">
+        <div style="display:flex;gap:6px;">
+          ${['#fff','#f06868','#8b7cf8','#68f0b9','#f0b96a','#000'].map(c =>
+            `<button onclick="camTextColor='${c}';updateCamText()" style="width:22px;height:22px;border-radius:50%;background:${c};border:2px solid rgba(255,255,255,.3);cursor:pointer;"></button>`
+          ).join('')}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        ${['normal','bold','italic'].map(s => `<button onclick="camTextStyle='${s}';updateCamText()" style="padding:4px 10px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:white;font-size:11px;cursor:pointer;font-style:${s==='italic'?'italic':'normal'};font-weight:${s==='bold'?'700':'400'}">${s}</button>`).join('')}
       </div>
     </div>
 
     <!-- Controles de captura -->
     <div style="display:flex;gap:16px;justify-content:center;padding:8px 16px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom));">
       <button onclick="startCameraVideo()" id="recordBtn" style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:white;font-size:20px;cursor:pointer;" title="Grabar video">🔴</button>
-      <button onclick="capturePhoto()" style="width:68px;height:68px;border-radius:50%;background:white;border:4px solid rgba(255,255,255,.5);color:#000;font-size:28px;cursor:pointer;box-shadow:0 4px 24px rgba(255,255,255,.4);">⚪</button>
+      <button onclick="capturePhoto()" style="width:68px;height:68px;border-radius:50%;background:white;border:4px solid rgba(255,255,255,.5);color:#000;font-size:28px;cursor:pointer;box-shadow:0 4px 24px rgba(255,255,255,.4);" title="Sacar foto">⚪</button>
       <label style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Galería">
         🖼️<input type="file" accept="image/*,video/*" style="display:none" onchange="openGalleryFilter(this)">
       </label>
@@ -4131,10 +4182,154 @@ function flipCamera() {
   startCameraStream();
 }
 
-// ── Snapchat-style filter: CSS filter + color overlay
+// ── Camera tabs
+let camTextColor = '#fff';
+let camTextStyle = 'bold';
+let currentCamFrame = '';
+let currentCamEmoji = '';
+
+function camTab(tab, btn) {
+  ['filters','frames','stickers','text'].forEach(t => {
+    const panel = document.getElementById('camPanel' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (panel) panel.style.display = t === tab ? 'block' : 'none';
+    const b = document.getElementById('camTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (b) {
+      b.style.color = t === tab ? 'white' : 'rgba(255,255,255,.4)';
+      b.style.borderBottomColor = t === tab ? '#8b7cf8' : 'transparent';
+    }
+  });
+}
+
+// ── Marcos decorativos tipo Snapchat
+const CAM_FRAMES = {
+  hearts: `<div style="position:absolute;inset:0;pointer-events:none;">
+    <span style="position:absolute;top:4px;left:4px;font-size:32px;">💕</span>
+    <span style="position:absolute;top:4px;right:4px;font-size:32px;">💕</span>
+    <span style="position:absolute;bottom:4px;left:4px;font-size:32px;">💕</span>
+    <span style="position:absolute;bottom:4px;right:4px;font-size:32px;">💕</span>
+    <span style="position:absolute;top:50%;left:4px;transform:translateY(-50%);font-size:24px;">❤️</span>
+    <span style="position:absolute;top:50%;right:4px;transform:translateY(-50%);font-size:24px;">❤️</span>
+  </div>`,
+  stars: `<div style="position:absolute;inset:0;pointer-events:none;">
+    <span style="position:absolute;top:6px;left:6px;font-size:28px;">⭐</span>
+    <span style="position:absolute;top:6px;right:6px;font-size:28px;">⭐</span>
+    <span style="position:absolute;bottom:6px;left:6px;font-size:28px;">✨</span>
+    <span style="position:absolute;bottom:6px;right:6px;font-size:28px;">✨</span>
+    <span style="position:absolute;top:30%;left:4px;font-size:18px;">⭐</span>
+    <span style="position:absolute;top:60%;right:4px;font-size:18px;">💫</span>
+    <span style="position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:22px;">✨</span>
+    <span style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:22px;">⭐</span>
+  </div>`,
+  rainbow: `<div style="position:absolute;inset:0;pointer-events:none;">
+    <div style="position:absolute;top:0;left:0;right:0;height:8px;background:linear-gradient(90deg,#f06868,#f0b96a,#f0f068,#68f068,#68f0f0,#68b9f0,#8b7cf8);opacity:.85;border-radius:0;"></div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:8px;background:linear-gradient(90deg,#8b7cf8,#68b9f0,#68f0f0,#68f068,#f0f068,#f0b96a,#f06868);opacity:.85;"></div>
+    <span style="position:absolute;top:12px;left:8px;font-size:26px;">🌈</span>
+    <span style="position:absolute;top:12px;right:8px;font-size:26px;">☁️</span>
+    <span style="position:absolute;bottom:12px;left:8px;font-size:22px;">⭐</span>
+    <span style="position:absolute;bottom:12px;right:8px;font-size:22px;">💧</span>
+  </div>`,
+  flowers: `<div style="position:absolute;inset:0;pointer-events:none;">
+    <span style="position:absolute;top:4px;left:4px;font-size:30px;">🌸</span>
+    <span style="position:absolute;top:4px;right:4px;font-size:30px;">🌺</span>
+    <span style="position:absolute;bottom:4px;left:4px;font-size:30px;">🌻</span>
+    <span style="position:absolute;bottom:4px;right:4px;font-size:30px;">🌹</span>
+    <span style="position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:24px;">🌷</span>
+    <span style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:24px;">🌼</span>
+    <span style="position:absolute;top:35%;left:4px;font-size:20px;">🍀</span>
+    <span style="position:absolute;top:35%;right:4px;font-size:20px;">🌿</span>
+  </div>`,
+  fire: `<div style="position:absolute;inset:0;pointer-events:none;">
+    <div style="position:absolute;top:0;left:0;right:0;height:10px;background:linear-gradient(90deg,#f06868,#f0b96a,#f06868);opacity:.7;"></div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:10px;background:linear-gradient(90deg,#f0b96a,#f06868,#f0b96a);opacity:.7;"></div>
+    <span style="position:absolute;top:4px;left:4px;font-size:30px;">🔥</span>
+    <span style="position:absolute;top:4px;right:4px;font-size:30px;">🔥</span>
+    <span style="position:absolute;bottom:4px;left:4px;font-size:30px;">💥</span>
+    <span style="position:absolute;bottom:4px;right:4px;font-size:30px;">💥</span>
+    <span style="position:absolute;top:40%;left:4px;font-size:22px;">🌋</span>
+    <span style="position:absolute;top:40%;right:4px;font-size:22px;">🌋</span>
+  </div>`,
+  snow: `<div style="position:absolute;inset:0;pointer-events:none;">
+    <div style="position:absolute;top:0;left:0;right:0;height:8px;background:linear-gradient(90deg,rgba(200,230,255,.6),rgba(255,255,255,.8),rgba(200,230,255,.6));"></div>
+    <span style="position:absolute;top:6px;left:6px;font-size:28px;">❄️</span>
+    <span style="position:absolute;top:6px;right:6px;font-size:28px;">❄️</span>
+    <span style="position:absolute;bottom:6px;left:6px;font-size:28px;">⛄</span>
+    <span style="position:absolute;bottom:6px;right:6px;font-size:28px;">🌨️</span>
+    <span style="position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:22px;">☃️</span>
+    <span style="position:absolute;top:30%;left:4px;font-size:18px;">❄️</span>
+    <span style="position:absolute;top:55%;right:4px;font-size:18px;">❄️</span>
+  </div>`,
+  confetti: `<div style="position:absolute;inset:0;pointer-events:none;">
+    <span style="position:absolute;top:4px;left:4px;font-size:28px;">🎉</span>
+    <span style="position:absolute;top:4px;right:4px;font-size:28px;">🎊</span>
+    <span style="position:absolute;bottom:4px;left:4px;font-size:28px;">🎈</span>
+    <span style="position:absolute;bottom:4px;right:4px;font-size:28px;">🎁</span>
+    <span style="position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:22px;">🥳</span>
+    <span style="position:absolute;top:35%;left:4px;font-size:20px;">🎀</span>
+    <span style="position:absolute;top:35%;right:4px;font-size:20px;">✨</span>
+    <div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#f06868,#f0b96a,#68f068,#8b7cf8,#68f0f0);opacity:.8;"></div>
+  </div>`,
+  galaxy: `<div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 20% 20%,rgba(139,124,248,.15) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(104,240,185,.1) 0%,transparent 50%);">
+    <span style="position:absolute;top:6px;left:6px;font-size:28px;">🌌</span>
+    <span style="position:absolute;top:6px;right:6px;font-size:28px;">🪐</span>
+    <span style="position:absolute;bottom:6px;left:6px;font-size:28px;">🌟</span>
+    <span style="position:absolute;bottom:6px;right:6px;font-size:28px;">🚀</span>
+    <span style="position:absolute;top:30%;left:4px;font-size:20px;">⭐</span>
+    <span style="position:absolute;top:55%;right:4px;font-size:20px;">💫</span>
+    <span style="position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:22px;">🌠</span>
+  </div>`,
+  neon_frame: `<div style="position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 4px #8b7cf8,inset 0 0 20px rgba(139,124,248,.4),0 0 20px rgba(139,124,248,.3);border-radius:2px;">
+    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#8b7cf8,#68f0b9,#8b7cf8);animation:neonPulse 2s infinite;"></div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#f0b96a,#f06868,#f0b96a);"></div>
+    <span style="position:absolute;top:8px;left:8px;font-size:24px;filter:drop-shadow(0 0 6px #8b7cf8);">💜</span>
+    <span style="position:absolute;top:8px;right:8px;font-size:24px;filter:drop-shadow(0 0 6px #68f0b9);">💚</span>
+    <span style="position:absolute;bottom:8px;left:8px;font-size:24px;filter:drop-shadow(0 0 6px #f0b96a);">🔆</span>
+    <span style="position:absolute;bottom:8px;right:8px;font-size:24px;filter:drop-shadow(0 0 6px #f06868);">⚡</span>
+  </div>`,
+  polaroid: `<div style="position:absolute;inset:0;pointer-events:none;">
+    <div style="position:absolute;inset:0;border:16px solid white;border-bottom:48px solid white;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);"></div>
+    <div style="position:absolute;bottom:6px;left:0;right:0;text-align:center;font-family:'Fraunces',serif;font-size:16px;color:#333;font-weight:700;">📷 NOVU</div>
+  </div>`,
+};
+
+function setCamFrame(frameId) {
+  currentCamFrame = frameId;
+  const overlay = document.getElementById('camFrameOverlay');
+  if (!overlay) return;
+  if (!frameId || !CAM_FRAMES[frameId]) {
+    overlay.innerHTML = '';
+    overlay.style.display = 'none';
+  } else {
+    overlay.innerHTML = CAM_FRAMES[frameId];
+    overlay.style.display = 'block';
+  }
+}
+
+// ── Texto en cámara
+function updateCamText() {
+  const val = document.getElementById('camTextInput')?.value || '';
+  const el = document.getElementById('camTextOverlay');
+  if (!el) return;
+  if (!val) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = `<span style="
+    font-size:22px;
+    font-weight:${camTextStyle==='bold'?'900':'400'};
+    font-style:${camTextStyle==='italic'?'italic':'normal'};
+    color:${camTextColor};
+    text-shadow:0 2px 8px rgba(0,0,0,.7),0 0 20px rgba(0,0,0,.5);
+    font-family:var(--font-display);
+    padding:4px 12px;
+    background:rgba(0,0,0,.3);
+    border-radius:8px;
+    backdrop-filter:blur(4px);
+    white-space:nowrap;
+  ">${val}</span>`;
+}
+
+// ── Snap filter setter (override existing)
 function setSnapFilter(el, cssFilter, colorOverlay, frame) {
   document.querySelectorAll('.cam-filter-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
+  if (el) el.classList.add('selected');
   currentCamFilter = cssFilter;
   const video = document.getElementById('cameraPreview');
   if (video) video.style.filter = cssFilter;
@@ -4143,30 +4338,25 @@ function setSnapFilter(el, cssFilter, colorOverlay, frame) {
     if (colorOverlay) {
       overlay.style.background = colorOverlay;
       overlay.style.opacity = '1';
+      overlay.style.mixBlendMode = 'color';
     } else {
       overlay.style.opacity = '0';
     }
   }
 }
 
-// ── Emoji sticker overlay (Snapchat style)
-let currentCamEmoji = '';
+// ── Emoji sticker
 function setCamEmoji(emoji) {
   currentCamEmoji = emoji;
   const el = document.getElementById('camEmojiOverlay');
   if (!el) return;
-  if (emoji) {
-    el.textContent = emoji;
-    el.style.display = 'block';
-  } else {
-    el.style.display = 'none';
-  }
+  if (emoji) { el.textContent = emoji; el.style.display = 'block'; }
+  else { el.style.display = 'none'; }
 }
 
-// Legacy setCamFilter for gallery
-function setCamFilter(el, filter) {
-  setSnapFilter(el, filter, '', '');
-}
+// ── Legacy setCamFilter
+function setCamFilter(el, filter) { setSnapFilter(el, filter, '', ''); }
+
 
 function capturePhoto() {
   const video = document.getElementById('cameraPreview');
@@ -4178,6 +4368,23 @@ function capturePhoto() {
   // Apply CSS filter in canvas
   ctx.filter = currentCamFilter || 'none';
   ctx.drawImage(video, 0, 0);
+
+  // Bake text overlay if active
+  const textInput = document.getElementById('camTextInput');
+  if (textInput?.value.trim()) {
+    ctx.filter = 'none';
+    const txt = textInput.value.trim();
+    const fontSize = Math.round(canvas.width * 0.06);
+    ctx.font = `${camTextStyle === 'bold' ? '900' : camTextStyle === 'italic' ? 'italic 400' : '400'} ${fontSize}px Fraunces, serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    // Shadow
+    ctx.shadowColor = 'rgba(0,0,0,.8)';
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = camTextColor || '#fff';
+    ctx.fillText(txt, canvas.width / 2, canvas.height * 0.82);
+    ctx.shadowBlur = 0;
+  }
 
   // Bake emoji sticker if active
   if (currentCamEmoji) {
@@ -5341,44 +5548,103 @@ function copyRoomCode() {
 function startApp() {
   const nameInput = document.getElementById('ob-name').value.trim();
   const name = nameInput || 'Vos';
+  const phoneInput = document.getElementById('ob-phone')?.value.trim() || '';
   const modeEl = document.querySelector('.ob-mode.selected');
   const mode = modeEl ? modeEl.dataset.mode : 'neuro';
 
-  state.user = { name, mode };
+  state.user = { name, mode, phone: normalizePhone(phoneInput) };
   state.chats = JSON.parse(JSON.stringify(DEMO_CHATS));
   state.contacts = JSON.parse(JSON.stringify(DEMO_CONTACTS));
 
   launchApp();
+  checkPendingSala();
 }
 
 // ══════════════════════════════════════════
-// MODAL SALA EN VIVO
+// VOZ PARA CAMPOS DE TEXTO (onboarding y contactos)
+// ══════════════════════════════════════════
+function voiceInputField(fieldId) {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert('Tu navegador no soporta dictado por voz. Usá Chrome.');
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r = new SR();
+  r.lang = 'es-UY';
+  r.continuous = false;
+  r.interimResults = false;
+
+  const field = document.getElementById(fieldId);
+  const origBorder = field.style.border;
+  field.style.border = '2px solid var(--accent)';
+  field.placeholder = '🎙️ Escuchando...';
+
+  r.onresult = e => {
+    const text = e.results[0][0].transcript;
+    // Para teléfono, limpiar texto a números
+    if (fieldId === 'ob-phone' || fieldId === 'newContactPhone') {
+      field.value = text.replace(/[^0-9+\s]/g, '').trim();
+    } else {
+      field.value = text.charAt(0).toUpperCase() + text.slice(1);
+    }
+    field.style.border = origBorder;
+    field.placeholder = '';
+  };
+  r.onerror = () => {
+    field.style.border = origBorder;
+    field.placeholder = '';
+  };
+  r.onend = () => {
+    field.style.border = origBorder;
+  };
+  r.start();
+}
+
+// ══════════════════════════════════════════
+// SALA EN VIVO — sistema por link directo
 // ══════════════════════════════════════════
 function abrirModalSala() {
-  const codigo = prompt(
-    '🔴 Chat en vivo\n\n' +
-    'Para crear una sala nueva: dejá vacío y tocá OK\n' +
-    'Para unirte a una sala existente: ingresá el código de 6 letras'
-  );
+  const appUrl = window.location.href.split('?')[0];
 
-  if (codigo === null) return; // canceló
+  // Generar código único
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const codigo = Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const link = `${appUrl}?sala=${codigo}`;
 
-  if (codigo.trim() === '') {
-    // Generar código nuevo
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    const nuevo = Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-    const compartir = confirm(
-      `Tu código de sala es:\n\n${nuevo}\n\nCompartí este código con la persona con quien querés chatear.\n\n¿Abrir la sala ahora?`
-    );
-    if (compartir) {
-      const appUrl = window.location.href.split('?')[0];
-      if (navigator.share) {
-        navigator.share({ title: 'NOVU — Sala de chat', text: `Unite a mi sala en NOVU con el código: ${nuevo}\n\n${appUrl}` });
-      }
-      abrirSalaChat(nuevo);
-    }
+  const texto = `💬 Te invito a chatear en NOVU\n\nTocá este link para entrar:\n${link}\n\n_(No necesitás instalar nada — abre directo en el navegador)_`;
+
+  if (navigator.share) {
+    navigator.share({ title: 'NOVU — Unirse al chat', text: texto, url: link })
+      .then(() => abrirSalaChat(codigo))
+      .catch(() => {});
   } else {
-    abrirSalaChat(codigo.trim().toUpperCase());
+    navigator.clipboard?.writeText(link).then(() => {
+      alert(`✅ Link copiado:\n${link}\n\nCompartilo por WhatsApp y después esperá que la otra persona entre.`);
+      abrirSalaChat(codigo);
+    });
+  }
+}
+
+// Al cargar la app, verificar si hay ?sala= en la URL
+function checkSalaUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const sala = params.get('sala');
+  if (sala) {
+    // Guardar para abrir después del onboarding
+    sessionStorage.setItem('novu_pending_sala', sala.toUpperCase());
+    // Limpiar URL sin recargar
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+}
+
+function checkPendingSala() {
+  const sala = sessionStorage.getItem('novu_pending_sala');
+  if (sala) {
+    sessionStorage.removeItem('novu_pending_sala');
+    setTimeout(() => {
+      alert(`🔴 Vas a entrar a la sala de chat: ${sala}\nTomate un segundo para acomodarte.`);
+      abrirSalaChat(sala);
+    }, 800);
   }
 }
 
@@ -5392,17 +5658,18 @@ function updateAiKeyBtn() {
 }
 
 function launchApp() {
-  const { name, mode } = state.user;
+  const { name, mode, phone } = state.user;
   document.getElementById('onboarding').style.display = 'none';
   const app = document.getElementById('app');
   app.classList.add('visible');
 
   document.getElementById('headerName').textContent = name;
+  document.getElementById('headerName').title = phone ? `📱 ${phone}` : '';
   document.getElementById('headerMode').textContent = MODES[mode]?.label || mode;
   // Mobile header
   const hm = document.getElementById('headerNameMobile');
   const mm = document.getElementById('headerModeMobile');
-  if (hm) hm.textContent = name;
+  if (hm) { hm.textContent = name; hm.title = phone ? `📱 ${phone}` : ''; }
   if (mm) mm.textContent = MODES[mode]?.label || mode;
 
   const isMobile = window.innerWidth <= 640;
@@ -5452,11 +5719,12 @@ function launchApp() {
 // INIT ON LOAD — check persistence
 // ══════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
+  checkSalaUrl(); // Detectar ?sala= en la URL antes de todo
   const restored = loadPersistence();
   if (restored) {
     launchApp();
+    checkPendingSala(); // Si venía de un link de sala
   }
-  // Also try to load voices early
   loadVoices();
 });
 
@@ -6466,9 +6734,13 @@ function closeFunPicker() {
 function switchFunTab(tab, el) {
   currentFunTab = tab;
   document.querySelectorAll('.fun-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
   document.getElementById('funEmojiPanel').classList.toggle('active', tab === 'emoji');
   document.getElementById('funGifPanel').classList.toggle('active', tab === 'gif');
+  const stickerPanel = document.getElementById('funStickerPanel');
+  if (stickerPanel) stickerPanel.classList.toggle('active', tab === 'sticker');
+  const gamesPanel = document.getElementById('funGamesPanel');
+  if (gamesPanel) gamesPanel.classList.toggle('active', tab === 'games');
   if (tab === 'emoji' && document.getElementById('emojiGrid').children.length === 0) {
     buildEmojiCats();
     renderEmojiCat(0);
@@ -6822,10 +7094,10 @@ function renderMsg(msg, container, chat) {
   } else if (msg.type === 'tts') {
     group.innerHTML = `
       <div class="tts-bubble-wrap">
-        <div class="tts-bubble${msg.from === 'me' ? ' me-audio' : ''}" data-text="${escapeHtml(msg.text)}" onclick="speakText(this.dataset.text, this.querySelector('.play-btn'))">
+        <div class="tts-bubble${msg.from === 'me' ? ' me-audio' : ''}" data-text="${escapeHtml(msg.text)}" onclick="speakText(this.dataset.text, this.querySelector('.play-btn'))" style="cursor:pointer;">
           <div class="tts-from-pictos">🖼️ → 🔊 Mensaje por pictogramas</div>
           <div class="audio-row">
-            <button class="play-btn">▶</button>
+            <button class="play-btn" style="cursor:pointer;" onclick="event.stopPropagation();speakText(this.closest('[data-text]').dataset.text,this)">▶</button>
             <div class="audio-wave">${typeof waveHTML === 'function' ? waveHTML() : ''}</div>
           </div>
           <div class="tts-caption">${escapeHtml(msg.text)}</div>
@@ -6839,9 +7111,11 @@ function renderMsg(msg, container, chat) {
       <div class="audio-bubble-wrap">
         <div class="audio-bubble${msg.from === 'me' ? ' me-audio' : ''}"
              onclick="if(typeof processAudio==='function')processAudio('${msg.id}', this)"
+             style="cursor:pointer;"
+             title="Tocá para analizar con IA"
              id="ab-${msg.id}">
           <div class="audio-row">
-            <button class="play-btn">▶</button>
+            <button class="play-btn" style="cursor:pointer;">▶</button>
             <div class="audio-wave">${typeof waveHTML === 'function' ? waveHTML() : ''}</div>
             <div class="audio-dur">${msg.duration || ''}</div>
           </div>
