@@ -3518,8 +3518,8 @@ function sendMessage(force = false) {
   renderChatList();
   savePersistence();
 
-  // Enviar a Supabase si hay sala activa → la otra persona contesta de verdad
-  if (typeof salaActual !== 'undefined' && salaActual) {
+  // Enviar a Supabase si hay sala activa Y el chat actual ES esa sala
+  if (typeof salaActual !== 'undefined' && salaActual && chat.id === 'sala-' + salaActual.id) {
     enviarMensajeSupabase(text);
     return; // No simular respuesta — la sala es un chat real
   }
@@ -5438,9 +5438,29 @@ function requestNotifPermission() {
 
 function sendNotification(title, body) {
   if (!notifPermission || !('Notification' in window)) return;
-  if (document.visibilityState === 'visible') return; // solo cuando en segundo plano
+  const isHidden = document.visibilityState !== 'visible' || document.hidden;
+  // Intentar siempre — en móvil la app puede estar en background
   try {
-    new Notification(title, { body, icon: '🔵', tag: 'novu-msg' });
+    // Preferir Service Worker para notificaciones en segundo plano (más confiable en móvil)
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(title, {
+          body,
+          icon: './android-chrome-192x192.png',
+          badge: './android-chrome-192x192.png',
+          tag: 'novu-msg',
+          renotify: true,
+          vibrate: [100, 50, 100]
+        }).catch(() => {
+          // Fallback a Notification normal si falla el SW
+          if (isHidden) new Notification(title, { body, icon: './android-chrome-192x192.png', tag: 'novu-msg' });
+        });
+      });
+    } else if (isHidden) {
+      // Fallback cuando no hay SW activo
+      new Notification(title, { body, icon: './android-chrome-192x192.png', tag: 'novu-msg' });
+    }
+    // Vibración
     if (navigator.vibrate && !document.getElementById('silentToggle')?.classList.contains('on')) {
       navigator.vibrate([100, 50, 100]);
     }
@@ -5826,8 +5846,22 @@ window.addEventListener('resize', () => {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('[NOVU] SW registrado:', reg.scope))
+      .then(reg => {
+        console.log('[NOVU] SW registrado:', reg.scope);
+      })
       .catch(err => console.warn('[NOVU] SW error:', err));
+  });
+
+  // Escuchar mensajes del SW (ej: usuario tocó una notificación)
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'NOTIFICATION_CLICK') {
+      // Enfocar el chat de sala si hay uno activo
+      if (salaActual && state.chats) {
+        const chatId = 'sala-' + salaActual.id;
+        const chat = state.chats.find(c => c.id === chatId);
+        if (chat) openChat(chatId);
+      }
+    }
   });
 }
 
@@ -5844,16 +5878,27 @@ let realtimeChannel = null;
 async function crearOUnirSala(codigo) {
   if (!NOVU_SUPABASE_URL) return; // Sin Supabase configurado, modo local
 
+  // Limpiar polling anterior si existe
+  if (realtimeChannel) {
+    realtimeChannel.unsubscribe?.();
+    realtimeChannel = null;
+  }
+
   try {
     // Buscar sala existente
-    const res = await fetch(`${NOVU_SUPABASE_URL}/rest/v1/salas?codigo=eq.${codigo}&activa=eq.true`, {
+    const res = await fetch(`${NOVU_SUPABASE_URL}/rest/v1/novu_salas?codigo=eq.${encodeURIComponent(codigo)}&activa=eq.true`, {
       headers: { 'apikey': NOVU_SUPABASE_KEY, 'Authorization': `Bearer ${NOVU_SUPABASE_KEY}` }
     });
     const salas = await res.json();
 
+    if (!Array.isArray(salas)) {
+      console.warn('[NOVU] Respuesta inesperada de Supabase:', salas);
+      return;
+    }
+
     if (salas.length === 0) {
       // Crear sala nueva
-      const crear = await fetch(`${NOVU_SUPABASE_URL}/rest/v1/salas`, {
+      const crear = await fetch(`${NOVU_SUPABASE_URL}/rest/v1/novu_salas`, {
         method: 'POST',
         headers: {
           'apikey': NOVU_SUPABASE_KEY,
@@ -5863,31 +5908,57 @@ async function crearOUnirSala(codigo) {
         },
         body: JSON.stringify({ codigo, nombre: `Sala ${codigo}` })
       });
-      const [sala] = await crear.json();
-      salaActual = sala;
+      const nuevaSala = await crear.json();
+      salaActual = Array.isArray(nuevaSala) ? nuevaSala[0] : nuevaSala;
     } else {
       salaActual = salas[0];
     }
 
-    // Suscribirse a mensajes en tiempo real vía Supabase Realtime
-    if (realtimeChannel) realtimeChannel.unsubscribe?.();
+    if (!salaActual?.id) {
+      console.warn('[NOVU] No se pudo obtener sala válida');
+      return;
+    }
 
-    // Polling simple como fallback (Realtime requiere SDK o WebSocket nativo)
-    let ultimoCheck = new Date().toISOString();
-    const poll = setInterval(async () => {
-      if (!salaActual) return;
-      const r = await fetch(
-        `${NOVU_SUPABASE_URL}/rest/v1/mensajes?sala_id=eq.${salaActual.id}&created_at=gt.${ultimoCheck}&order=created_at.asc`,
+    // Guardar alias del usuario en esta sesión
+    const miAlias = window._novuAlias || '';
+
+    // Usar created_at del servidor como punto de corte (id es UUID, no comparable con gt)
+    let ultimoCreatedAt = null;
+    try {
+      const prevRes = await fetch(
+        `${NOVU_SUPABASE_URL}/rest/v1/novu_mensajes?sala_id=eq.${salaActual.id}&order=created_at.desc&limit=1`,
         { headers: { 'apikey': NOVU_SUPABASE_KEY, 'Authorization': `Bearer ${NOVU_SUPABASE_KEY}` } }
       );
-      const nuevos = await r.json();
-      ultimoCheck = new Date().toISOString();
-      nuevos.forEach(msg => {
-        if (msg.alias !== (window._novuAlias || '')) {
-          // Mostrar mensaje del otro dispositivo
-          recibirMensajeExterno(msg);
-        }
-      });
+      const prevMsgs = await prevRes.json();
+      if (Array.isArray(prevMsgs) && prevMsgs.length > 0) {
+        ultimoCreatedAt = prevMsgs[0].created_at;
+      }
+    } catch(e) { /* ignora, arranca desde ahora */ }
+
+    if (!ultimoCreatedAt) {
+      ultimoCreatedAt = new Date().toISOString();
+    }
+
+    const poll = setInterval(async () => {
+      if (!salaActual?.id) return;
+      try {
+        const url = `${NOVU_SUPABASE_URL}/rest/v1/novu_mensajes?sala_id=eq.${salaActual.id}&created_at=gt.${encodeURIComponent(ultimoCreatedAt)}&order=created_at.asc`;
+        const r = await fetch(url, {
+          headers: { 'apikey': NOVU_SUPABASE_KEY, 'Authorization': `Bearer ${NOVU_SUPABASE_KEY}` }
+        });
+        const nuevos = await r.json();
+        if (!Array.isArray(nuevos) || nuevos.length === 0) return;
+
+        ultimoCreatedAt = nuevos[nuevos.length - 1].created_at;
+
+        nuevos.forEach(msg => {
+          if (msg.alias !== miAlias) {
+            recibirMensajeExterno(msg);
+          }
+        });
+      } catch(e) {
+        console.warn('[NOVU] Error polling mensajes:', e);
+      }
     }, 2000); // cada 2 segundos
 
     realtimeChannel = { unsubscribe: () => clearInterval(poll) };
@@ -5899,7 +5970,7 @@ async function crearOUnirSala(codigo) {
 
 async function enviarMensajeSupabase(contenido, tipo = 'texto') {
   if (!salaActual || !NOVU_SUPABASE_URL) return;
-  await fetch(`${NOVU_SUPABASE_URL}/rest/v1/mensajes`, {
+  await fetch(`${NOVU_SUPABASE_URL}/rest/v1/novu_mensajes`, {
     method: 'POST',
     headers: {
       'apikey': NOVU_SUPABASE_KEY,
@@ -5974,14 +6045,16 @@ async function abrirSalaChat(codigo) {
 
   if (salaActual) {
     // Actualizar id del chat con el id real de la sala
-    chat.id = 'sala-' + salaActual.id;
+    const nuevoId = 'sala-' + salaActual.id;
+    chat.id = nuevoId;
     chat.name = `Sala ${codigo}`;
     chat.preview = 'Chat en vivo 🟢';
-    state.activeChat = chat.id;
+    // Sincronizar state.activeChat con el nuevo ID
+    state.activeChat = nuevoId;
 
     // Cargar mensajes anteriores
     const r = await fetch(
-      `${NOVU_SUPABASE_URL}/rest/v1/mensajes?sala_id=eq.${salaActual.id}&order=created_at.asc`,
+      `${NOVU_SUPABASE_URL}/rest/v1/novu_mensajes?sala_id=eq.${salaActual.id}&order=created_at.asc`,
       { headers: { 'apikey': NOVU_SUPABASE_KEY, 'Authorization': `Bearer ${NOVU_SUPABASE_KEY}` } }
     );
     const anteriores = await r.json();
