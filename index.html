@@ -2551,7 +2551,7 @@ body::after {
       <div style="display:flex;gap:8px;">
         <input id="ncName" type="text" placeholder="Nombre del contacto" maxlength="40"
           style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:12px 16px;color:var(--text);font-family:var(--font-body);font-size:15px;outline:none;">
-        <button onclick="voiceInputField('ncName')" title="Dictar nombre" id="ncNameVoiceBtn"
+        <button onclick="voiceInputNcField('ncName')" title="Dictar nombre" id="ncNameVoiceBtn"
           style="width:46px;height:46px;border-radius:12px;background:var(--surface2);border:1px solid var(--border2);font-size:20px;cursor:pointer;flex-shrink:0;">🎙️</button>
       </div>
     </div>
@@ -2561,7 +2561,7 @@ body::after {
       <div style="display:flex;gap:8px;">
         <input id="ncPhone" type="tel" placeholder="Ej: 099 123 456" maxlength="20"
           style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:12px 16px;color:var(--text);font-family:var(--font-body);font-size:15px;outline:none;">
-        <button onclick="voiceInputField('ncPhone')" title="Dictar teléfono" id="ncPhoneVoiceBtn"
+        <button onclick="voiceInputNcField('ncPhone')" title="Dictar teléfono" id="ncPhoneVoiceBtn"
           style="width:46px;height:46px;border-radius:12px;background:var(--surface2);border:1px solid var(--border2);font-size:20px;cursor:pointer;flex-shrink:0;">🎙️</button>
       </div>
     </div>
@@ -3039,7 +3039,7 @@ function confirmNewChat() {
 }
 
 // Dictado de voz para un campo de texto
-function voiceInputField(fieldId) {
+function voiceInputNcField(fieldId) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { alert('Tu navegador no soporta voz. Usá Chrome.'); return; }
   stopNcVoice();
@@ -3957,13 +3957,13 @@ function setMode(card) {
   if (mm) mm.textContent = MODES[mode].label;
   // Actualizar badge en el chat activo
   const badge = document.getElementById('chatModeBadge');
-  if (badge) badge.textContent = (MODES[mode]?.emoji || '') + ' ' + MODES[mode].label.toUpperCase();
+  if (badge) badge.textContent = MODES[mode].label.toUpperCase();
   // Actualizar modo en el chat activo
   const chat = state.chats.find(c => c.id === state.activeChat);
   if (chat) chat.mode = mode;
   updateModeCards();
   savePersistence();
-  showToast('Modo ' + MODES[mode].label + ' activado ' + (MODES[mode]?.emoji || ''));
+  showToast(MODES[mode].label + ' activado');
 }
 
 function updateModeCards() {
