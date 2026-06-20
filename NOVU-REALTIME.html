@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a14">
+<title>NOVU</title>
+<style>
+/* ════ APP BASE ════ */
+:root {
+  --p:#7c6fd4;--p2:rgba(124,111,212,0.15);--a:#6ee7b7;
+  --danger:#ff6b6b;--warn:#facc15;--ok:#4ade80;
+  --bg:#0a0a14;--s:#12121f;--s2:#1a1a2e;--s3:#2a2118;--b:#2a2a42;
+  --t:#f0f0fa;--t2:#b0b0cc;--t3:#6a6a7e;
+  --r:12px;--fs:16px;--sw:280px;
+}
+body.light{--bg:#ece5dd;--s:#fff;--s2:#f0f0f5;--b:#dddde8;--t:#1a1a2e;--t2:#4a4a5e;--t3:#9a9aae;}
+body.big-text{--fs:18px;}
+body.hi-contrast{--bg:#000;--s:#111;--s2:#1a1a1a;--b:#555;--t:#fff;--t2:#ddd;}
+body.no-anim *{animation:none!important;transition:none!important;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:var(--fs);overflow:hidden;}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100%;}
+.topbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s);border-bottom:1px solid var(--b);flex-shrink:0;z-index:10;}
+.logo{font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--p),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0;}
+.topbar-title{flex:1;font-size:14px;font-weight:600;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ibtn{width:36px;height:36px;background:var(--s2);border:1px solid var(--b);border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--t);flex-shrink:0;transition:border-color .15s,background .15s;}
+.ibtn:hover{border-color:var(--p);background:var(--p2);}
+.ibtn.sos{background:var(--danger);border-color:var(--danger);color:#fff;font-size:13px;font-weight:800;width:auto;padding:0 10px;animation:sosPulse 2s infinite;}
+@keyframes sosPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,.4)}50%{box-shadow:0 0 0 6px rgba(255,107,107,0);}}
+.sync{width:8px;height:8px;border-radius:50%;background:var(--t3);flex-shrink:0;transition:background .3s;}
+.sync.ok{background:var(--ok);}.sync.busy{background:var(--warn);animation:pulse 1s infinite;}.sync.err{background:var(--danger);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.body{display:flex;flex:1;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sw);flex-shrink:0;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;overflow:hidden;}
+.sb-head{padding:10px;border-bottom:1px solid var(--b);display:flex;flex-direction:column;gap:8px;}
+.search{width:100%;padding:9px 12px;background:var(--s2);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-size:13px;}
+.search:focus{outline:none;border-color:var(--p);}
+.btn-new{padding:9px;background:var(--p);color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:700;width:100%;}
+.chat-list{flex:1;overflow-y:auto;}
+.ci{display:flex;align-items:center;gap:12px;padding:14px 12px;cursor:pointer;border-bottom:1px solid var(--b);transition:background .1s;min-height:72px;}
+.ci:hover{background:var(--s2);}
+.ci.active{background:var(--p2);border-left:3px solid var(--p);}
+.av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex-shrink:0;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.ci-meta{flex:1;min-width:0;}
+.ci-name{font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t);}
+.ci-prev{font-size:13px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px;}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--t3);}
+.empty .ei{font-size:56px;}
+.empty h2{font-size:18px;color:var(--t2);}
+.cv{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.cv.open{display:flex;}
+.chat-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s);border-bottom:1px solid var(--b);flex-shrink:0;}
+.chat-bar-info{flex:1;min-width:0;}
+.chat-bar-name{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.chat-bar-sub{font-size:11px;color:var(--t3);margin-top:1px;}
+.call-btns{display:flex;gap:6px;}
+.cbtn{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.cbtn.voice{background:var(--ok);}.cbtn.video{background:var(--p);}.cbtn.robot{background:var(--warn);}
+
+/* ── MESSAGES — estilo WhatsApp ── */
+.msgs{flex:1;overflow-y:auto;padding:10px 12px 6px;display:flex;flex-direction:column;gap:3px;background:var(--bg);}
+.msg{display:flex;margin-bottom:2px;}
+.msg.own{justify-content:flex-end;}
+.msg.other{align-items:flex-end;gap:7px;}
+.msg-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;margin-bottom:18px;}
+.msg-wrap{display:flex;flex-direction:column;}
+.msg.own .msg-wrap{align-items:flex-end;}
+.msg.other .msg-wrap{align-items:flex-start;}
+.bbl{max-width:78%;padding:10px 14px;border-radius:18px;font-size:16px;line-height:1.5;word-break:break-word;position:relative;}
+.msg.own .bbl{background:#5b4fc7;color:#fff;border-bottom-right-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.msg.other .bbl{background:var(--s2);border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.2);color:var(--t);border:1px solid var(--b);}
+body.light .msg.own .bbl{background:#5b4fc7;}
+body.light .msg.other .bbl{background:#fff;border:1px solid #e0e0e8;}
+.mtime{font-size:11px;color:var(--t3);margin-top:3px;font-weight:500;display:flex;align-items:center;gap:4px;padding:0 2px;}
+.msg.own .mtime{justify-content:flex-end;color:rgba(255,255,255,.45);}
+.tick{font-size:12px;color:#6ee7b7;letter-spacing:-1px;}
+.abbl{max-width:260px;padding:10px 14px;border-radius:18px;border-bottom-right-radius:4px;display:flex;align-items:center;gap:8px;background:#5b4fc7;}
+.msg.other .abbl{background:var(--s2);border-bottom-right-radius:18px;border-bottom-left-radius:4px;border:1px solid var(--b);}
+.pbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.25);border:none;cursor:pointer;font-size:15px;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.abar{flex:1;height:4px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden;}
+.apr{height:100%;background:#fff;width:0%;transition:width .1s linear;}
+.adur{font-size:11px;color:rgba(255,255,255,.8);white-space:nowrap;}
+.imgbbl img{max-width:220px;border-radius:12px;display:block;}
+.ttsbbl{background:linear-gradient(135deg,#5b4fc7,#7c6fd4)!important;color:#fff!important;}
+.bbl-failed{opacity:.7;border:1px dashed var(--danger)!important;}
+
+/* ── INPUT AREA — estilo WhatsApp ── */
+.input-area{padding:8px 10px 10px;background:var(--s);border-top:1px solid var(--b);display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.input-row{display:flex;gap:8px;align-items:flex-end;}
+.ta{flex:1;padding:12px 16px;background:var(--s2);border:1.5px solid var(--b);border-radius:24px;color:var(--t);font-size:16px;resize:none;min-height:48px;max-height:120px;line-height:1.4;}
+.ta:focus{outline:none;border-color:var(--p);}
+.sbtn{width:50px;height:50px;border-radius:50%;background:var(--p);border:none;cursor:pointer;font-size:22px;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 12px rgba(91,79,199,.45);}
+.abar-btns{display:flex;gap:6px;flex-wrap:wrap;padding:0 2px;}
+.abtn{padding:9px 14px;background:var(--s2);border:1.5px solid var(--b);border-radius:22px;cursor:pointer;font-size:14px;font-weight:600;color:var(--t2);transition:border-color .15s,color .15s,background .15s;display:flex;align-items:center;gap:5px;}
+.abtn:hover,.abtn:active{border-color:var(--p);color:var(--p);background:var(--p2);}
+.abtn.rec{border-color:var(--danger);color:var(--danger);background:rgba(255,107,107,.08);animation:pulse 1s infinite;}
+
+/* ── CHAT BAR — con botones llamada grandes ── */
+.chat-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s);border-bottom:1px solid var(--b);flex-shrink:0;min-height:64px;}
+.chat-bar-info{flex:1;min-width:0;cursor:pointer;}
+.chat-bar-name{font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.chat-bar-sub{font-size:12px;color:var(--ok);margin-top:1px;font-weight:600;}
+.call-btns{display:flex;gap:8px;}
+.cbtn{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25);transition:transform .1s,box-shadow .1s;}
+.cbtn:active{transform:scale(.93);}
+.cbtn.voice{background:#22c55e;color:#fff;}
+.cbtn.video{background:var(--p);color:#fff;}
+.cbtn.robot{background:#f59e0b;color:#fff;}
+
+/* ── CALL SCREEN ── */
+.call-screen{position:fixed;inset:0;background:linear-gradient(180deg,#12121f 0%,#0a0a14 100%);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+.call-screen.open{display:flex;}
+.call-avatar{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900;color:#fff;animation:callRing 1.8s ease-in-out infinite;}
+@keyframes callRing{0%,100%{box-shadow:0 0 0 0 rgba(91,79,199,.6),0 0 0 0 rgba(91,79,199,.25)}50%{box-shadow:0 0 0 20px rgba(91,79,199,.12),0 0 0 40px rgba(91,79,199,0);}}
+.call-name{font-size:26px;font-weight:900;color:#fff;text-align:center;}
+.call-status{font-size:15px;color:rgba(255,255,255,.55);letter-spacing:.3px;}
+.call-timer{font-size:34px;font-weight:700;font-family:monospace;color:#6ee7b7;letter-spacing:2px;}
+.call-actions{display:flex;gap:22px;margin-top:16px;}
+.call-act{width:68px;height:68px;border-radius:50%;border:none;cursor:pointer;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(0,0,0,.4);transition:transform .1s;}
+.call-act:active{transform:scale(.9);}
+.call-act.end{background:#ef4444;color:#fff;}
+.call-act.mute{background:#2a2a42;color:#fff;border:2px solid #3a3a5a;}
+.call-act.robot-toggle{background:#f59e0b;color:#fff;}
+.call-hint-txt{font-size:13px;color:rgba(255,255,255,.35);text-align:center;max-width:260px;line-height:1.6;padding:0 20px;}
+#videoArea{width:100%;max-width:480px;border-radius:16px;overflow:hidden;position:relative;}
+#remoteVideo,#localVideo{width:100%;border-radius:16px;background:#111;}
+#localVideo{position:absolute;bottom:10px;right:10px;width:100px;border-radius:8px;}
+
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:200;padding:16px;}
+.ov.open{display:flex;}
+.modal{background:var(--s);border:1px solid var(--b);border-radius:16px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--b);font-size:16px;font-weight:700;}
+.mb{padding:20px;display:flex;flex-direction:column;gap:14px;}
+.mcls{width:30px;height:30px;border-radius:8px;background:var(--s2);border:none;cursor:pointer;font-size:16px;color:var(--t);}
+.sg-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--p);padding-bottom:6px;border-bottom:1px solid var(--b);}
+.si{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--b);font-size:14px;}
+.tog{width:44px;height:26px;border-radius:13px;background:var(--b);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tog.on{background:var(--p);}
+.tog::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;}
+.tog.on::after{transform:translateX(18px);}
+.fld{width:100%;padding:10px 12px;background:var(--s2);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-size:14px;}
+.fld:focus{outline:none;border-color:var(--p);}
+.btn{padding:10px 18px;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;border:none;transition:opacity .15s;}
+.btn-p{background:var(--p);color:#fff;}.btn-d{background:var(--danger);color:#fff;}.btn-g{background:var(--s2);border:1px solid var(--b);color:var(--t);}
+.egrid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;}
+.eb{font-size:22px;border:none;background:none;cursor:pointer;padding:4px;border-radius:6px;}
+.eb:hover{background:var(--s2);}
+.vopts{display:flex;gap:8px;}
+.vopt{flex:1;padding:10px;border-radius:var(--r);background:var(--s2);border:2px solid transparent;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:var(--t);}
+.vopt.sel{border-color:var(--p);background:var(--p2);color:var(--p);}
+.contact-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--s2);border-radius:var(--r);border:1px solid var(--b);}
+.contact-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;}
+.contact-info{flex:1;min-width:0;}
+.contact-name{font-weight:700;font-size:14px;}
+.contact-phone{font-size:12px;color:var(--t3);}
+.contact-btns{display:flex;gap:6px;}
+.contact-btn{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.sbanner{padding:12px;border-radius:var(--r);background:rgba(124,111,212,.12);border:1px solid rgba(124,111,212,.3);font-size:13px;line-height:1.6;}
+.sbanner strong{color:var(--p);}
+input[type=range]{width:100%;accent-color:var(--p);}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--b);border-radius:3px;}
+
+@media(max-width:640px){
+  .sidebar{position:fixed;left:-100%;top:0;height:100%;width:85%;z-index:50;transition:left .25s ease;box-shadow:4px 0 20px rgba(0,0,0,.3);}
+  .sidebar.open{left:0;}
+  .sb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;}
+  .sb-backdrop.open{display:block;}
+  .mob-menu{display:flex!important;}
+  .bbl{max-width:82%;font-size:16px;}
+  .cbtn{width:50px;height:50px;font-size:22px;}
+  .call-btns{gap:10px;}
+  .input-area{padding:6px 8px 10px;}
+  .abtn{padding:10px 12px;font-size:14px;}
+  .ta{font-size:16px;min-height:48px;}
+  .sbtn{width:52px;height:52px;font-size:24px;}
+}
+
+/* ════ GAMES CSS ════ */
+.game-ov{position:fixed;inset:0;background:#0a0806;z-index:250;display:none;flex-direction:column;overflow:hidden;}
+.game-ov.open{display:flex;}
+.game-topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(180deg,#1e1812,#120f0a);border-bottom:1px solid #c9a227;flex-shrink:0;}
+.game-logo{font-size:18px;font-weight:900;letter-spacing:1px;background:linear-gradient(135deg,#f5c842,#fff,#c9a227);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.score-display{background:#1e1812;border:1px solid #c9a227;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:700;color:#f5c842;}
+.game-close{margin-left:auto;width:36px;height:36px;border-radius:8px;background:#2a2118;border:1px solid #3a3020;cursor:pointer;font-size:18px;color:#f5ead0;display:flex;align-items:center;justify-content:center;}
+.game-tabs{padding:12px 16px;display:flex;gap:8px;overflow-x:auto;background:#120f0a;border-bottom:1px solid #3a3020;flex-shrink:0;scrollbar-width:none;}
+.game-tabs::-webkit-scrollbar{display:none;}
+.game-tab{flex-shrink:0;padding:8px 16px;border-radius:20px;background:#1e1812;border:1px solid #3a3020;cursor:pointer;font-size:13px;font-weight:700;color:#b8a880;transition:all .2s;white-space:nowrap;}
+.game-tab.active{background:linear-gradient(135deg,#c9a227,#f5c842);border-color:#f5c842;color:#111;box-shadow:0 0 16px rgba(245,200,66,.4);}
+.game-area{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.game-card{width:100%;max-width:480px;background:linear-gradient(180deg,#1e1812,#120f0a);border:1px solid #c9a227;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(245,200,66,.2);}
+.game-header{padding:14px 20px;background:linear-gradient(135deg,#2a2118,#1e1812);border-bottom:1px solid #3a3020;display:flex;align-items:center;gap:10px;}
+.game-icon{font-size:28px;}
+.game-title{font-size:18px;font-weight:800;color:#f5c842;}
+.game-subtitle{font-size:12px;color:#6a5e42;margin-top:2px;}
+.game-body{padding:20px;}
+.status-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+.status-pill{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;background:#2a2118;border:1px solid #3a3020;color:#b8a880;}
+.status-pill.gold{border-color:#c9a227;color:#f5c842;}
+.status-pill.green{border-color:#2dc653;color:#2dc653;}
+.status-pill.red{border-color:#e63946;color:#e63946;}
+.btn-gold{background:linear-gradient(135deg,#c9a227,#f5c842);color:#111;border:none;padding:11px 22px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(245,200,66,.3);transition:all .15s;letter-spacing:.5px;}
+.btn-gold:hover{box-shadow:0 6px 24px rgba(245,200,66,.5);transform:translateY(-1px);}
+.btn-ghost-g{background:#2a2118;border:1px solid #3a3020;color:#b8a880;padding:11px 22px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:all .15s;}
+.btn-ghost-g:hover{border-color:#c9a227;color:#f5c842;}
+.result-banner{padding:16px;border-radius:12px;text-align:center;margin-top:16px;font-size:20px;font-weight:800;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+.result-banner.win{background:linear-gradient(135deg,#1a3a1a,#0d2a0d);border:2px solid #2dc653;color:#2dc653;}
+.result-banner.lose{background:linear-gradient(135deg,#3a0a0a,#2a0505);border:2px solid #e63946;color:#e63946;}
+.result-banner.draw{background:linear-gradient(135deg,#2a2a0a,#1a1a05);border:2px solid #f5c842;color:#f5c842;}
+@keyframes popIn{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px #c9a227}50%{box-shadow:0 0 24px #f5c842,0 0 48px rgba(245,200,66,.3)}}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+/* TicTacToe */
+.ttt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:0 auto;}
+.ttt-cell{aspect-ratio:1;border-radius:12px;background:#2a2118;border:2px solid #3a3020;display:flex;align-items:center;justify-content:center;font-size:42px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.ttt-cell:hover:not(.taken){border-color:#c9a227;background:rgba(245,200,66,.1);}
+.ttt-cell.x{color:#4895ef;}.ttt-cell.o{color:#f5c842;}
+.ttt-cell.win-cell{border-color:#2dc653;background:rgba(45,198,83,.1);animation:glow 1s infinite;}
+/* Memory */
+.memory-grid{display:grid;gap:8px;grid-template-columns:repeat(4,1fr);max-width:380px;margin:0 auto;}
+.mem-card{aspect-ratio:1;border-radius:10px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform .4s cubic-bezier(.4,0,.2,1);}
+.mem-card.flipped,.mem-card.matched{transform:rotateY(180deg);}
+.mem-card-front,.mem-card-back{position:absolute;inset:0;border-radius:10px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.mem-card-front{background:linear-gradient(135deg,#2a2118,#1e1812);border:2px solid #3a3020;font-size:26px;}
+.mem-card-front::before{content:'?';font-size:22px;font-weight:800;color:#c9a227;}
+.mem-card-back{background:linear-gradient(135deg,#1e1812,#2a2118);border:2px solid #c9a227;font-size:26px;transform:rotateY(180deg);}
+.mem-card.matched .mem-card-back{border-color:#2dc653;background:rgba(45,198,83,.1);animation:bounce .3s ease;}
+/* Wordle */
+.wordle-grid{display:flex;flex-direction:column;gap:6px;align-items:center;margin-bottom:16px;}
+.wordle-row{display:flex;gap:6px;}
+.wordle-cell{width:52px;height:52px;border-radius:8px;border:2px solid #3a3020;background:#2a2118;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#f5ead0;transition:all .15s;text-transform:uppercase;}
+.wordle-cell.correct{background:#2d6a4f;border-color:#52b788;color:#fff;}
+.wordle-cell.present{background:#b5830a;border-color:#f4a261;color:#fff;}
+.wordle-cell.absent{background:#222;border-color:#444;color:#666;}
+.wordle-cell.current{border-color:#c9a227;animation:bounce .15s ease;}
+.wordle-keyboard{display:flex;flex-direction:column;gap:6px;align-items:center;}
+.kbd-row{display:flex;gap:4px;justify-content:center;}
+.kbd-key{min-width:32px;height:44px;padding:0 6px;border-radius:6px;background:#2a2118;border:1px solid #3a3020;cursor:pointer;font-size:12px;font-weight:700;color:#f5ead0;display:flex;align-items:center;justify-content:center;transition:all .1s;}
+.kbd-key:hover{border-color:#c9a227;color:#f5c842;}
+.kbd-key.correct{background:#2d6a4f;border-color:#52b788;color:#fff;}
+.kbd-key.present{background:#b5830a;border-color:#f4a261;color:#fff;}
+.kbd-key.absent{background:#1a1a1a;border-color:#333;color:#444;}
+.kbd-key.wide{min-width:52px;font-size:11px;}
+/* Sudoku */
+.sudoku-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:2px;max-width:360px;margin:0 auto;border:3px solid #c9a227;border-radius:10px;overflow:hidden;background:#c9a227;}
+.sdk-cell{aspect-ratio:1;background:#1e1812;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;cursor:pointer;transition:background .1s;color:#f5ead0;position:relative;}
+.sdk-cell.given{color:#f5c842;font-weight:900;}
+.sdk-cell.selected{background:rgba(245,200,66,.2)!important;}
+.sdk-cell.highlight{background:rgba(245,200,66,.07)!important;}
+.sdk-cell.error{color:#e63946!important;}
+.sdk-cell.box-right{border-right:2px solid #c9a227!important;}
+.sdk-cell.box-bottom{border-bottom:2px solid #c9a227!important;}
+.sudoku-numpad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:360px;margin:12px auto 0;}
+.sdk-num{padding:10px;border-radius:8px;border:1px solid #3a3020;background:#2a2118;cursor:pointer;font-size:18px;font-weight:800;color:#f5c842;text-align:center;transition:all .15s;}
+.sdk-num:hover{border-color:#c9a227;background:rgba(245,200,66,.1);}
+.sdk-num.erase{color:#e63946;font-size:14px;}
+/* Chess */
+.chess-board{display:grid;grid-template-columns:repeat(8,1fr);max-width:380px;margin:0 auto;border:3px solid #c9a227;border-radius:10px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.chess-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;position:relative;transition:filter .1s;user-select:none;}
+.chess-cell.light{background:#f0d9b5;}.chess-cell.dark{background:#b58863;}
+.chess-cell.selected{background:#7fc97f!important;}
+.chess-cell.possible{background:#6abf6a!important;}
+.chess-cell.possible::after{content:'';position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(0,0,0,.3);}
+.chess-cell.last-move{filter:brightness(1.2);}
+.chess-piece{font-size:28px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));transition:transform .1s;pointer-events:none;}
+.chess-cell.selected .chess-piece{transform:scale(1.15);}
+.chess-info{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+.chess-captured{background:#2a2118;border:1px solid #3a3020;border-radius:10px;padding:8px 12px;font-size:18px;min-width:120px;text-align:center;}
+.chess-captured-title{font-size:11px;color:#6a5e42;margin-bottom:4px;}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--s2);border:1px solid var(--b);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;z-index:500;transition:opacity .2s;white-space:nowrap;color:var(--t);}
+.toast.show{opacity:1;}
+
+@media(max-width:480px){
+  .ttt-cell{font-size:32px;}
+  .wordle-cell{width:40px;height:40px;font-size:16px;}
+  .kbd-key{min-width:26px;height:38px;font-size:10px;}
+  .chess-cell{font-size:20px;}.chess-piece{font-size:20px;}
+  .memory-grid{gap:5px;}
+  .mem-card-back{font-size:20px;}
+}
+
+/* ══════════════════════════════════════════
+   NOVU — MEJORAS ACCESIBILIDAD Y CRISIS
+══════════════════════════════════════════ */
+
+/* Mensaje con avatar del contacto */
+.msg.other{align-items:flex-end;gap:7px;}
+.msg-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-bottom:18px;}
+.msg-wrap{display:flex;flex-direction:column;}
+.msg.own .msg-wrap{align-items:flex-end;}
+.msg.other .msg-wrap{align-items:flex-start;}
+
+/* Tick de leído */
+.tick{font-size:11px;color:var(--a);letter-spacing:-2px;font-weight:700;}
+
+/* ── BOTÓN SOS FLOTANTE ── */
+#sosFab{
+  position:fixed;bottom:84px;right:14px;z-index:400;
+  width:58px;height:58px;border-radius:50%;
+  background:linear-gradient(135deg,#ff2d2d,#c00);
+  border:2.5px solid rgba(255,255,255,.2);
+  color:#fff;font-size:13px;font-weight:900;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;
+  box-shadow:0 4px 18px rgba(220,0,0,.55);
+  animation:sosFab 2.4s ease-in-out infinite;
+  line-height:1;gap:1px;
+}
+#sosFab span{font-size:9px;font-weight:700;letter-spacing:.5px;opacity:.85;}
+@keyframes sosFab{
+  0%,100%{box-shadow:0 4px 18px rgba(220,0,0,.5),0 0 0 0 rgba(220,0,0,.3);}
+  50%{box-shadow:0 4px 24px rgba(220,0,0,.7),0 0 0 10px rgba(220,0,0,0);}
+}
+@media(min-width:641px){#sosFab{display:none;}}
+
+/* ── MODAL CRISIS ── */
+#crisisOv{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.93);
+  z-index:450;
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:24px;gap:14px;
+  backdrop-filter:blur(10px);
+}
+#crisisOv.open{display:flex;}
+.crisis-head{text-align:center;}
+.crisis-head h1{font-size:32px;font-weight:900;color:#fff;margin-bottom:6px;}
+.crisis-head p{font-size:15px;color:rgba(255,255,255,.55);line-height:1.5;max-width:300px;}
+.crisis-list{width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px;max-height:55vh;overflow-y:auto;}
+.crisis-btn{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 18px;border-radius:18px;
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(255,255,255,.1);
+  color:#fff;cursor:pointer;width:100%;text-align:left;
+  transition:all .15s;
+}
+.crisis-btn:active{background:rgba(255,50,50,.2);border-color:#ff4444;transform:scale(.97);}
+.cav{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:#fff;flex-shrink:0;}
+.cinfo{flex:1;}
+.cname{font-size:18px;font-weight:800;}
+.caction{font-size:12px;color:rgba(255,255,255,.45);margin-top:2px;}
+.crisis-no-contacts{text-align:center;padding:24px;color:rgba(255,255,255,.5);font-size:14px;line-height:1.7;}
+.crisis-cancel{
+  margin-top:6px;padding:13px 28px;
+  border-radius:100px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.55);font-size:15px;cursor:pointer;
+}
+
+/* ── BLUETOOTH ── */
+#btPanel{
+  position:fixed;top:0;right:-320px;width:300px;height:100%;
+  background:var(--s);border-left:1px solid var(--b);
+  z-index:350;transition:right .25s ease;
+  display:flex;flex-direction:column;
+  box-shadow:-4px 0 20px rgba(0,0,0,.3);
+}
+#btPanel.open{right:0;}
+.bt-head{padding:16px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;}
+.bt-head h2{font-size:16px;font-weight:800;}
+.bt-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
+.bt-status{padding:14px;border-radius:14px;background:var(--s2);border:1px solid var(--b);font-size:13px;display:flex;align-items:center;gap:10px;}
+.bt-dot{width:10px;height:10px;border-radius:50%;background:var(--t3);flex-shrink:0;}
+.bt-dot.connected{background:var(--ok);animation:pulse 1.5s infinite;}
+.bt-dot.scanning{background:var(--warn);animation:pulse .7s infinite;}
+.bt-actions{display:flex;flex-direction:column;gap:8px;}
+.bt-action-btn{
+  padding:13px 16px;border-radius:14px;
+  background:var(--s2);border:1px solid var(--b);
+  color:var(--t);font-size:14px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:10px;
+  transition:border-color .15s;text-align:left;
+}
+.bt-action-btn:hover{border-color:var(--p);}
+.bt-action-btn:disabled{opacity:.4;cursor:not-allowed;}
+.bt-device-name{font-size:13px;font-weight:700;color:var(--p);}
+.bt-hint{font-size:12px;color:var(--t3);line-height:1.6;padding:10px;border-radius:10px;background:var(--s2);}
+
+/* ── VAPI VOICE ── */
+.voice-bar{
+  display:none;align-items:center;gap:8px;
+  padding:8px 12px;background:rgba(110,231,183,.08);
+  border:1px solid rgba(110,231,183,.2);border-radius:12px;
+  font-size:12px;font-weight:700;color:var(--a);
+  margin:0 12px 4px;
+}
+.voice-bar.active{display:flex;}
+.voice-wave{display:flex;gap:2px;align-items:center;height:16px;}
+.voice-bar-line{width:3px;border-radius:2px;background:var(--a);animation:vbl .6s ease-in-out infinite;}
+.voice-bar-line:nth-child(2){animation-delay:.1s;height:60%;}
+.voice-bar-line:nth-child(3){animation-delay:.2s;height:90%;}
+.voice-bar-line:nth-child(4){animation-delay:.3s;height:50%;}
+.voice-bar-line:nth-child(5){animation-delay:.15s;height:75%;}
+@keyframes vbl{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+
+/* ── CONTACTOS EN EMERGENCIA ── */
+.emerg-badge{background:var(--danger);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:4px;}
+
+/* ── MOBILE TOPBAR ── */
+@media(max-width:640px){
+  .topbar{padding:8px 10px;gap:8px;}
+  .logo{font-size:20px;}
+  .ibtn{width:40px;height:40px;}
+  .ibtn.sos{display:none;}
+  .chat-bar{padding:10px 12px;gap:8px;}
+  .cbtn{width:50px;height:50px;font-size:22px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <button class="ibtn mob-menu" style="display:none" onclick="toggleSB()">☰</button>
+    <div class="logo">NOVU</div>
+    <div class="topbar-title" id="topTitle">Selecciona un chat</div>
+    <div id="syncDot" class="sync"></div>
+    <button class="ibtn" id="btBtn" onclick="toggleBT()" title="Bluetooth / Auto">🚗</button>
+    <button class="ibtn sos" onclick="openCrisis()" style="background:var(--danger);border-color:var(--danger);color:#fff;font-size:13px;font-weight:800;width:auto;padding:0 10px;">🆘 SOS</button>
+    <button class="ibtn" onclick="openGames()" title="Juegos">🎮</button>
+    <button class="ibtn" onclick="openOv('settingsOv')">⚙️</button>
+    <button class="ibtn" onclick="toggleTheme()">🌙</button>
+  </header>
+
+  <div class="body">
+    <nav class="sidebar" id="sidebar">
+      <div class="sb-head">
+        <input class="search" type="search" placeholder="🔍 Buscar contacto..." oninput="filterContacts(this.value)">
+        <button class="btn-new" onclick="openOv('addContactOv')">+ Agregar contacto</button>
+      </div>
+      <div class="chat-list" id="chatList"></div>
+    </nav>
+    <div class="sb-backdrop" id="sbBackdrop" onclick="toggleSB()"></div>
+
+    <main class="main">
+      <div class="empty" id="emptyState">
+        <div class="ei">💬</div>
+        <h2>Bienvenida a NOVU</h2>
+        <p>Crea un chat para empezar</p>
+      </div>
+      <div class="cv" id="chatView">
+        <div class="chat-bar">
+          <button class="ibtn mob-menu" style="display:none" onclick="backToUserList()">←</button>
+          <div class="chat-bar-info">
+            <div class="chat-bar-name" id="cName">—</div>
+            <div class="chat-bar-sub" id="cSub">—</div>
+          </div>
+          <div class="call-btns">
+            <button class="cbtn voice" onclick="startCall('voice')" title="Llamada de voz">📞</button>
+            <button class="cbtn video" onclick="startCall('video')" title="Videollamada">📹</button>
+            <button class="cbtn robot" onclick="startCall('robot')" title="Voz robot">🤖</button>
+          </div>
+          <button class="ibtn" onclick="openOv('chatMenuOv')" style="margin-left:4px">⋯</button>
+        </div>
+        <div class="msgs" id="messages"></div>
+        <div class="input-area">
+          <div class="input-row">
+            <textarea class="ta" id="msgIn" rows="1" placeholder="Escribe un mensaje..."
+              onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"
+              oninput="autoH(this)"></textarea>
+            <button class="sbtn" onclick="sendMsg()">📤</button>
+          </div>
+          <div class="abar-btns">
+            <button class="abtn" id="recBtn" onclick="toggleRec()">🎤 Grabar</button>
+            <button class="abtn" onclick="openOv('ttsOv')">🗣️ Voz robot</button>
+            <button class="abtn" onclick="openOv('emojiOv')">😊 Emoji</button>
+            <button class="abtn" onclick="pickImg()">📷 Foto/Video</button>
+            <button class="abtn" onclick="openGames()">🎮 Juegos</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- CALL SCREEN -->
+<div class="call-screen" id="callScreen">
+  <div id="videoArea" style="display:none"><video id="remoteVideo" autoplay playsinline></video><video id="localVideo" autoplay playsinline muted></video></div>
+  <div class="call-avatar" id="callAvatar">?</div>
+  <div class="call-name" id="callName">—</div>
+  <div class="call-status" id="callStatus">Llamando…</div>
+  <div class="call-timer" id="callTimer" style="display:none">0:00</div>
+  <div class="call-actions">
+    <button class="call-act mute" id="muteBtn" onclick="toggleMute()" title="Silenciar">🎙️</button>
+    <button class="call-act end" onclick="endCall()" title="Colgar">📵</button>
+    <button class="call-act robot-toggle" id="robotBtn" onclick="toggleRobotVoice()" title="Voz robot">🤖</button>
+  </div>
+  <div class="call-hint-txt" id="callHint"></div>
+</div>
+
+<!-- GAMES OVERLAY -->
+<div class="game-ov" id="gamesOv">
+  <div class="game-topbar">
+    <div class="game-logo">♠ NOVU GAMES ♠</div>
+    <div class="score-display">🏆 <span id="gScore">0</span> pts</div>
+    <button class="game-close" onclick="closeGames()">✕</button>
+  </div>
+  <div class="game-tabs" id="gameTabs">
+    <div class="game-tab active" onclick="switchGame('ttt',this)">⭕ 3 en línea</div>
+    <div class="game-tab" onclick="switchGame('memory',this)">🃏 Memoria</div>
+    <div class="game-tab" onclick="switchGame('wordle',this)">📝 Wordle</div>
+    <div class="game-tab" onclick="switchGame('sudoku',this)">🔢 Sudoku</div>
+    <div class="game-tab" onclick="switchGame('chess',this)">♟️ Ajedrez</div>
+  </div>
+  <div class="game-area" id="gameArea"></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="ov" id="settingsOv" onclick="ovClick(event,'settingsOv')">
+  <div class="modal">
+    <div class="mh">⚙️ Configuración <button class="mcls" onclick="closeOv('settingsOv')">✕</button></div>
+    <div class="mb">
+      <div class="sg-title">☁️ Supabase</div>
+      <div class="sbanner">
+        <strong>Paso 1 — SQL Editor en Supabase:</strong><br>
+        <button class="btn btn-g" style="margin:8px 0;font-size:12px;padding:6px 12px;" onclick="copiarSQL()">📋 Copiar SQL completo</button>
+        <div id="sqlBox" style="font-size:11px;background:var(--bg);padding:10px;border-radius:8px;line-height:2;word-break:break-all;max-height:160px;overflow-y:auto;color:var(--t2);border:1px solid var(--b);margin-top:4px;white-space:pre-wrap;font-family:monospace;">-- TABLAS
+create table if not exists novu_usuarios (
+  id text primary key,
+  nombre text not null,
+  telefono text,
+  color text,
+  ultimo_visto timestamptz default now()
+);
+alter table novu_usuarios add column if not exists telefono text;
+create unique index if not exists idx_usuarios_telefono on novu_usuarios(telefono) where telefono is not null;
+create table if not exists novu_mensajes (
+  id uuid default gen_random_uuid() primary key,
+  sala_id text not null,
+  emisor_id text not null,
+  emisor_nombre text,
+  tipo text default 'texto',
+  contenido text,
+  created_at timestamptz default now()
+);
+create index if not exists idx_mensajes_sala
+  on novu_mensajes(sala_id, created_at);
+create table if not exists novu_contactos (
+  id uuid default gen_random_uuid() primary key,
+  propietario_id text not null,
+  contacto_telefono text not null,
+  contacto_nombre text,
+  created_at timestamptz default now(),
+  unique(propietario_id, contacto_telefono)
+);
+create index if not exists idx_contactos_propietario
+  on novu_contactos(propietario_id);
+-- REALTIME
+alter table novu_mensajes replica identity full;
+alter table novu_usuarios replica identity full;
+do $$
+begin
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'novu_mensajes') then
+    alter publication supabase_realtime add table novu_mensajes;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'novu_usuarios') then
+    alter publication supabase_realtime add table novu_usuarios;
+  end if;
+end $$;
+-- RLS: acceso público (sin login)
+alter table novu_usuarios enable row level security;
+alter table novu_mensajes enable row level security;
+alter table novu_contactos enable row level security;
+drop policy if exists "novu_usuarios_all" on novu_usuarios;
+create policy "novu_usuarios_all" on novu_usuarios
+  for all using (true) with check (true);
+drop policy if exists "novu_mensajes_all" on novu_mensajes;
+create policy "novu_mensajes_all" on novu_mensajes
+  for all using (true) with check (true);
+drop policy if exists "novu_contactos_all" on novu_contactos;
+create policy "novu_contactos_all" on novu_contactos
+  for all using (true) with check (true);
+-- STORAGE: bucket para fotos, videos y audios
+insert into storage.buckets (id, name, public)
+  values ('novu-media','novu-media', true)
+  on conflict (id) do nothing;
+drop policy if exists "novu_media_read" on storage.objects;
+create policy "novu_media_read" on storage.objects
+  for select using (bucket_id = 'novu-media');
+drop policy if exists "novu_media_insert" on storage.objects;
+create policy "novu_media_insert" on storage.objects
+  for insert with check (bucket_id = 'novu-media');</div>
+        <strong>Paso 2 — Pegá la URL y clave anon:</strong>
+      </div>
+      <p style="font-size:11px;color:var(--t3);margin-top:-4px;">NOVU ya viene conectado por defecto. Solo completá esto si querés usar tu propio proyecto Supabase.</p>
+      <input class="fld" id="sbUrl" type="url" placeholder="https://xxxxx.supabase.co">
+      <input class="fld" id="sbKey" type="text" placeholder="eyJhbGci... (anon/public key)">
+      <button class="btn btn-p" onclick="saveSupabase()">✅ Conectar Supabase</button>
+      <div class="sg-title">🆘 Contacto SOS</div>
+      <input class="fld" id="sosName" type="text" placeholder="Nombre (ej: Mamá)">
+      <input class="fld" id="sosPhone" type="tel" placeholder="+5491155...">
+      <button class="btn btn-p" onclick="saveSOS()">Guardar SOS</button>
+      <p style="font-size:12px;color:var(--t3)">Al tocar 🆘: abre WhatsApp con tu ubicación GPS.</p>
+      <div class="sg-title">👤 Cuenta</div>
+      <div style="display:flex;gap:8px">
+        <input class="fld" id="nameField" type="text" placeholder="Tu nombre" style="flex:1">
+        <button class="btn btn-p" onclick="saveName()">Guardar</button>
+      </div>
+      <div class="sg-title">🎨 Interfaz</div>
+      <div class="si"><span>Sonidos</span><div class="tog on" id="tSounds" onclick="togPref('sounds',this)"></div></div>
+      <div class="si"><span>Notificaciones</span><div class="tog" id="tNotifs" onclick="togPref('notifs',this)"></div></div>
+      <div class="sg-title">♿ Accesibilidad</div>
+      <div class="si"><span>Texto grande</span><div class="tog" id="tBig" onclick="togCls('big-text','bigText',this)"></div></div>
+      <div class="si"><span>Alto contraste</span><div class="tog" id="tHi" onclick="togCls('hi-contrast','hiContrast',this)"></div></div>
+      <div class="si"><span>Sin animaciones</span><div class="tog" id="tAnim" onclick="togCls('no-anim','noAnim',this)"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- AGREGAR CONTACTO -->
+<div class="ov" id="addContactOv" onclick="ovClick(event,'addContactOv')">
+  <div class="modal">
+    <div class="mh">👤 Agregar contacto <button class="mcls" onclick="closeOv('addContactOv')">✕</button></div>
+    <div class="mb">
+      <input class="fld" id="newContactName" type="text" placeholder="Nombre">
+      <input class="fld" id="newContactPhone" type="tel" placeholder="Celular (ej: +598 99 123 456)">
+      <button class="btn btn-p" onclick="addContactManual();closeOv('addContactOv')" style="width:100%">+ Agregar</button>
+      <button class="btn btn-g" onclick="importFromPhoneContacts()" style="width:100%;margin-top:6px">📇 Importar desde mi agenda</button>
+      <p style="font-size:12px;color:var(--t3);margin-top:6px">Importar agenda requiere Chrome en Android.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT MENU -->
+<div class="ov" id="chatMenuOv" onclick="ovClick(event,'chatMenuOv')">
+  <div class="modal">
+    <div class="mh">Opciones <button class="mcls" onclick="closeOv('chatMenuOv')">✕</button></div>
+    <div class="mb">
+      <button class="btn btn-g" onclick="exportChat()" style="width:100%">📥 Exportar TXT</button>
+      <button class="btn btn-g" onclick="clearChat()" style="width:100%;margin-top:4px">🧹 Limpiar</button>
+      <button class="btn btn-d" onclick="delChat()" style="width:100%;margin-top:4px">🗑️ Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMOJI -->
+<div class="ov" id="emojiOv" onclick="ovClick(event,'emojiOv')">
+  <div class="modal">
+    <div class="mh">😊 Emojis <button class="mcls" onclick="closeOv('emojiOv')">✕</button></div>
+    <div class="mb"><div class="egrid" id="emojiGrid"></div></div>
+  </div>
+</div>
+
+<!-- TTS -->
+<div class="ov" id="ttsOv" onclick="ovClick(event,'ttsOv')">
+  <div class="modal">
+    <div class="mh">🗣️ Voz robot <button class="mcls" onclick="closeOv('ttsOv')">✕</button></div>
+    <div class="mb">
+      <div class="sg-title">Tipo de voz</div>
+      <div class="vopts">
+        <div class="vopt sel" onclick="selVoice('female',this)">👩 Mujer</div>
+        <div class="vopt" onclick="selVoice('male',this)">👨 Hombre</div>
+        <div class="vopt" onclick="selVoice('robot',this)">🤖 Robot</div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px">Velocidad: <span id="spLabel">Normal</span></div>
+        <input type="range" min="0.5" max="2" step="0.1" value="1" id="spRange" oninput="updSpeed(this.value)">
+      </div>
+      <input class="fld" id="ttsText" type="text" placeholder="Escribe algo…">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-g" style="flex:1" onclick="speakTest()">▶️ Probar</button>
+        <button class="btn btn-p" style="flex:1" onclick="if(document.getElementById('chatView').dataset.realtimeMode)sendRealtimeTTS();else sendTTS();">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACTS -->
+<div class="ov" id="contactsOv" onclick="ovClick(event,'contactsOv')">
+  <div class="modal">
+    <div class="mh">📋 Contactos <button class="mcls" onclick="closeOv('contactsOv')">✕</button></div>
+    <div class="mb">
+      <div class="sg-title">Agregar</div>
+      <input class="fld" id="cName" type="text" placeholder="Nombre">
+      <input class="fld" id="cPhone" type="tel" placeholder="Teléfono">
+      <button class="btn btn-p" onclick="addContact()">Agregar</button>
+      <div class="sg-title">Mis contactos</div>
+      <div id="contactList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="imgInput" accept="image/*,video/*" style="display:none" onchange="handleImg(event)">
+
+<!-- SOS FAB — siempre visible en móvil -->
+<button id="sosFab" onclick="openCrisis()">🆘<span>SOS</span></button>
+
+<!-- BARRA DE VOZ ACTIVA -->
+<div class="voice-bar" id="voiceBar">
+  <div class="voice-wave">
+    <div class="voice-bar-line" style="height:40%"></div>
+    <div class="voice-bar-line"></div>
+    <div class="voice-bar-line"></div>
+    <div class="voice-bar-line"></div>
+    <div class="voice-bar-line"></div>
+  </div>
+  Escuchando...
+</div>
+
+<!-- MODAL CRISIS -->
+<div id="crisisOv" onclick="if(event.target.id==='crisisOv')closeCrisis()">
+  <div class="crisis-head">
+    <h1>🆘 ¿Necesitás ayuda?</h1>
+    <p>Elegí a quién avisarle — NOVU les manda un mensaje con tu ubicación</p>
+  </div>
+  <div class="crisis-list" id="crisisList"></div>
+  <div style="display:flex;gap:10px;width:100%;max-width:360px;margin-top:4px;">
+    <button class="crisis-cancel" style="flex:1" onclick="startCrisisVoice()">🎤 Decí un nombre</button>
+    <button class="crisis-cancel" style="flex:1" onclick="closeCrisis()">Estoy bien ✓</button>
+  </div>
+</div>
+
+<!-- PANEL BLUETOOTH -->
+<div id="btPanel">
+  <div class="bt-head">
+    <h2>🚗 Auto / Bluetooth</h2>
+    <button class="ibtn" onclick="toggleBT()">✕</button>
+  </div>
+  <div class="bt-body">
+    <div class="bt-status">
+      <div class="bt-dot" id="btDot"></div>
+      <div>
+        <div class="bt-device-name" id="btDevName">Sin conectar</div>
+        <div style="font-size:11px;color:var(--t3)" id="btStatusTxt">Tocá para buscar dispositivos</div>
+      </div>
+    </div>
+    <div class="bt-actions">
+      <button class="bt-action-btn" onclick="btScan()">🔍 Buscar dispositivo Bluetooth</button>
+      <button class="bt-action-btn" onclick="openCrisis()">🆘 Enviar alerta de emergencia</button>
+      <button class="bt-action-btn" onclick="startCrisisVoice()">🎤 Comando de voz</button>
+      <button class="bt-action-btn" id="btDiscoBtn" onclick="btDisconnect()" style="color:var(--danger);border-color:rgba(255,107,107,.3)">📵 Desconectar</button>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--t3);margin-top:4px;">LLAMADA RÁPIDA</div>
+    <div id="btContactList"><div class="bt-hint">Conectá un dispositivo primero</div></div>
+    <div class="bt-hint">⚠️ Bluetooth requiere Chrome en Android. Funciona con manos libres de auto, auriculares, y altavoces.</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════
+let S={user:{id:null,name:'',phone:''},chats:[],active:null,activePartner:null,settings:{sounds:true,notifs:false,bigText:false,hiContrast:false,noAnim:false},tts:{voice:'female',speed:1},sos:{name:'',phone:''},contacts:[],sb:{url:'',key:''}};
+let db=null;
+// Tiempo real
+let realtimeSub=null;
+let presenceIv=null;
+let onlineUsers=[];
+let localMsgs={}; // cache local mensajes por sala
+
+// Credenciales por defecto de NOVU — el usuario no necesita configurar nada
+const NOVU_DEFAULT_SUPABASE_URL='https://lgpqyjevdwstbnerawmp.supabase.co';
+const NOVU_DEFAULT_SUPABASE_KEY='sb_publishable_ezLQMGeIrqgHPMyINUGHKw_mTDTNR61';
+
+// ═══════════════════════════════════════════════════
+// SUPABASE — REAL TIME CHAT
+// ═══════════════════════════════════════════════════
+function initSB(){
+  const url=S.sb.url||NOVU_DEFAULT_SUPABASE_URL;
+  const key=S.sb.key||NOVU_DEFAULT_SUPABASE_KEY;
+  if(!url||!key){setSyncDot('off');return;}
+  setSyncDot('busy');
+  if(window._sbLoaded&&window.supabase){_initSBClient(url,key);return;}
+  const sc=document.createElement('script');
+  sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  sc.onload=()=>{window._sbLoaded=true;_initSBClient(url,key);};
+  sc.onerror=()=>{setSyncDot('err');toast('❌ Error cargando Supabase');};
+  document.head.appendChild(sc);
+}
+function _initSBClient(url,key){
+  try{
+    db=window.supabase.createClient(url||S.sb.url,key||S.sb.key);
+    setSyncDot('ok');
+    // Si ya tiene nombre y celular, ir directo a la lista
+    if(S.user.name&&S.user.name.trim()&&S.user.phone){
+      startOnlineMode();
+    }
+  }catch(e){setSyncDot('err');toast('❌ '+e.message);}
+}
+function setSyncDot(st){const d=document.getElementById('syncDot');d.className='sync'+({ok:' ok',busy:' busy',err:' err'}[st]||'');d.title={ok:'Online',busy:'Conectando…',err:'Error',off:'Sin Supabase'}[st]||'';}
+function copiarSQL(){
+  const sql=document.getElementById('sqlBox').textContent;
+  navigator.clipboard.writeText(sql).then(()=>toast('✅ SQL copiado')).catch(()=>{
+    // Fallback para móviles sin clipboard API
+    const ta=document.createElement('textarea');
+    ta.value=sql;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('✅ SQL copiado');
+  });
+}
+function saveSupabase(){
+  const url=document.getElementById('sbUrl').value.trim();
+  const key=document.getElementById('sbKey').value.trim();
+  if(!url||!key){toast('⚠️ Completá URL y clave');return;}
+  if(!url.startsWith('https://')||!url.includes('.supabase.co')){
+    toast('⚠️ URL inválida — debe ser https://xxxx.supabase.co');return;
+  }
+  if(!key.startsWith('eyJ')){
+    toast('⚠️ Clave inválida — usá la "anon public" key');return;
+  }
+  S.sb={url,key};saveLocal();toast('Conectando…');initSB();
+}
+
+// ─── PRESENCIA ONLINE ───────────────────────────────
+let onlineUsersIv=null;
+async function startOnlineMode(){
+  if(!db){toast('⚠️ Configurá Supabase primero');return;}
+  await updatePresence();
+  if(presenceIv)clearInterval(presenceIv);
+  presenceIv=setInterval(updatePresence,20000);
+  await loadMyContacts();
+  // Polling cada 5s para refrescar estado online/offline de mis contactos
+  if(onlineUsersIv)clearInterval(onlineUsersIv);
+  onlineUsersIv=setInterval(loadMyContacts,5000);
+  showUserList();
+}
+async function updatePresence(){
+  if(!db||!S.user.id||!S.user.name)return;
+  try{
+    await db.from('novu_usuarios').upsert({
+      id:S.user.id,
+      nombre:S.user.name,
+      telefono:S.user.phone||null,
+      color:S.user.color||rndColor(),
+      ultimo_visto:new Date().toISOString()
+    },{onConflict:'id'});
+  }catch(e){console.warn('presencia:',e.message);}
+}
+
+// ─── CONTACTOS PERSISTENTES ─────────────────────────
+// onlineUsers ahora representa "mis contactos guardados" con su estado online/offline
+async function loadMyContacts(){
+  if(!db||!S.user.id)return;
+  try{
+    // 1. Traer mi lista de contactos guardados
+    const{data:contactos,error:e1}=await db.from('novu_contactos')
+      .select('*').eq('propietario_id',S.user.id);
+    if(e1)throw e1;
+    if(!contactos||!contactos.length){onlineUsers=[];renderUserList();return;}
+
+    const telefonos=contactos.map(c=>c.contacto_telefono);
+    // 2. Buscar esos teléfonos en novu_usuarios para ver quién ya tiene NOVU y su estado
+    const{data:usuarios,error:e2}=await db.from('novu_usuarios')
+      .select('*').in('telefono',telefonos);
+    if(e2)throw e2;
+
+    const cutoff=Date.now()-45000;
+    onlineUsers=contactos.map(ct=>{
+      const u=usuarios?.find(u=>u.telefono===ct.contacto_telefono);
+      return {
+        id:u?.id||null,
+        nombre:u?.nombre||ct.contacto_nombre,
+        telefono:ct.contacto_telefono,
+        color:u?.color||rndColor(),
+        registrado:!!u,
+        online:u?(new Date(u.ultimo_visto).getTime()>cutoff):false
+      };
+    }).sort((a,b)=>{
+      if(a.online!==b.online)return a.online?-1:1;
+      return (a.nombre||'').localeCompare(b.nombre||'');
+    });
+    renderUserList();
+    renderChats();
+  }catch(e){console.warn('loadMyContacts:',e.message);}
+}
+
+async function addContactByPhone(name,phone){
+  if(!db||!S.user.id)return;
+  const tel=normalizePhone(phone);
+  if(!tel){toast('Celular inválido');return;}
+  try{
+    await db.from('novu_contactos').upsert({
+      propietario_id:S.user.id,
+      contacto_telefono:tel,
+      contacto_nombre:name||tel
+    },{onConflict:'propietario_id,contacto_telefono'});
+    toast('✅ '+(name||tel)+' agregado');
+    await loadMyContacts();
+  }catch(e){toast('❌ Error: '+e.message);}
+}
+
+function addContactManual(){
+  const name=document.getElementById('newContactName')?.value.trim();
+  const phone=document.getElementById('newContactPhone')?.value.trim();
+  if(!phone){toast('Ingresá un celular');return;}
+  addContactByPhone(name,phone);
+  document.getElementById('newContactName').value='';
+  document.getElementById('newContactPhone').value='';
+}
+
+// Importar contactos desde la agenda del teléfono (Contact Picker API)
+async function importFromPhoneContacts(){
+  if(!('contacts' in navigator && 'ContactsManager' in window)){
+    toast('⚠️ Tu navegador no soporta importar contactos (usá Chrome Android)');
+    return;
+  }
+  try{
+    const props=['name','tel'];
+    const opts={multiple:true};
+    const selected=await navigator.contacts.select(props,opts);
+    if(!selected||!selected.length){toast('No se seleccionaron contactos');return;}
+    let count=0;
+    for(const c of selected){
+      const name=(c.name&&c.name[0])||'';
+      const tel=(c.tel&&c.tel[0])||'';
+      if(!tel)continue;
+      await addContactByPhone(name,tel);
+      count++;
+    }
+    toast('✅ '+count+' contacto(s) importado(s)');
+  }catch(e){
+    if(e.name!=='AbortError')toast('❌ Error al importar: '+e.message);
+  }
+}
+
+// ─── MENSAJES EN TIEMPO REAL ────────────────────────
+function roomId(idA,idB){return [idA,idB].sort().join('_');}
+
+async function openRealtimeChat(partnerId,partnerName,partnerColor){
+  S.activePartner={id:partnerId,name:partnerName,color:partnerColor||rndColor()};
+  const room=roomId(S.user.id,partnerId);
+
+  // Cargar mensajes históricos
+  try{
+    const{data,error}=await db.from('novu_mensajes')
+      .select('*')
+      .eq('sala_id',room)
+      .order('created_at',{ascending:true})
+      .limit(100);
+    if(!error)localMsgs[room]=data||[];
+  }catch(e){localMsgs[room]=[];}
+
+  // Suscribirse a mensajes nuevos
+  if(realtimeSub){realtimeSub.unsubscribe();realtimeSub=null;}
+  realtimeSub=db.channel('sala:'+room)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'novu_mensajes',filter:'sala_id=eq.'+room},(payload)=>{
+      const msg=payload.new;
+      if(!localMsgs[room])localMsgs[room]=[];
+      // Si es mensaje propio: ya está en la lista con el UUID real (reemplazamos el temp arriba)
+      // Solo agregar si realmente no existe (mensaje del otro usuario)
+      const exists=localMsgs[room].find(m=>m.id===msg.id&&!m._isTemp);
+      if(!exists){
+        // Filtrar cualquier temp nuestro que pueda quedar
+        localMsgs[room]=localMsgs[room].filter(m=>!(m._isTemp&&m.emisor_id===S.user.id&&m.contenido===msg.contenido&&Math.abs(new Date(m.created_at)-new Date(msg.created_at))<5000));
+        localMsgs[room].push(msg);
+        localMsgs[room].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+        renderRealtimeMsgs();
+        if(msg.emisor_id!==S.user.id&&S.settings.sounds)beepApp(500,0.08);
+      }
+    })
+    .subscribe((status)=>{
+      if(status==='SUBSCRIBED')setSyncDot('ok');
+      else if(status==='CLOSED'||status==='CHANNEL_ERROR')setSyncDot('err');
+    });
+
+  // Mostrar vista de chat
+  showChatView(partnerName,partnerColor,room);
+  renderChats();
+  if(window.innerWidth<=640)closeSB();
+}
+
+async function sendRealtimeMsg(){
+  const el=document.getElementById('msgIn');
+  const text=el.value.trim();
+  if(!text||!S.activePartner||!db)return;
+  const room=roomId(S.user.id,S.activePartner.id);
+  // ID temporal local — se reemplaza cuando llega el evento Realtime con el UUID real
+  const tempId='tmp_'+Date.now();
+  const msg={
+    id:tempId,
+    _isTemp:true,
+    sala_id:room,
+    emisor_id:S.user.id,
+    emisor_nombre:S.user.name,
+    tipo:'texto',
+    contenido:text,
+    created_at:new Date().toISOString()
+  };
+  if(!localMsgs[room])localMsgs[room]=[];
+  localMsgs[room].push(msg);
+  renderRealtimeMsgs();
+  el.value='';el.style.height='auto';
+  if(S.settings.sounds)beepApp(700,0.06);
+  try{
+    const{data,error}=await db.from('novu_mensajes').insert({
+      sala_id:room,
+      emisor_id:S.user.id,
+      emisor_nombre:S.user.name,
+      tipo:'texto',
+      contenido:text
+    }).select().single();
+    if(error)throw error;
+    // Reemplazar el temp por el registro real (con UUID de Supabase)
+    const idx=localMsgs[room].findIndex(m=>m.id===tempId);
+    if(idx!==-1)localMsgs[room][idx]={...data,_isTemp:false};
+    renderRealtimeMsgs();
+  }catch(e){
+    toast('⚠️ Error enviando: '+e.message);
+    // Marcar mensaje temp como fallido
+    const idx=localMsgs[room].findIndex(m=>m.id===tempId);
+    if(idx!==-1)localMsgs[room][idx]._failed=true;
+    renderRealtimeMsgs();
+  }
+}
+
+function renderRealtimeMsgs(){
+  const room=S.activePartner?roomId(S.user.id,S.activePartner.id):null;
+  if(!room)return;
+  const msgs=localMsgs[room]||[];
+  const box=document.getElementById('messages');
+  box.innerHTML=msgs.map((m,i)=>{
+    const own=m.emisor_id===S.user.id;
+    const ts=m.created_at?new Date(m.created_at).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}):'';
+    const tick=own?(m._failed?'<span style="color:var(--danger)">⚠️</span>':m._uploading?'<span style="color:var(--t3)">⏳</span>':m._isTemp?'<span style="color:var(--t3)">✓</span>':'<span class="tick">✓✓</span>'):'';
+    const avHtml=!own?`<div class="msg-av" style="background:${S.activePartner.color}">${initials(S.activePartner.name)}</div>`:'';
+    // URL real: contenido es la URL pública de Storage (viene de Supabase) o mediaUrl/localUrl mientras sube (propio dispositivo)
+    const realUrl=(m.contenido&&m.contenido.startsWith('http'))?m.contenido:(m.mediaUrl||null);
+    const previewUrl=realUrl||m.localUrl;
+    let bubble='';
+    if(m.tipo==='tts')bubble=`<div class="bbl ttsbbl">🗣️ ${esc(m.contenido)}</div>`;
+    else if(m.tipo==='audio'){
+      bubble=previewUrl?`<div class="abbl"><button class="pbtn" onclick="playAudio('${previewUrl}',${i})">▶️</button><div class="abar"><div class="apr" id="ap${i}"></div></div><span class="adur">${m.dur||'0:00'}</span>${m._uploading?' <span style="font-size:10px;opacity:.6">subiendo…</span>':''}</div>`:`<div class="bbl">🎙️ Mensaje de voz</div>`;
+    }
+    else if(m.tipo==='image'){
+      bubble=previewUrl?`<div class="imgbbl"><img src="${previewUrl}" alt="foto" loading="lazy">${m._uploading?'<div style="font-size:10px;opacity:.7;padding:4px 8px">subiendo…</div>':''}</div>`:`<div class="bbl">📷 Foto</div>`;
+    }
+    else if(m.tipo==='video'){
+      bubble=previewUrl?`<div class="imgbbl"><video src="${previewUrl}" controls style="max-width:260px;border-radius:12px;"></video>${m._uploading?'<div style="font-size:10px;opacity:.7;padding:4px 8px">subiendo…</div>':''}</div>`:`<div class="bbl">🎬 Video</div>`;
+    }
+    else bubble=`<div class="bbl${m._failed?' bbl-failed':''}">${esc(m.contenido||m.text||'')}</div>`;
+    const timeHtml=`<div class="mtime">${ts}${tick}</div>`;
+    if(own)return `<div class="msg own"><div class="msg-wrap">${bubble}${timeHtml}</div></div>`;
+    return `<div class="msg other">${avHtml}<div class="msg-wrap">${bubble}${timeHtml}</div></div>`;
+  }).join('');
+  setTimeout(()=>{box.scrollTop=box.scrollHeight;},0);
+}
+
+async function sendRealtimeTTS(){
+  const text=document.getElementById('ttsText').value.trim();
+  if(!text)return;
+  const room=S.activePartner?roomId(S.user.id,S.activePartner.id):null;
+  if(!room||!db)return;
+  const msg={
+    id:'m_'+Date.now()+'_tts',
+    sala_id:room,
+    emisor_id:S.user.id,
+    emisor_nombre:S.user.name,
+    tipo:'tts',
+    contenido:text,
+    created_at:new Date().toISOString()
+  };
+  if(!localMsgs[room])localMsgs[room]=[];
+  localMsgs[room].push(msg);
+  renderRealtimeMsgs();
+  try{await db.from('novu_mensajes').insert({sala_id:room,emisor_id:S.user.id,emisor_nombre:S.user.name,tipo:'tts',contenido:text});}catch(e){}
+}
+
+// ─── UI: PANTALLAS ──────────────────────────────────
+function showNameScreen(){
+  document.getElementById('emptyState').innerHTML=`
+    <div style="max-width:300px;width:100%;display:flex;flex-direction:column;gap:14px;align-items:center;padding:24px;">
+      <div style="font-size:56px">💬</div>
+      <h2 style="font-size:22px;color:var(--t);text-align:center">Bienvenida a NOVU</h2>
+      <p style="font-size:14px;color:var(--t2);text-align:center;line-height:1.6">Ingresá tu nombre y celular para que tus contactos puedan encontrarte</p>
+      <input class="fld" id="nameEntryInput" type="text" placeholder="Tu nombre..." style="width:100%;text-align:center;font-size:18px;padding:14px;">
+      <input class="fld" id="phoneEntryInput" type="tel" placeholder="Tu celular (ej: +598 99 123 456)" style="width:100%;text-align:center;font-size:16px;padding:14px;"
+        onkeypress="if(event.key==='Enter')confirmName()">
+      <button class="btn btn-p" style="width:100%;font-size:16px;padding:14px;" onclick="confirmName()">✨ Entrar</button>
+      ${!db?`<p style="font-size:12px;color:var(--warn);text-align:center">⚠️ Conectando con el chat en tiempo real...</p>`:''}
+    </div>`;
+  document.getElementById('emptyState').style.display='flex';
+  document.getElementById('chatView').classList.remove('open');
+}
+
+function confirmName(){
+  const nameInput=document.getElementById('nameEntryInput');
+  const phoneInput=document.getElementById('phoneEntryInput');
+  const name=(nameInput?.value||document.getElementById('nameField').value||'').trim();
+  const phone=(phoneInput?.value||S.user.phone||'').trim();
+  if(!name){toast('Escribí tu nombre');return;}
+  if(!phone){toast('Escribí tu celular');return;}
+  S.user.name=name;
+  S.user.phone=normalizePhone(phone);
+  S.user.color=S.user.color||rndColor();
+  document.getElementById('nameField').value=name;
+  saveLocal();
+  if(!db){
+    // El script de Supabase puede estar todavía cargando — reintentar un par de veces
+    toast('Conectando…');
+    let tries=0;
+    const retry=setInterval(()=>{
+      tries++;
+      if(db){clearInterval(retry);startOnlineMode();}
+      else if(tries>=10){clearInterval(retry);toast('⚠️ Sin conexión — modo local');showNoSupabase();}
+    },500);
+    return;
+  }
+  startOnlineMode();
+}
+
+// Normaliza un teléfono a solo dígitos con + inicial si lo tenía
+function normalizePhone(p){
+  if(!p)return '';
+  const hasPlus=p.trim().startsWith('+');
+  const digits=p.replace(/\D/g,'');
+  return hasPlus?'+'+digits:digits;
+}
+
+function showNoSupabase(){
+  document.getElementById('emptyState').innerHTML=`
+    <div style="max-width:300px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;">
+      <div style="font-size:48px">☁️</div>
+      <h2>Conectá Supabase</h2>
+      <p style="font-size:13px;color:var(--t2);line-height:1.7">Para el chat en tiempo real necesitás configurar Supabase.<br>Ve a <strong>⚙️ Configuración</strong> e ingresá tu URL y clave.</p>
+      <button class="btn btn-p" onclick="openOv('settingsOv')">⚙️ Configurar ahora</button>
+    </div>`;
+}
+
+function showUserList(){
+  document.getElementById('emptyState').style.display='flex';
+  document.getElementById('chatView').classList.remove('open');
+  document.getElementById('topTitle').textContent='Hola, '+S.user.name+' 👋';
+  renderUserList();
+}
+
+function renderUserList(){
+  const el=document.getElementById('emptyState');
+  if(S.activePartner||el.style.display==='none')return;
+
+  const addBar=`
+    <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+      <div style="display:flex;gap:8px;">
+        <input class="fld" id="newContactName" type="text" placeholder="Nombre" style="flex:1">
+        <input class="fld" id="newContactPhone" type="tel" placeholder="Celular" style="flex:1">
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-p" style="flex:1" onclick="addContactManual()">+ Agregar contacto</button>
+        <button class="btn btn-g" style="flex:1" onclick="importFromPhoneContacts()">📇 Importar agenda</button>
+      </div>
+    </div>`;
+
+  if(!onlineUsers.length){
+    el.innerHTML=`
+      <div style="text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;">
+        ${addBar}
+        <div style="font-size:52px">👋</div>
+        <h2 style="color:var(--t2)">Sin contactos todavía</h2>
+        <p style="font-size:14px;color:var(--t3);line-height:1.7;max-width:260px">Agregá un contacto por nombre y celular, o importá desde tu agenda del teléfono.</p>
+      </div>`;
+    return;
+  }
+  const onlineCount=onlineUsers.filter(u=>u.online).length;
+  el.innerHTML=`
+    <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
+      ${addBar}
+      <div style="text-align:center;margin-bottom:4px;">
+        <div style="font-size:13px;font-weight:700;color:var(--ok);letter-spacing:1px;">● ${onlineCount} ONLINE · ${onlineUsers.length} CONTACTOS</div>
+      </div>
+      ${onlineUsers.map(u=>{
+        if(!u.registrado){
+          // Contacto guardado pero todavía no tiene NOVU
+          return `
+          <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--s2);border:1.5px dashed var(--b);border-radius:16px;width:100%;opacity:.75;">
+            <div style="width:48px;height:48px;border-radius:50%;background:${u.color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;">${initials(u.nombre)}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:16px;font-weight:700;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(u.nombre)}</div>
+              <div style="font-size:12px;color:var(--t3);margin-top:2px;">Todavía no usa NOVU</div>
+            </div>
+            <button class="ibtn" style="width:auto;padding:0 10px;font-size:12px;" onclick="window.open('https://wa.me/${u.telefono.replace(/\\D/g,'')}?text='+encodeURIComponent('¡Hola! Te invito a chatear conmigo en NOVU 💬'))">Invitar</button>
+          </div>`;
+        }
+        return `
+          <button onclick="openRealtimeChat('${u.id}','${esc(u.nombre)}','${u.color}')"
+            style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--s2);border:1.5px solid var(--b);border-radius:16px;cursor:pointer;width:100%;text-align:left;transition:border-color .15s;"
+            onmouseover="this.style.borderColor='var(--p)'" onmouseout="this.style.borderColor='var(--b)'">
+            <div style="width:48px;height:48px;border-radius:50%;background:${u.color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;position:relative;">
+              ${initials(u.nombre)}
+              ${u.online?'<div style="position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;background:var(--ok);border:2px solid var(--s2);"></div>':''}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:16px;font-weight:700;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(u.nombre)}</div>
+              <div style="font-size:12px;color:${u.online?'var(--ok)':'var(--t3)'};margin-top:2px;">${u.online?'● Disponible ahora':'Sin conexión'}</div>
+            </div>
+            <div style="font-size:22px;">💬</div>
+          </button>`;
+      }).join('')}
+    </div>`;
+}
+
+function showChatView(partnerName,partnerColor,room){
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('chatView').classList.add('open');
+  document.getElementById('cName').textContent=partnerName;
+  document.getElementById('topTitle').textContent=partnerName;
+  const contact=onlineUsers.find(u=>u.id===S.activePartner?.id);
+  const isOnline=contact?contact.online:false;
+  document.getElementById('cSub').innerHTML=isOnline?`<span style="color:var(--ok)">● Online</span>`:`<span style="color:var(--t3)">Sin conexión</span>`;
+  // Redirigir envío de mensaje al sistema real
+  document.getElementById('chatView').dataset.realtimeMode='true';
+  renderRealtimeMsgs();
+}
+
+function backToUserList(){
+  if(realtimeSub){realtimeSub.unsubscribe();realtimeSub=null;}
+  S.activePartner=null;
+  document.getElementById('chatView').classList.remove('open');
+  document.getElementById('chatView').removeAttribute('data-realtime-mode');
+  showUserList();
+  renderChats();
+  document.getElementById('topTitle').textContent='Hola, '+S.user.name+' 👋';
+}
+
+// ═══════════════════════════════════════════════════
+// LOCAL STORAGE
+// ═══════════════════════════════════════════════════
+function saveLocal(){localStorage.setItem('novu4',JSON.stringify(S));}
+function loadLocal(){try{const d=localStorage.getItem('novu4');if(d)Object.assign(S,JSON.parse(d));}catch(e){}if(!S.user.id){S.user.id='u_'+Math.random().toString(36).slice(2,11);saveLocal();}}
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+const COLORS=['#7c6fd4','#e84393','#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#06b6d4'];
+function rndColor(){return COLORS[Math.floor(Math.random()*COLORS.length)];}
+function initials(n){return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function autoH(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function beepApp(f=600,d=0.08,v=0.12){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.setValueAtTime(v,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);o.start();o.stop(ctx.currentTime+d);}catch(e){}}
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);}
+
+// ═══════════════════════════════════════════════════
+// CHATS
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// SIDEBAR DE CONTACTOS (refleja onlineUsers = mis contactos)
+// ═══════════════════════════════════════════════════
+function renderChats(filter=''){
+  const list=document.getElementById('chatList');
+  if(!list)return;
+  const contacts=filter?onlineUsers.filter(u=>(u.nombre||'').toLowerCase().includes(filter.toLowerCase())):onlineUsers;
+  if(!contacts.length){list.innerHTML=`<div style="padding:20px;text-align:center;color:var(--t3);font-size:13px">${filter?'Sin resultados':'Sin contactos aún'}</div>`;return;}
+  list.innerHTML=contacts.map(u=>{
+    const activeClass=(S.activePartner&&S.activePartner.id===u.id)?' active':'';
+    const statusTxt=!u.registrado?'Todavía no usa NOVU':(u.online?'● Online':'Sin conexión');
+    const clickAction=u.registrado?`openRealtimeChat('${u.id}','${esc(u.nombre)}','${u.color}')`:`openOv('addContactOv')`;
+    return `<div class="ci${activeClass}" onclick="${clickAction}">
+      <div class="av" style="background:${u.color}">${initials(u.nombre)}</div>
+      <div class="ci-meta">
+        <div class="ci-name">${esc(u.nombre)}</div>
+        <div class="ci-prev" style="color:${u.online?'var(--ok)':'var(--t3)'}">${statusTxt}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterContacts(q){renderChats(q);}
+function filterChats(q){renderChats(q);}
+function clearChat(){
+  if(!S.activePartner){closeOv('chatMenuOv');return;}
+  if(!confirm('¿Limpiar mensajes localmente? (no se borran del otro lado)'))return;
+  const room=roomId(S.user.id,S.activePartner.id);
+  localMsgs[room]=[];
+  renderRealtimeMsgs();
+  closeOv('chatMenuOv');
+}
+function delChat(){
+  if(!S.activePartner){closeOv('chatMenuOv');return;}
+  if(!confirm('¿Salir de este chat?'))return;
+  closeOv('chatMenuOv');
+  backToUserList();
+}
+function exportChat(){
+  if(!S.activePartner){closeOv('chatMenuOv');return;}
+  const room=roomId(S.user.id,S.activePartner.id);
+  const msgs=localMsgs[room]||[];
+  const txt=msgs.map(m=>{
+    const who=m.emisor_id===S.user.id?S.user.name:S.activePartner.name;
+    const ts=m.created_at?new Date(m.created_at).toLocaleString('es'):'';
+    return `[${ts}] ${who}: ${m.contenido||''}`;
+  }).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  a.download=S.activePartner.name+'.txt';
+  a.click();
+  closeOv('chatMenuOv');
+}
+function sendMsg(){
+  if(!S.activePartner){toast('Abrí un chat primero');return;}
+  sendRealtimeMsg();
+}
+
+// Envía contenido no-texto (audio local, imagen) como mensaje realtime.
+// NOTA: audio/imagen se guardan como Object URL local (no persisten entre dispositivos/recargas);
+// solo created_at+contenido viajan por Supabase para el otro lado mostrar un aviso.
+// Sube un archivo (Blob/File) al bucket novu-media y devuelve la URL pública
+async function uploadToStorage(blob,ext,folder){
+  if(!db)throw new Error('Sin conexión a Supabase');
+  const path=`${folder}/${S.user.id}_${Date.now()}.${ext}`;
+  const{error}=await db.storage.from('novu-media').upload(path,blob,{cacheControl:'3600',upsert:false});
+  if(error)throw error;
+  const{data}=db.storage.from('novu-media').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// Envía contenido multimedia (audio/imagen/video) — sube a Supabase Storage para que
+// llegue de verdad al otro dispositivo, no solo como Object URL local.
+async function sendRealtimeMedia(tipo,blob,ext,folder,label,extraMeta={}){
+  if(!S.activePartner||!db){toast('Abrí un chat primero');return;}
+  const room=roomId(S.user.id,S.activePartner.id);
+  const tempId='tmp_'+Date.now();
+  const localUrl=URL.createObjectURL(blob);
+  const msg={id:tempId,_isTemp:true,_uploading:true,sala_id:room,emisor_id:S.user.id,emisor_nombre:S.user.name,tipo,contenido:label,localUrl,...extraMeta,created_at:new Date().toISOString()};
+  if(!localMsgs[room])localMsgs[room]=[];
+  localMsgs[room].push(msg);
+  renderRealtimeMsgs();
+  if(S.settings.sounds)beepApp(700,0.06);
+
+  try{
+    const publicUrl=await uploadToStorage(blob,ext,folder);
+    const idx=localMsgs[room].findIndex(m=>m.id===tempId);
+    if(idx!==-1){localMsgs[room][idx]._uploading=false;localMsgs[room][idx].mediaUrl=publicUrl;}
+    renderRealtimeMsgs();
+    const{data,error}=await db.from('novu_mensajes').insert({sala_id:room,emisor_id:S.user.id,emisor_nombre:S.user.name,tipo,contenido:publicUrl}).select().single();
+    if(error)throw error;
+    const idx2=localMsgs[room].findIndex(m=>m.id===tempId);
+    if(idx2!==-1)localMsgs[room][idx2]={...localMsgs[room][idx2],...data,mediaUrl:publicUrl,_isTemp:false,_uploading:false};
+    renderRealtimeMsgs();
+  }catch(e){
+    toast('⚠️ Error subiendo archivo: '+e.message);
+    const idx=localMsgs[room].findIndex(m=>m.id===tempId);
+    if(idx!==-1){localMsgs[room][idx]._failed=true;localMsgs[room][idx]._uploading=false;}
+    renderRealtimeMsgs();
+  }
+}
+
+// Texto/TTS — sin archivo, va directo
+function sendRealtimeExtra(tipo,contenido,extra={}){
+  if(!S.activePartner||!db){toast('Abrí un chat primero');return;}
+  const room=roomId(S.user.id,S.activePartner.id);
+  const tempId='tmp_'+Date.now();
+  const msg={id:tempId,_isTemp:true,sala_id:room,emisor_id:S.user.id,emisor_nombre:S.user.name,tipo,contenido,created_at:new Date().toISOString(),...extra};
+  if(!localMsgs[room])localMsgs[room]=[];
+  localMsgs[room].push(msg);
+  renderRealtimeMsgs();
+  if(S.settings.sounds)beepApp(700,0.06);
+  db.from('novu_mensajes').insert({sala_id:room,emisor_id:S.user.id,emisor_nombre:S.user.name,tipo,contenido}).select().single()
+    .then(({data,error})=>{
+      if(error){toast('⚠️ Error enviando: '+error.message);const idx=localMsgs[room].findIndex(m=>m.id===tempId);if(idx!==-1)localMsgs[room][idx]._failed=true;renderRealtimeMsgs();return;}
+      const idx=localMsgs[room].findIndex(m=>m.id===tempId);
+      if(idx!==-1)localMsgs[room][idx]={...localMsgs[room][idx],...data,_isTemp:false};
+      renderRealtimeMsgs();
+    });
+}
+
+// ═══════════════════════════════════════════════════
+// GRABACIÓN
+// ═══════════════════════════════════════════════════
+let recState={on:false,mr:null,chunks:[],t:0,iv:null};
+async function toggleRec(){if(recState.on)stopRec();else await startRec();}
+async function startRec(){try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});recState.mr=new MediaRecorder(stream);recState.chunks=[];recState.t=0;recState.on=true;const btn=document.getElementById('recBtn');btn.classList.add('rec');recState.iv=setInterval(()=>{recState.t++;const m=Math.floor(recState.t/60),s=recState.t%60;btn.textContent=`⏹️ ${m}:${String(s).padStart(2,'0')}`;},1000);recState.mr.ondataavailable=e=>recState.chunks.push(e.data);recState.mr.onstop=()=>{const blob=new Blob(recState.chunks,{type:'audio/webm'});const dur=`${Math.floor(recState.t/60)}:${String(recState.t%60).padStart(2,'0')}`;sendRealtimeMedia('audio',blob,'webm','audio','🎙️ Mensaje de voz',{dur});recState.on=false;clearInterval(recState.iv);const b=document.getElementById('recBtn');b.classList.remove('rec');b.textContent='🎤 Grabar';};recState.mr.start();}catch(e){toast('❌ Permite el micrófono');}}
+function stopRec(){if(recState.mr&&recState.on)recState.mr.stop();}
+let curAudio=null;
+function playAudio(url,i){if(!url){toast('Audio no disponible en este dispositivo');return;}if(curAudio){curAudio.pause();curAudio=null;}const a=new Audio(url);curAudio=a;a.ontimeupdate=()=>{const p=document.getElementById('ap'+i);if(p)p.style.width=(a.currentTime/a.duration*100)+'%';};a.onended=()=>{const p=document.getElementById('ap'+i);if(p)p.style.width='0%';};a.play().catch(()=>{});}
+
+// ═══════════════════════════════════════════════════
+// TTS
+// ═══════════════════════════════════════════════════
+function selVoice(t,el){S.tts.voice=t;document.querySelectorAll('.vopt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');}
+function updSpeed(v){S.tts.speed=parseFloat(v);const L={0.5:'Muy lento',0.75:'Lento',1:'Normal',1.25:'Rápido',1.5:'Muy rápido',2:'Doble'};document.getElementById('spLabel').textContent=L[v]||v+'x';}
+function speak(text,ov){if(!text)return;const u=new SpeechSynthesisUtterance(text);u.lang='es-ES';u.rate=S.tts.speed;const v=ov||S.tts.voice;u.pitch=v==='male'?0.7:v==='robot'?1.4:1.0;window.speechSynthesis.cancel();window.speechSynthesis.speak(u);}
+function speakTest(){speak(document.getElementById('ttsText').value.trim()||'Hola, soy NOVU');}
+function sendTTS(){
+  const text=document.getElementById('ttsText').value.trim();
+  if(!text){toast('Escribe algo');return;}
+  if(S.activePartner)sendRealtimeTTS();
+  speak(text);
+  closeOv('ttsOv');
+}
+
+// ═══════════════════════════════════════════════════
+// LLAMADAS
+// ═══════════════════════════════════════════════════
+let callState={active:false,mode:null,localStream:null,muted:false,robotOn:false,timer:0,iv:null};
+async function startCall(mode){
+  const partner=S.activePartner;
+  const name=partner?partner.name:null;
+  const color=partner?partner.color:'#7c6fd4';
+  if(!name){toast('Abrí un chat primero');return;}
+
+  callState.mode=mode;callState.active=true;callState.muted=false;
+  callState.robotOn=(mode==='robot');callState.timer=0;
+
+  const screen=document.getElementById('callScreen');
+  screen.classList.add('open');
+  document.getElementById('callAvatar').textContent=initials(name);
+  document.getElementById('callAvatar').style.background=color;
+  document.getElementById('callName').textContent=name;
+  document.getElementById('callStatus').textContent='Llamando…';
+  document.getElementById('callTimer').style.display='none';
+  document.getElementById('videoArea').style.display=mode==='video'?'block':'none';
+  document.getElementById('callHint').textContent=mode==='robot'?'🤖 Voz robot activa':'📞 Esperando respuesta…';
+  document.getElementById('robotBtn').style.background=callState.robotOn?'var(--p)':'#f59e0b';
+
+  try{
+    const constraints=mode==='video'?{audio:true,video:{facingMode:'user'}}:{audio:true};
+    callState.localStream=await navigator.mediaDevices.getUserMedia(constraints);
+    if(mode==='video')document.getElementById('localVideo').srcObject=callState.localStream;
+    // Simular conexión después de 1.5s (WebRTC real requeriría señalización)
+    setTimeout(()=>{
+      document.getElementById('callStatus').textContent='✅ Conectado';
+      document.getElementById('callHint').textContent='';
+      document.getElementById('callTimer').style.display='block';
+      callState.iv=setInterval(()=>{
+        callState.timer++;
+        const m=Math.floor(callState.timer/60),s=callState.timer%60;
+        document.getElementById('callTimer').textContent=`${m}:${String(s).padStart(2,'0')}`;
+      },1000);
+    },1500);
+  }catch(e){
+    let msg='❌ Permití el acceso al micrófono';
+    if(mode==='video')msg='❌ Permití el acceso a la cámara y micrófono';
+    toast(msg);
+    document.getElementById('callStatus').textContent='Sin permisos';
+    document.getElementById('callHint').textContent='Para llamar: Android → Configuración → Apps → NOVU → Permisos';
+    // No cerrar automáticamente — dejar que el usuario lea el mensaje
+    setTimeout(()=>endCall(),4000);
+  }
+}
+function toggleMute(){if(!callState.localStream)return;callState.muted=!callState.muted;callState.localStream.getAudioTracks().forEach(t=>t.enabled=!callState.muted);document.getElementById('muteBtn').textContent=callState.muted?'🔇':'🎙️';toast(callState.muted?'Silenciado':'Micrófono activo');}
+function toggleRobotVoice(){callState.robotOn=!callState.robotOn;document.getElementById('robotBtn').style.background=callState.robotOn?'var(--p)':'var(--warn)';toast(callState.robotOn?'🤖 Voz robot ON':'🎙️ Tu voz');}
+function endCall(){if(callState.localStream)callState.localStream.getTracks().forEach(t=>t.stop());clearInterval(callState.iv);callState={active:false,mode:null,localStream:null,muted:false,robotOn:false,timer:0,iv:null};document.getElementById('callScreen').classList.remove('open');window.speechSynthesis.cancel();}
+
+// ═══════════════════════════════════════════════════
+// SOS
+// ═══════════════════════════════════════════════════
+function saveSOS(){const name=document.getElementById('sosName').value.trim(),phone=document.getElementById('sosPhone').value.trim();if(!name||!phone){toast('Completa nombre y teléfono');return;}S.sos={name,phone};saveLocal();toast('✅ SOS guardado: '+name);}
+function triggerSOS(){openCrisis();}
+
+// ═══════════════════════════════════════════════════
+// CONTACTOS — múltiples SOS
+// ═══════════════════════════════════════════════════
+function addContact(){
+  const name=document.getElementById('cName').value.trim(),phone=document.getElementById('cPhone').value.trim();
+  if(!name||!phone){toast('Completa nombre y teléfono');return;}
+  S.contacts.push({id:'ct_'+Date.now(),name,phone,color:rndColor(),emergency:false});
+  saveLocal();renderContacts();
+  document.getElementById('cName').value='';document.getElementById('cPhone').value='';
+  toast('✅ '+name+' agregado');
+}
+function toggleEmergency(id){
+  const c=S.contacts.find(ct=>ct.id===id);
+  if(c){c.emergency=!c.emergency;saveLocal();renderContacts();toast(c.emergency?'🆘 '+c.name+' marcado como SOS':c.name+' quitado de SOS');}
+}
+function renderContacts(){
+  const list=document.getElementById('contactList');
+  if(!S.contacts.length){list.innerHTML='<p style="color:var(--t3);font-size:13px">Sin contactos. Agregá uno arriba.</p>';return;}
+  list.innerHTML=S.contacts.map(c=>`
+    <div class="contact-item">
+      <div class="contact-av" style="background:${c.color}">${initials(c.name)}</div>
+      <div class="contact-info">
+        <div class="contact-name">${esc(c.name)}${c.emergency?'<span class="emerg-badge">SOS</span>':''}</div>
+        <div class="contact-phone">${esc(c.phone)}</div>
+      </div>
+      <div class="contact-btns">
+        <button class="contact-btn" style="background:${c.emergency?'var(--danger)':'var(--s2)'};border:1px solid var(--b);font-size:14px" title="SOS" onclick="toggleEmergency('${c.id}')">⭐</button>
+        <button class="contact-btn" style="background:var(--ok)" onclick="window.open('tel:${c.phone}')">📞</button>
+        <button class="contact-btn" style="background:var(--p)" onclick="crisisCall('${c.id}')">🆘</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// IMAGEN
+// ═══════════════════════════════════════════════════
+function pickImg(){document.getElementById('imgInput').click();}
+function handleImg(e){
+  const file=e.target.files[0];if(!file)return;
+  const isVideo=file.type.startsWith('video/');
+  const ext=(file.name.split('.').pop()||(isVideo?'mp4':'jpg')).toLowerCase();
+  if(isVideo){
+    sendRealtimeMedia('video',file,ext,'video','🎬 Video');
+  }else{
+    sendRealtimeMedia('image',file,ext,'image','📷 Foto');
+  }
+  e.target.value='';
+}
+
+// ═══════════════════════════════════════════════════
+// EMOJIS
+// ═══════════════════════════════════════════════════
+const EMOJIS=['😀','😃','😄','😁','😆','😅','🤣','😂','😊','😇','🙂','😉','😍','🥰','😘','😋','😛','😜','🤪','😎','😏','😒','😔','😴','🥺','😢','😭','😡','🤬','😱','😨','🤯','🥳','🤩','🫡','👍','👎','👏','🙌','🤝','💪','💃','🕺','🎉','❤️','🧡','💛','💚','💙','💜','🔥','⭐','✅','❌','💡','🎯','🚀','🙏','🫶','🤗'];
+function renderEmojis(){document.getElementById('emojiGrid').innerHTML=EMOJIS.map(e=>`<button class="eb" onclick="insertEmoji('${e}')">${e}</button>`).join('');}
+function insertEmoji(e){const i=document.getElementById('msgIn');i.value+=e;i.focus();closeOv('emojiOv');}
+
+// ═══════════════════════════════════════════════════
+// AJUSTES
+// ═══════════════════════════════════════════════════
+function saveName(){const v=document.getElementById('nameField').value.trim();if(!v)return;S.user.name=v;saveLocal();toast('✅ Nombre guardado: '+v);if(db)startOnlineMode();}
+function togPref(key,el){S.settings[key]=!S.settings[key];el.classList.toggle('on',S.settings[key]);if(key==='notifs'&&S.settings.notifs&&'Notification'in window)Notification.requestPermission();saveLocal();}
+function togCls(cls,key,el){S.settings[key]=!S.settings[key];document.body.classList.toggle(cls,S.settings[key]);el.classList.toggle('on',S.settings[key]);saveLocal();}
+function applySettings(){if(S.settings.bigText)document.body.classList.add('big-text');if(S.settings.hiContrast)document.body.classList.add('hi-contrast');if(S.settings.noAnim)document.body.classList.add('no-anim');[['tSounds','sounds'],['tNotifs','notifs'],['tBig','bigText'],['tHi','hiContrast'],['tAnim','noAnim']].forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',S.settings[k]);});}
+function toggleTheme(){document.body.classList.toggle('light');}
+
+// ═══════════════════════════════════════════════════
+// OVERLAYS APP
+// ═══════════════════════════════════════════════════
+function openOv(id){document.getElementById(id)?.classList.add('open');}
+function closeOv(id){document.getElementById(id)?.classList.remove('open');}
+function ovClick(e,id){if(e.target.id===id)closeOv(id);}
+function toggleSB(){const sb=document.getElementById('sidebar'),bd=document.getElementById('sbBackdrop'),o=sb.classList.toggle('open');bd.classList.toggle('open',o);}
+// Stubs — el módulo de juegos no está implementado todavía
+function openGames(){document.getElementById('gamesOv')?.classList.add('open');toast('🎮 Juegos: próximamente');}
+function closeGames(){document.getElementById('gamesOv')?.classList.remove('open');}
+function switchGame(){toast('🎮 Próximamente');}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbBackdrop').classList.remove('open');}
+
+// ═══════════════════════════════════════════════════
+// CRISIS — contactos personalizados + voz
+// ═══════════════════════════════════════════════════
+function openCrisis(){
+  document.getElementById('crisisOv').classList.add('open');
+  renderCrisisContacts();
+  try{const u=new SpeechSynthesisUtterance('Modo emergencia. ¿A quién querés llamar?');u.lang='es-ES';window.speechSynthesis.speak(u);}catch(e){}
+}
+function closeCrisis(){document.getElementById('crisisOv').classList.remove('open');window.speechSynthesis.cancel();}
+function renderCrisisContacts(){
+  const list=document.getElementById('crisisList');
+  const sos=S.contacts.filter(c=>c.emergency);
+  const source=sos.length?sos:S.contacts;
+  if(!source.length){
+    list.innerHTML=`<div class="crisis-no-contacts">😔 No tenés contactos.<br>Agregá uno en <strong>⚙️ Configuración → Contactos</strong><br><br><button class="btn btn-p" onclick="closeCrisis();openOv('settingsOv')">Ir a Contactos</button></div>`;return;
+  }
+  list.innerHTML=source.map(c=>`
+    <button class="crisis-btn" onclick="crisisCall('${c.id}')">
+      <div class="cav" style="background:${c.color}">${initials(c.name)}</div>
+      <div class="cinfo"><div class="cname">${esc(c.name)}</div><div class="caction">📱 Enviar alerta de crisis${c.phone?' · '+c.phone:''}</div></div>
+      <span style="font-size:22px">📲</span>
+    </button>`).join('');
+}
+function crisisCall(contactId){
+  const c=S.contacts.find(ct=>ct.id===contactId);
+  if(!c){closeCrisis();return;}
+  const sendWA=(lat,lon)=>{
+    const locTxt=lat?` Estoy aquí: https://maps.google.com/?q=${lat},${lon}`:'';
+    const msg=encodeURIComponent('🆘 NOVU CRISIS — '+(S.user.name||'Tu contacto')+' necesita ayuda urgente ahora mismo.'+locTxt);
+    window.open('https://wa.me/'+c.phone.replace(/\D/g,'')+'?text='+msg,'_blank');
+  };
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>sendWA(pos.coords.latitude,pos.coords.longitude),()=>sendWA(null,null),{timeout:3000});
+  } else sendWA(null,null);
+  try{const u=new SpeechSynthesisUtterance('Avisando a '+c.name+'. Estamos con vos.');u.lang='es-ES';window.speechSynthesis.cancel();window.speechSynthesis.speak(u);}catch(e){}
+  toast('🆘 Avisando a '+c.name+'...');
+  closeCrisis();
+}
+function startCrisisVoice(){
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){toast('Tu navegador no soporta comandos de voz');return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const sr=new SR();sr.lang='es-UY';sr.continuous=false;sr.interimResults=false;
+  const vbar=document.getElementById('voiceBar');if(vbar)vbar.classList.add('active');
+  sr.onend=()=>{if(vbar)vbar.classList.remove('active');};
+  sr.onresult=e=>{
+    const txt=e.results[0][0].transcript.toLowerCase();
+    toast('🎤 "'+txt+'"');
+    const crisisWords=['me siento mal','necesito ayuda','auxilio','socorro','emergencia','crisis','me duele','ayudame','ayuda'];
+    if(crisisWords.some(w=>txt.includes(w))){openCrisis();return;}
+    const callMatch=txt.match(/(?:llam[aá]|avis[aá]|contac[ta]|mand[aá])(?:\s+a)?\s+([a-záéíóúüñ\s]+)/i);
+    if(callMatch){
+      const name=callMatch[1].trim().toLowerCase();
+      const found=S.contacts.find(c=>c.name.toLowerCase().includes(name));
+      if(found){crisisCall(found.id);return;}
+      toast('No encontré a "'+name+'"');return;
+    }
+    if(S.activePartner){document.getElementById('msgIn').value=txt;}
+  };
+  sr.onerror=()=>{if(vbar)vbar.classList.remove('active');toast('❌ Error de micrófono');};
+  sr.start();toast('🎤 Escuchando...');
+}
+
+// ═══════════════════════════════════════════════════
+// BLUETOOTH — auto / manos libres
+// ═══════════════════════════════════════════════════
+let btDevice=null,btConnected=false;
+function toggleBT(){document.getElementById('btPanel').classList.toggle('open');}
+async function btScan(){
+  if(!navigator.bluetooth){toast('❌ Bluetooth requiere Chrome Android');setBtStatus('off','No disponible');return;}
+  try{
+    setBtStatus('scanning','Buscando...');
+    btDevice=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:['battery_service','generic_access']});
+    btDevice.addEventListener('gattserverdisconnected',onBtDisc);
+    btConnected=true;
+    setBtStatus('connected','Conectado: '+(btDevice.name||'Dispositivo'));
+    document.getElementById('btDevName').textContent=btDevice.name||'Auto / Manos libres';
+    document.getElementById('btBtn').textContent='🚗🔵';
+    toast('🚗 Conectado a '+(btDevice.name||'dispositivo'));
+    renderBtContacts();
+  }catch(e){if(e.name!=='NotFoundError')toast('Error: '+e.message);setBtStatus('off','Sin conectar');}
+}
+function onBtDisc(){btConnected=false;setBtStatus('off','Desconectado');document.getElementById('btBtn').textContent='🚗';toast('🚗 Bluetooth desconectado');}
+function btDisconnect(){if(btDevice&&btDevice.gatt.connected)btDevice.gatt.disconnect();else onBtDisc();}
+function setBtStatus(state,msg){
+  const dot=document.getElementById('btDot'),txt=document.getElementById('btStatusTxt');
+  if(dot)dot.className='bt-dot'+(state==='connected'?' connected':state==='scanning'?' scanning':'');
+  if(txt)txt.textContent=msg;
+}
+function renderBtContacts(){
+  const list=document.getElementById('btContactList');if(!list)return;
+  if(!S.contacts.length){list.innerHTML='<div class="bt-hint">Agregá contactos en ⚙️ para llamar desde el auto.</div>';return;}
+  const sos=S.contacts.filter(c=>c.emergency);
+  const show=(sos.length?sos:S.contacts).slice(0,5);
+  list.innerHTML=show.map(c=>`<button class="bt-action-btn" onclick="window.open('tel:${c.phone.replace(/\D/g,'')}')"><div style="width:32px;height:32px;border-radius:50%;background:${c.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0">${initials(c.name)}</div><span>${esc(c.name)}</span><span style="margin-left:auto;font-size:11px;color:var(--t3)">${c.phone}</span></button>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// ARRANQUE
+// ═══════════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  loadLocal();applySettings();renderEmojis();renderContacts();
+  document.getElementById('nameField').value=S.user.name||'';
+  if(S.sb.url)document.getElementById('sbUrl').value=S.sb.url;
+  if(S.sb.key)document.getElementById('sbKey').value=S.sb.key;
+  if(S.sos.name)document.getElementById('sosName').value=S.sos.name;
+  if(S.sos.phone)document.getElementById('sosPhone').value=S.sos.phone;
+  // Migrar contactos legacy SOS
+  if(S.sos.name&&S.sos.phone&&!S.contacts.find(c=>c.phone===S.sos.phone)){
+    S.contacts.push({id:'ct_sos',name:S.sos.name,phone:S.sos.phone,color:'#ff4444',emergency:true});
+    saveLocal();renderContacts();
+  }
+  // Iniciar Supabase y determinar pantalla inicial
+  initSB();
+  // Mostrar pantalla de nombre+celular si falta alguno
+  if(!S.user.name||!S.user.name.trim()||!S.user.phone){
+    showNameScreen();
+  }
+  renderChats();
+  // startOnlineMode() se llama desde _initSBClient() si ya tiene nombre+celular
+});
+
+</script>
+</body>
+</html>
