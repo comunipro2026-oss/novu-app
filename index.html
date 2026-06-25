@@ -1,463 +1,159 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>NOVU — Sistema Conversacional Adaptativo Completo</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&family=Cabinet+Grotesk:wght@400;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --bg: #0b141a;
-      --bg2: #111b21;
-      --surface: #202c33;
-      --surface2: #2a3942;
-      --border: #222d34;
-      --border2: #374248;
-      --accent: #8b7cf8; 
-      --accent-dim: rgba(139, 124, 248, 0.15);
-      --accent-wa: #00a884;
-      --accent2: #f0b96a; 
-      --accent3: #53bdeb; 
-      --accent4: #ea0038; 
-      --text: #e9edef;
-      --text2: #8696a0;
-      --text3: #667781;
-      --me-bubble: #005c4b; 
-      --other-bubble: #202c33; 
-      --font-display: 'Fraunces', serif;
-      --font-body: 'Cabinet Grotesk', sans-serif;
-      --fs-base: 15px;
-    }
-
-    body.light-theme {
-      --bg: #efeae2;
-      --bg2: #f0f2f5;
-      --surface: #ffffff;
-      --surface2: #f0f2f5;
-      --border: #e9edef;
-      --border2: #d1d7db;
-      --text: #111b21;
-      --text2: #667781;
-      --text3: #8696a0;
-      --me-bubble: #d9fdd3;
-      --other-bubble: #ffffff;
-    }
-
-    body.big-text { --fs-base: 19px; }
-    body.hi-contrast {
-      --bg: #000000; --bg2: #111111; --surface: #222222; --surface2: #333333;
-      --text: #ffffff; --text2: #ffff00; --accent: #00ff00;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; width: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: var(--fs-base); overflow: hidden; }
-
-    /* ONBOARDING */
-    #onboarding { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: var(--bg); z-index: 100; overflow-y: auto; }
-    .ob-logo { font-family: var(--font-display); font-size: 55px; font-weight: 900; color: var(--accent); margin-bottom: 4px; }
-    .ob-card { background: var(--bg2); border: 1px solid var(--border2); border-radius: 20px; padding: 24px; width: 100%; max-width: 460px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-    .ob-field { margin-bottom: 12px; }
-    .ob-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; margin-bottom: 4px; display: block; }
-    .ob-input { width: 100%; background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; padding: 10px; color: var(--text); outline: none; }
-    .ob-modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
-    .ob-mode { background: var(--surface); border: 1.5px solid var(--border2); border-radius: 8px; padding: 8px 4px; cursor: pointer; text-align: center; }
-    .ob-mode.selected { border-color: var(--accent); background: var(--accent-dim); }
-    .ob-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; margin-top: 10px; }
-
-    /* APP LAYOUT */
-    #app { display: none; height: 100%; flex-direction: column; }
-    #app.visible { display: flex; }
-    .app-header { display: flex; align-items: center; padding: 10px 16px; background: var(--bg2); border-bottom: 1px solid var(--border); gap: 10px; }
-    .app-header-user { flex: 1; }
-    .app-header-name { font-size: 14px; font-weight: 700; }
-    .app-header-mode { font-size: 11px; color: var(--accent2); }
-    
-    .header-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border2); color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-    .header-btn.active { background: var(--accent4); color: white; }
-    .sos-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--accent4); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
-    .app-body { flex: 1; display: flex; overflow: hidden; }
-    .sidebar { width: 280px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-    .chat-list { flex: 1; overflow-y: auto; padding: 4px; }
-    .chat-item { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; cursor: pointer; margin-bottom: 2px; }
-    .chat-item.active { background: var(--surface); }
-    .chat-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--border2); display: flex; align-items: center; justify-content: center; font-weight: bold; }
-    .chat-info { flex: 1; min-width: 0; }
-    .chat-preview { font-size: 12px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    /* ÁREA DE CHAT */
-    .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
-    .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background-image: radial-gradient(var(--border) 1px, transparent 0); background-size: 16px 16px; }
-    
-    .msg-group { display: flex; flex-direction: column; max-width: 70%; position: relative; }
-    .msg-group.me { align-self: flex-end; align-items: flex-end; }
-    .msg-group.other { align-self: flex-start; align-items: flex-start; }
-    
-    .bubble { padding: 10px 12px 22px 12px; border-radius: 8px; font-size: 14px; line-height: 1.4; position: relative; word-break: break-word; cursor: pointer; }
-    .me .bubble { background: var(--me-bubble); color: var(--text); }
-    .other .bubble { background: var(--other-bubble); color: var(--text); border: 1px solid var(--border); }
-    .bubble-meta { position: absolute; bottom: 2px; right: 8px; display: flex; align-items: center; gap: 3px; font-size: 10px; color: var(--text3); }
-    .me .bubble-meta { color: rgba(233, 237, 239, 0.6); }
-
-    /* COMPONENTES COGNITIVOS */
-    .novu-card { background: rgba(139, 124, 248, 0.08); border: 1px solid rgba(139, 124, 248, 0.3); border-radius: 8px; padding: 10px; margin-top: 6px; width: 100%; font-size: 12px; }
-    .novu-card-header { font-size: 10px; font-weight: 800; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; }
-    .task-item { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
-    .task-cb { width: 14px; height: 14px; border: 1.5px solid var(--border2); border-radius: 3px; cursor: pointer; }
-    .task-cb.done { background: var(--accent-wa); border-color: var(--accent-wa); }
-
-    /* ENTRADAS Y PANELES */
-    .input-panel { padding: 10px 16px; background: var(--bg2); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
-    .input-row { display: flex; align-items: center; gap: 8px; }
-    .chat-input { flex: 1; background: var(--surface); border: none; border-radius: 8px; padding: 12px; color: var(--text); outline: none; }
-    
-    .picto-panel { display: none; background: var(--surface); border-radius: 10px; padding: 10px; }
-    .picto-panel.show { display: block; }
-    .picto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 6px; max-height: 120px; overflow-y: auto; }
-    .picto-item { background: var(--bg2); padding: 6px; border-radius: 6px; text-align: center; cursor: pointer; font-size: 18px; }
-    .picto-item span { display: block; font-size: 10px; color: var(--text2); }
-
-    /* FLOTANTES */
-    .msg-menu { display: none; position: absolute; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 4px; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-    .msg-menu button { background: none; border: none; color: var(--text); padding: 8px 12px; display: block; width: 100%; text-align: left; cursor: pointer; font-size: 12px; }
-    .status-banner { background: var(--accent-dim); color: var(--text); padding: 6px; text-align: center; font-size: 12px; display: none; }
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 110; align-items: center; justify-content: center; padding: 16px; }
-    .modal.show { display: flex; }
-    .modal-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NOVU — Ecosistema Maestro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;700;900&family=Cabinet+Grotesk:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0b141a; --surface: #202c33; --accent: #8b7cf8; --accent-danger: #ea0038; --text: #e9edef; --text2: #8696a0; --me: #005c4b; }
+        .light { --bg: #efeae2; --surface: #ffffff; --text: #111b21; --text2: #667781; --me: #d9fdd3; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Cabinet Grotesk', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
+        
+        /* Layout */
+        #app { display: none; height: 100vh; grid-template-columns: 280px 1fr; }
+        .sidebar { background: var(--surface); border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .chat-area { display: flex; flex-direction: column; height: 100%; position: relative; }
+        
+        /* Botones e UI */
+        .btn { padding: 12px; border-radius: 12px; border: none; cursor: pointer; background: var(--accent); color: white; font-weight: bold; }
+        .pulse { animation: pulse 2s infinite; background: var(--accent-danger) !important; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        
+        /* Pictogramas */
+        .picto-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 15px; background: var(--surface); border-top: 1px solid #333; }
+        .picto { font-size: 2rem; cursor: pointer; text-align: center; background: var(--bg); padding: 10px; border-radius: 8px; }
+        
+        /* Modales */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999; display: none; align-items: center; justify-content: center; color: white; text-align: center; }
+    </style>
 </head>
 <body>
 
-  <div id="onboarding">
-    <div class="ob-logo">NOVU</div>
-    <div class="ob-card">
-      <div class="ob-field">
-        <label class="ob-label">Tu Nombre o Alias</label>
-        <input type="text" id="ob-alias" class="ob-input" value="Usuario">
-      </div>
-      <div class="ob-field">
-        <label class="ob-label">Supabase URL (Sincronización)</label>
-        <input type="text" id="ob-sburl" class="ob-input" placeholder="https://your-id.supabase.co">
-      </div>
-      <div class="ob-field">
-        <label class="ob-label">Supabase Anon Key</label>
-        <input type="password" id="ob-sbkey" class="ob-input" placeholder="eyJhbGciOi...">
-      </div>
-      <div class="ob-field">
-        <label class="ob-label">Gemini API Key (Inteligencia Artificial)</label>
-        <input type="password" id="ob-gemini" class="ob-input" placeholder="AIzaSy...">
-      </div>
-      <div class="ob-field">
-        <label class="ob-label">Perfil de Carga Cognitiva</label>
-        <div class="ob-modes">
-          <div class="ob-mode selected" data-mode="neuro" onclick="selectProfile(this)">🧠<br><span style="font-size:9px">Neuro</span></div>
-          <div class="ob-mode" data-mode="calm" onclick="selectProfile(this)">🍃<br><span style="font-size:9px">Calma</span></div>
-          <div class="ob-mode" data-mode="direct" onclick="selectProfile(this)">⚡<br><span style="font-size:9px">Directo</span></div>
-          <div class="ob-mode" data-mode="executive" onclick="selectProfile(this)">📋<br><span style="font-size:9px">Normal</span></div>
+<!-- ONBOARDING (INCLUSIÓN) -->
+<div id="onboarding" style="position:fixed; inset:0; z-index:1000; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+    <h1 style="font-family:'Fraunces'; font-size:4rem; color:var(--accent);">NOVU</h1>
+    <div style="background:var(--surface); padding:30px; border-radius:20px; width:100%; max-width:350px;">
+        <input type="text" id="username" placeholder="Tu Nombre" style="width:100%; padding:15px; border-radius:8px; border:none; margin-bottom:10px;">
+        <p style="font-size:12px; color:var(--text2); margin-bottom:10px;">Selecciona tu perfil de interacción:</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button class="btn" onclick="setProfile('Neuro')">🧠 Neuro</button>
+            <button class="btn" onclick="setProfile('Calma')">🍃 Calma</button>
+            <button class="btn" onclick="setProfile('Directo')">⚡ Directo</button>
+            <button class="btn" onclick="setProfile('Equilibrado')">📋 Equilibrado</button>
         </div>
-      </div>
-      <button class="ob-btn" onclick="initApp()">Iniciar Ecosistema Completo</button>
+        <button class="btn" style="width:100%; margin-top:20px; background:#444;" onclick="initApp()">Iniciar Sesión</button>
     </div>
-  </div>
+</div>
 
-  <div id="app">
-    <div class="status-banner" id="voice-banner">🎙️ Escuchando comandos de voz manos libres...</div>
+<!-- APP PRINCIPAL -->
+<div id="app">
+    <aside class="sidebar">
+        <div style="padding:15px; font-weight:bold;">Contactos</div>
+        <div id="contact-list" style="flex:1; overflow-y:auto;"></div>
+        <button class="btn" style="margin:10px;" onclick="addContact()">+ Importar Contacto</button>
+    </aside>
     
-    <header class="app-header">
-      <div class="app-header-user">
-        <div class="app-header-name" id="user-display-name">---</div>
-        <div class="app-header-mode" id="user-display-profile">---</div>
-      </div>
-      <button class="header-btn" id="hf-btn" title="Activar Control de Voz Manos Libres" onclick="toggleVoiceControl()">🎙️</button>
-      <button class="header-btn" title="Invitación de Enlace" onclick="shareNovuLink()">🔗</button>
-      <button class="header-btn" title="Cambiar Vista de Color" onclick="toggleVisualTheme()">🎨</button>
-      <button class="header-btn" title="Tamaño de Letra" onclick="toggleTextSize()">Aa</button>
-      <button class="header-btn" title="Entrenamiento Cognitivo" onclick="openGamesModal()">🎮</button>
-      <button class="sos-btn" onclick="openSOSModal()">SOS</button>
-    </header>
-
-    <div class="app-body">
-      <aside class="sidebar">
-        <div class="chat-list" id="sidebar-chats"></div>
-      </aside>
-
-      <main class="chat-area">
-        <div class="messages" id="message-container"></div>
-
-        <div id="context-menu" class="msg-menu">
-          <button onclick="triggerEditMessage()">✏️ Editar Mensaje</button>
-          <button onclick="triggerDeleteMessage()" style="color:var(--accent4)">🗑️ Eliminar Mensaje</button>
+    <main class="chat-area">
+        <header style="padding:15px; display:flex; justify-content:space-between; background:var(--surface);">
+            <h2 id="chat-title">Chat de NOVU</h2>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" onclick="toggleTheme()">🎨</button>
+                <button class="btn" onclick="toggleCall()">📞</button>
+                <button class="btn pulse" onclick="triggerSOS()">SOS</button>
+            </div>
+        </header>
+        
+        <div id="msg-container" style="flex:1; overflow-y:auto; padding:20px;"></div>
+        
+        <div id="picto-bar" class="picto-grid" style="display:none;"></div>
+        
+        <div style="padding:15px; background:var(--surface); display:flex; gap:10px;">
+            <button class="btn" onclick="togglePictos()">🧩</button>
+            <button class="btn" onclick="toggleVoice()">🎙️</button>
+            <input type="text" id="input" style="flex:1; padding:10px; border-radius:8px; border:none;" placeholder="Escribe tu mensaje...">
+            <button class="btn" onclick="sendMessage()">Enviar</button>
         </div>
+    </main>
+</div>
 
-        <div class="input-panel">
-          <div class="input-row">
-            <button class="header-btn" onclick="togglePictoPanel()">🧩</button>
-            <input type="text" id="message-input" class="chat-input" placeholder="Escribe o usa comandos de voz..." onkeypress="handleKeyPress(event)">
-            <button class="header-btn" style="background:var(--accent-wa); color:white" onclick="sendMessage()">➔</button>
-          </div>
-          <div class="picto-panel" id="picto-selector">
-            <div class="picto-grid" id="picto-grid-container"></div>
-          </div>
-        </div>
-      </main>
+<!-- MODAL LLAMADA -->
+<div id="call-modal" class="modal">
+    <div>
+        <h2>Llamada Activa</h2>
+        <p>Conectando con tu contacto...</p>
+        <button class="btn" style="background:var(--accent-danger);" onclick="toggleCall()">Colgar</button>
     </div>
-  </div>
+</div>
 
-  <div class="modal" id="sos-modal">
-    <div class="modal-card">
-      <h3 style="color:var(--accent4); margin-bottom:12px">🚨 Red de Apoyo de Emergencia</h3>
-      <div id="sos-list"></div>
-      <button class="ob-btn" style="background:var(--surface2)" onclick="closeModal('sos-modal')">Cerrar</button>
-    </div>
-  </div>
-
-  <div class="modal" id="games-modal">
-    <div class="modal-card">
-      <h3 style="color:var(--accent); margin-bottom:12px">🎮 Estímulo Cognitivo</h3>
-      <button class="ob-btn" onclick="startMemoryGame()">Juego de Memoria con Emojis</button>
-      <div id="game-space" style="margin-top:14px; max-height:200px; overflow-y:auto;"></div>
-      <button class="ob-btn" style="background:var(--surface2); margin-top:10px;" onclick="closeModal('games-modal')">Salir</button>
-    </div>
-  </div>
-
-  <script>
-    let state = JSON.parse(localStorage.getItem('novu_master_state')) || {
-      user: { name: 'Usuario', profile: 'neuro' },
-      sbUrl: '', sbKey: '', geminiKey: '',
-      activeChatId: 'mama',
-      chats: [
-        { id: 'mama', name: 'Mamá (Cuidadora)', initials: 'MA' },
-        { id: 'medico', name: 'Dr. Benavídez (Terapeuta)', initials: 'DB' }
-      ],
-      messages: {
-        mama: [{ id: 1, from: 'other', text: 'Hola, acordate de tomar la medicación de las 10:00.', time: '09:30' }],
-        medico: [{ id: 2, from: 'other', text: 'Hola, ¿cómo manejaste los niveles de estrés hoy?', time: '08:00' }]
-      }
+<script>
+    // --- ESTADO Y PERSISTENCIA ---
+    let state = JSON.parse(localStorage.getItem('novu_maestro')) || { 
+        profile: 'Neuro', 
+        messages: [{text: 'Bienvenido a NOVU. ¿Cómo te sientes hoy?'}], 
+        contacts: ['Familia', 'Apoyo', 'Dr. Benavídez'] 
     };
 
-    let selectedMsgId = null;
-    let voiceRecognizer = null;
-    let isVoiceActive = false;
-
-    const PICTOGRAMS = [
-      { emoji: '👍', txt: 'Entendido' }, { emoji: '❌', txt: 'No puedo' },
-      { emoji: '💊', txt: 'Medicación' }, { emoji: '🏠', txt: 'Ir a Casa' },
-      { emoji: '🍽️', txt: 'Comer' }, { emoji: '🙏', txt: 'Gracias' }
-    ];
-
-    function saveState() { localStorage.setItem('novu_master_state', JSON.stringify(state)); }
-    function selectProfile(el) { document.querySelectorAll('.ob-mode').forEach(m => m.classList.remove('selected')); el.classList.add('selected'); state.user.profile = el.dataset.mode; }
-
     function initApp() {
-      state.user.name = document.getElementById('ob-alias').value.trim() || state.user.name;
-      state.sbUrl = document.getElementById('ob-sburl').value.trim();
-      state.sbKey = document.getElementById('ob-sbkey').value.trim();
-      state.geminiKey = document.getElementById('ob-gemini').value.trim();
-
-      document.getElementById('user-display-name').textContent = state.user.name;
-      document.getElementById('user-display-profile').textContent = 'Modo: ' + state.user.profile.toUpperCase();
-      
-      document.getElementById('onboarding').style.display = 'none';
-      document.getElementById('app').classList.add('visible');
-
-      if(state.user.profile === 'calm') document.body.classList.add('light-theme');
-      
-      saveState();
-      renderSidebar();
-      renderActiveChat();
-      renderPictograms();
-      initSupabasePolling();
+        state.user = document.getElementById('username').value || 'Usuario';
+        document.getElementById('onboarding').style.display = 'none';
+        document.getElementById('app').style.display = 'grid';
+        render();
     }
 
-    function renderSidebar() {
-      const container = document.getElementById('sidebar-chats');
-      container.innerHTML = '';
-      state.chats.forEach(c => {
-        const active = c.id === state.activeChatId ? 'active' : '';
-        const msgs = state.messages[c.id] || [];
-        const last = msgs.length ? msgs[msgs.length - 1].text : 'Sin chats';
-        container.innerHTML += `
-          <div class="chat-item ${active}" onclick="switchChat('${c.id}')">
-            <div class="chat-avatar">${c.initials}</div>
-            <div class="chat-info"><strong>${c.name}</strong><div class="chat-preview">${last}</div></div>
-          </div>
-        `;
-      });
+    function render() {
+        document.getElementById('msg-container').innerHTML = state.messages.map(m => 
+            `<div style="background:var(--surface); padding:12px; margin-bottom:10px; border-radius:8px;">${m.text}</div>`
+        ).join('');
+        document.getElementById('contact-list').innerHTML = state.contacts.map(c => 
+            `<div style="padding:15px; border-bottom:1px solid #333; cursor:pointer;">👤 ${c}</div>`
+        ).join('');
+        localStorage.setItem('novu_maestro', JSON.stringify(state));
     }
 
-    function renderActiveChat() {
-      const container = document.getElementById('message-container');
-      container.innerHTML = '';
-      (state.messages[state.activeChatId] || []).forEach(m => {
-        const isMe = m.from === 'me';
-        let aiHtml = '';
-        if(m.aiData) {
-          if(m.aiData.summary) aiHtml += `<div class="novu-card"><div class="novu-card-header">⚡ RESUMEN COGNITIVO</div>${m.aiData.summary}</div>`;
-          if(m.aiData.tasks) {
-            let tasks = m.aiData.tasks.map(t => `<div class="task-item"><div class="task-cb" onclick="this.classList.toggle('done')"></div><span>${t}</span></div>`).join('');
-            aiHtml += `<div class="novu-card"><div class="novu-card-header">📋 PASO A PASO EJECUTIVO</div>${tasks}</div>`;
-          }
+    // --- ACCIONES ---
+    function sendMessage() {
+        const inp = document.getElementById('input');
+        if(inp.value.trim()) {
+            state.messages.push({text: inp.value});
+            inp.value = '';
+            render();
         }
-        container.innerHTML += `
-          <div class="msg-group ${m.from}">
-            <div class="bubble" onclick="openMsgMenu(event, ${m.id}, '${m.from}')">
-              ${m.text} ${aiHtml}
-              <div class="bubble-meta"><span>${m.time}</span>${isMe ? ' ✓✓' : ''}</div>
-            </div>
-          </div>
-        `;
-      });
-      container.scrollTop = container.scrollHeight;
     }
 
-    async function sendMessage() {
-      const inp = document.getElementById('message-input');
-      const text = inp.value.trim();
-      if(!text) return;
-
-      const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      const msg = { id: Date.now(), from: 'me', text, time: timeStr };
-      state.messages[state.activeChatId].push(msg);
-      inp.value = '';
-      
-      saveState(); renderActiveChat(); renderSidebar();
-      await syncWithSupabase(text);
-      await processGeminiAI(text);
+    function toggleVoice() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'es-ES';
+        recognition.start();
+        alert("Escuchando comando...");
+        recognition.onresult = (e) => {
+            const transcript = e.results[0][0].transcript;
+            document.getElementById('input').value = transcript;
+        };
     }
 
-    // PROCESAMIENTO DINÁMICO DE GEMINI IA CON CONFIGURACIÓN DE AGENTES
-    async function processGeminiAI(userText) {
-      if(!state.geminiKey) return;
-      const currentChat = state.chats.find(c => c.id === state.activeChatId);
-      
-      const prompt = `
-        Actúa como "${currentChat.name}". El usuario tiene perfil cognitivo: "${state.user.profile}".
-        Responde a: "${userText}". 
-        Devuelve estrictamente un objeto JSON plano (sin formato markdown \`\`\`) con esta estructura exacta:
-        {"reply": "tu respuesta", "summary": "resumen simplificado si aplica", "tasks": ["tarea 1", "tarea 2"]}
-      `;
-
-      try {
-        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.geminiKey}`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const res = await r.json();
-        const rawText = res.candidates[0].content.parts[0].text.trim().replace(/^```json/, '').replace(/```$/, '');
-        const data = JSON.parse(rawText);
-
-        state.messages[state.activeChatId].push({
-          id: Date.now(), from: 'other', text: data.reply,
-          time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-          aiData: { summary: data.summary, tasks: data.tasks.length ? data.tasks : null }
-        });
-        saveState(); renderActiveChat(); renderSidebar();
-      } catch(e) { console.error("Error en IA Gemini", e); }
+    function togglePictos() {
+        const bar = document.getElementById('picto-bar');
+        bar.style.display = bar.style.display === 'none' ? 'grid' : 'none';
     }
 
-    // INTEGRACIÓN SUPABASE SINCRO COMPLETA (POLLING)
-    function initSupabasePolling() {
-      if(!state.sbUrl || !state.sbKey) return;
-      setInterval(async () => {
-        try {
-          const r = await fetch(`${state.sbUrl}/rest/v1/mensajes?order=id.desc&limit=1`, {
-            headers: { 'apikey': state.sbKey, 'Authorization': `Bearer ${state.sbKey}` }
-          });
-          const nuevos = await r.json();
-          if(nuevos.length && nuevos[0].alias !== state.user.name) {
-            // Recibe datos externos reales si existen en tu base de datos distribuida
-          }
-        } catch(e){}
-      }, 4000);
+    function toggleCall() {
+        const modal = document.getElementById('call-modal');
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
     }
 
-    async function syncWithSupabase(contenido) {
-      if(!state.sbUrl || !state.sbKey) return;
-      try {
-        await fetch(`${state.sbUrl}/rest/v1/mensajes`, {
-          method: 'POST',
-          headers: { 'apikey': state.sbKey, 'Authorization': `Bearer ${state.sbKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ alias: state.user.name, contenido: contenido, sala_id: state.activeChatId })
-        });
-      } catch(e){}
-    }
+    function toggleTheme() { document.body.classList.toggle('light'); }
+    function triggerSOS() { alert('🚨 ALERTA SOS: Enviando tu ubicación a contactos de emergencia.'); }
+    function setProfile(p) { state.profile = p; alert('Perfil: ' + p); }
+    function addContact() { const name = prompt('Nombre:'); if(name) { state.contacts.push(name); render(); } }
 
-    // MANOS LIBRES (RECONOCIMIENTO DE VOZ) Y COMANDOS NATIVOS
-    function toggleVoiceControl() {
-      const banner = document.getElementById('voice-banner');
-      const btn = document.getElementById('hf-btn');
-      
-      if(isVoiceActive) {
-        voiceRecognizer.stop();
-        isVoiceActive = false;
-        banner.style.display = 'none';
-        btn.classList.remove('active');
-        return;
-      }
-
-      const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if(!Speech) { alert("Tu navegador no soporta control por voz."); return; }
-
-      voiceRecognizer = new Speech();
-      voiceRecognizer.continuous = true;
-      voiceRecognizer.lang = 'es-ES';
-
-      voiceRecognizer.onresult = (e) => {
-        const trans = e.results[e.results.length - 1][0].transcript.toLowerCase().trim();
-        if(trans.includes('enviar')) {
-          sendMessage();
-        } else if(trans.includes('más grande')) {
-          document.body.classList.add('big-text');
-        } else if(trans.includes('más chico')) {
-          document.body.classList.remove('big-text');
-        } else {
-          document.getElementById('message-input').value = trans;
-        }
-      };
-
-      voiceRecognizer.start();
-      isVoiceActive = true;
-      banner.style.display = 'block';
-      btn.classList.add('active');
-    }
-
-    // MENÚS CONTEXTUALES, MODALES Y COMPARTIR INVITACIÓN
-    function openMsgMenu(e, id, from) { e.stopPropagation(); if(from !== 'me') return; selectedMsgId = id; const menu = document.getElementById('context-menu'); menu.style.display = 'block'; menu.style.top = e.pageY+'px'; menu.style.left = e.pageX+'px'; }
-    function closeAllMenus() { document.getElementById('context-menu').style.display = 'none'; }
-    function triggerEditMessage() { const m = state.messages[state.activeChatId].find(msg => msg.id === selectedMsgId); const txt = prompt("Editar mensaje:", m.text); if(txt) { m.text = txt + " (editado)"; saveState(); renderActiveChat(); } }
-    function triggerDeleteMessage() { const m = state.messages[state.activeChatId].find(msg => msg.id === selectedMsgId); if(confirm("¿Eliminar para todos?")) { m.text = "🚫 Eliminaste este mensaje."; m.aiData = null; saveState(); renderActiveChat(); } }
-    
-    function shareNovuLink() { navigator.clipboard.writeText(`¡Hola! Unite a mi canal de comunicación seguro y adaptativo en NOVU ingresando desde aquí: ${window.location.href}`).then(() => alert("🔗 ¡Enlace de invitación de WhatsApp copiado para tus redes de apoyo!")); }
-    function toggleVisualTheme() { document.body.classList.toggle('light-theme'); }
-    function toggleTextSize() { document.body.classList.toggle('big-text'); }
-    function togglePictoPanel() { document.getElementById('picto-selector').classList.toggle('show'); }
-    function renderPictograms() { const c = document.getElementById('picto-grid-container'); c.innerHTML = PICTOGRAMS.map(p => `<div class="picto-item" onclick="sendPicto('${p.emoji} ${p.txt}')">${p.emoji}<span>${p.txt}</span></div>`).join(''); }
-    function sendPicto(val) { document.getElementById('message-input').value = val; sendMessage(); togglePictoPanel(); }
-    function handleKeyPress(e) { if(e.key === 'Enter') sendMessage(); }
-    function switchChat(id) { state.activeChatId = id; renderSidebar(); renderActiveChat(); }
-    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-
-    function openSOSModal() {
-      document.getElementById('sos-list').innerHTML = `
-        <div style="padding:10px 0; border-bottom:1px solid var(--border)"><strong>Mamá (Principal)</strong> <button class="ob-btn" style="background:var(--accent4); width:auto; padding:4px 10px; margin:0; float:right" onclick="alert('🚨 SOS Enviado a red de cuidado con coordenadas GPS')">Alertar</button></div>
-        <div style="padding:10px 0; border-bottom:1px solid var(--border)"><strong>Dr. Benavídez (Clínica)</strong> <button class="ob-btn" style="background:var(--accent4); width:auto; padding:4px 10px; margin:0; float:right" onclick="alert('🚨 Alerta médica enviada al Terapeuta')">Alertar</button></div>
-      `;
-      document.getElementById('sos-modal').classList.add('show');
-    }
-
-    // JUEGOS DE ESTIMULACIÓN COGNITIVA
-    function openGamesModal() { document.getElementById('games-modal').classList.add('show'); }
-    function startMemoryGame() {
-      const space = document.getElementById('game-space');
-      space.innerHTML = '<div style="font-size:13px; text-align:center; color:var(--accent2)">Memoriza los elementos: 🍎 🦊 🚀 💡 🎸<br><br><button class="ob-btn" onclick="alert(\'¡Correcto! Completaste el entrenamiento cognitivo diario (+10 pts)\')">Validar Secuencia</button></div>';
-    }
-
-    if (localStorage.getItem('novu_master_state')) initApp();
-  </script>
+    // Generar pictogramas
+    const pictos = ['💊', '💧', '🏠', '😊', '🍽️', '🙏', '❤️', '🚶', '🚗', '💤'];
+    document.getElementById('picto-bar').innerHTML = pictos.map(p => 
+        `<div class="picto" onclick="document.getElementById('input').value+='${p}'">${p}</div>`
+    ).join('');
+</script>
 </body>
-</html>
-
+  </html>
+  
