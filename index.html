@@ -1859,6 +1859,7 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
 }
 .land-footer strong { color: var(--t2); }
 
+</style>
 </head>
 <body>
 
@@ -4728,7 +4729,8 @@ window.addEventListener('load', () => {
     renderEmergencyContacts();
     initSB();
   } else {
-    // Primera visita: mostrar landing
+    // Siempre mostrar landing en primera visita, onboarding si ya visitó
+    document.getElementById('onboarding').style.display = 'flex';
     const firstVisit = !localStorage.getItem('novu_visited');
     if (firstVisit) {
       localStorage.setItem('novu_visited', '1');
