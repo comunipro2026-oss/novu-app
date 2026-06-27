@@ -1971,6 +1971,7 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
             <div class="ch-status" id="chStatus">Sin conexión</div>
           </div>
           <div class="mode-pill" id="chModePill">NEURO</div>
+          <button class="ch-btn" onclick="openLuzCompania()" title="Luz de Compañía — presencia silenciosa" style="background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#f59e0b">🕯️</button>
           <button class="ch-btn voice" onclick="startCall('voice')" title="Llamada de voz">📞</button>
           <button class="ch-btn video" onclick="startCall('video')" title="Videollamada">📹</button>
           <button class="ch-btn" onclick="openOv('chatMenuOv')" title="Más opciones">⋯</button>
@@ -2013,9 +2014,12 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
             <button class="a-btn" id="recBtn" onclick="toggleRec()">🎤 Grabar</button>
             <button class="a-btn" onclick="openOv('ttsOv')">🗣️ Voz</button>
             <button class="a-btn" onclick="togglePicto()">🖼 Picto</button>
-            <button class="a-btn" onclick="pickImg()">📷 Foto</button>
+            <button class="a-btn" onclick="pickImg('environment')">📷 Cámara</button>
+            <button class="a-btn" onclick="pickImg('user')">🤳 Selfie</button>
+            <button class="a-btn" onclick="pickImg(null)">🖼️ Galería</button>
             <button class="a-btn" onclick="startDictation()">🎙️ Dictar</button>
             <button class="a-btn" onclick="openGames()">🎮 Jugar</button>
+            <button class="a-btn" onclick="inviteContact()" title="Invitar a NOVU">📨 Invitar</button>
             <button class="a-btn" onclick="openNumNav()" title="Navegación por números">🔢 Números</button>
             <button class="a-btn" onclick="transcribirUltimoAudio()" title="Transcripción emocional">📝 Transcribir</button>
           </div>
@@ -2036,6 +2040,8 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
     <button class="call-act mute" id="muteBtn" onclick="toggleMute()">🎙️</button>
     <button class="call-act end" onclick="endCall()">📵</button>
   </div>
+  <!-- Botón colgar siempre visible como fallback -->
+  <button onclick="endCall()" style="position:absolute;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--rose);border:none;color:white;font-size:20px;cursor:pointer;z-index:10;box-shadow:0 4px 16px rgba(244,63,94,.5)" title="Colgar">📵</button>
 </div>
 
 <!-- GAMES OVERLAY -->
@@ -3350,9 +3356,17 @@ function handleVoiceCmd(cmd) {
 // ══════════════════════════════════════════════════
 // PHOTOS / VIDEO
 // ══════════════════════════════════════════════════
-function pickImg() {
+function pickImg(facing) {
   if (!S.activePartner) { toast('⚠️ Abrí un chat primero'); return; }
-  document.getElementById('imgInput').click();
+  const input = document.getElementById('imgInput');
+  if (facing === 'environment') {
+    input.setAttribute('capture', 'environment');
+  } else if (facing === 'user') {
+    input.setAttribute('capture', 'user');
+  } else {
+    input.removeAttribute('capture');
+  }
+  input.click();
 }
 function handleImg(e) {
   const file = e.target.files[0];
@@ -3621,6 +3635,10 @@ function onCallAccepted() {
   callState.active=true;
   document.getElementById('callStatus').textContent='✅ Conectado';
   document.getElementById('callTimer').style.display='block';
+  // Asegurar que siempre hay botón de colgar
+  document.getElementById('callActions').innerHTML=`
+    <button class="call-act mute" id="muteBtn" onclick="toggleMute()">🎙️</button>
+    <button class="call-act end" onclick="endCall()" title="Colgar">📵</button>`;
   callState.iv=setInterval(()=>{
     callState.timer++;
     const m=Math.floor(callState.timer/60), s=callState.timer%60;
@@ -3639,23 +3657,28 @@ async function startCall(mode) {
   document.getElementById('callName').textContent=name;
   document.getElementById('callStatus').textContent='Llamando…';
   document.getElementById('callTimer').style.display='none';
-  document.getElementById('videoArea').style.display=mode==='video'?'block':'none';
+  document.getElementById('videoArea').style.display='none';
+  // Siempre mostrar botón de cortar
   document.getElementById('callActions').innerHTML=`
     <button class="call-act mute" id="muteBtn" onclick="toggleMute()">🎙️</button>
-    <button class="call-act end" onclick="endCall()">📵</button>`;
+    <button class="call-act end" onclick="endCall()" title="Colgar">📵</button>`;
   try {
-    const constraints = mode==='video' ? {audio:true,video:{facingMode:'user'}} : {audio:true};
+    const constraints = mode==='video' ? {audio:true,video:{facingMode:'user'}} : {audio:true,video:false};
     callState.localStream = await navigator.mediaDevices.getUserMedia(constraints);
-    if (mode==='video') document.getElementById('localVideo').srcObject=callState.localStream;
+    if (mode==='video') {
+      document.getElementById('videoArea').style.display='block';
+      document.getElementById('localVideo').srcObject=callState.localStream;
+    }
     callState.pc=createPC(id);
     callState.localStream.getTracks().forEach(t=>callState.pc.addTrack(t,callState.localStream));
     const offer = await callState.pc.createOffer();
     await callState.pc.setLocalDescription(offer);
     sendSignal(id,{kind:'offer',sdp:offer,mode});
     callState.ringTimeout=setTimeout(()=>{ if(!callState.active){toast('📵 No contestaron');endCall(false);} },30000);
-  } catch {
-    const msg=mode==='video'?'❌ Permití cámara y micrófono':'❌ Permití el micrófono';
-    toast(msg); document.getElementById('callStatus').textContent='Sin permisos';
+  } catch(err) {
+    const msg = mode==='video' ? '❌ Permití cámara y micrófono en el navegador' : '❌ Permití el micrófono en el navegador';
+    document.getElementById('callStatus').textContent = msg;
+    // Igual se puede colgar
   }
 }
 
@@ -3706,10 +3729,21 @@ function switchGame(game, btn) {
   const root = document.createElement('div');
   root.style.width='100%';
   area.appendChild(root);
-  if (game==='ttt') loadTTT(root);
-  else if (game==='memory') loadMemory(root);
-  else if (game==='chess') loadChess(root);
+
+  const multi = S.activePartner && db;
+  if (multi) openGameMulti(game);
+
+  if (game==='ttt') { multi ? loadTTTMulti(root) : loadTTT(root); }
+  else if (game==='memory') { multi ? loadMemoryMulti(root) : loadMemory(root); }
+  else if (game==='chess') { multi ? loadChessMulti(root) : loadChess(root); }
   else if (game==='wordle') loadWordle(root);
+
+  if (multi) {
+    const tag = document.createElement('div');
+    tag.style.cssText = 'text-align:center;font-size:11px;color:var(--emerald);margin-top:10px;font-weight:700;';
+    tag.textContent = '🟢 Jugando con ' + S.activePartner.name + ' en tiempo real';
+    area.appendChild(tag);
+  }
 }
 
 function showGameResult(root, msg) {
@@ -4708,6 +4742,157 @@ function appendEmotToMsg(msgId, tags) {
   renderMsgs();
 }
 
+// ══════════════════════════════════════════════════
+// INVITACIÓN A NOVU
+// ══════════════════════════════════════════════════
+function inviteContact() {
+  if (!S.activePartner) { toast('⚠️ Abrí un chat primero'); return; }
+  const appUrl = 'https://comunipro2026-oss.github.io/novu-app/';
+  const msg = `¡Hola ${S.activePartner.name}! 👋\nTe invito a usar *NOVU* — el chat que habla el idioma de tu cerebro 🧠\n\nEs una app de mensajería inclusiva para neurodivergentes, adultos mayores y personas con discapacidad.\n\n👉 ${appUrl}\n\nNo necesita instalación. ¡Abrila desde el navegador!`;
+  const phone = (S.activePartner.telefono || '').replace(/\D/g,'');
+  if (phone) {
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  } else {
+    navigator.clipboard.writeText(msg).then(()=>toast('✅ Invitación copiada')).catch(()=>toast('📨 ' + appUrl));
+  }
+}
+
+// ══════════════════════════════════════════════════
+// JUEGOS MULTIJUGADOR REAL
+// ══════════════════════════════════════════════════
+let gameChannel = null;
+let multiGame = { active:false, type:null };
+
+function openGameMulti(gameType) {
+  if (!S.activePartner || !db) return false;
+  const chName = 'game:' + [S.user.id, S.activePartner.id].sort().join('_') + ':' + gameType;
+  if (gameChannel) gameChannel.unsubscribe();
+  gameChannel = db.channel(chName)
+    .on('broadcast', { event:'move' }, ({ payload }) => { if (payload.from !== S.user.id) handleRemoteMove(payload); })
+    .on('broadcast', { event:'reset' }, () => { toast('🔄 ' + (S.activePartner?.name||'Tu contacto') + ' reinició'); switchGame(multiGame.type, document.querySelector('.game-tab.active')); })
+    .subscribe(st => { if (st==='SUBSCRIBED') toast('✅ Conectado con ' + (S.activePartner?.name||'tu contacto')); });
+  multiGame.active = true; multiGame.type = gameType;
+  return true;
+}
+function sendGameMove(data) { if (!gameChannel) return; gameChannel.send({ type:'broadcast', event:'move', payload:{ from:S.user.id, ...data } }).catch(()=>{}); }
+function handleRemoteMove(p) {
+  if (multiGame.type==='ttt') handleRemoteTTT(p);
+  else if (multiGame.type==='chess') handleRemoteChess(p);
+  else if (multiGame.type==='memory') handleRemoteMemory(p);
+}
+
+// TTT multi
+let tttState = { cells:Array(9).fill(''), turn:'X', over:false, myMark:'X', root:null };
+function loadTTTMulti(root) {
+  tttState.root=root; tttState.myMark=S.user.id<(S.activePartner?.id||'')?'X':'O';
+  tttState.cells=Array(9).fill(''); tttState.turn='X'; tttState.over=false;
+  const info=document.createElement('div'); info.id='tttInfo';
+  info.style.cssText='text-align:center;font-size:13px;color:var(--t2);margin-bottom:10px;';
+  root.appendChild(info);
+  const grid=document.createElement('div'); grid.className='ttt-grid'; grid.id='tttGrid';
+  root.appendChild(grid); renderTTT();
+}
+function renderTTT() {
+  const grid=document.getElementById('tttGrid'); const info=document.getElementById('tttInfo');
+  if (!grid) return;
+  const myTurn=tttState.turn===tttState.myMark&&!tttState.over;
+  if (info) info.textContent=tttState.over?'':(myTurn?'🟢 Tu turno':'⏳ Turno de '+tttState.turn);
+  grid.innerHTML='';
+  tttState.cells.forEach((v,i)=>{
+    const c=document.createElement('button'); c.className='ttt-cell'; c.textContent=v;
+    c.onclick=()=>{
+      if(tttState.over||tttState.cells[i]||tttState.turn!==tttState.myMark) return;
+      tttState.cells[i]=tttState.myMark; sendGameMove({idx:i,mark:tttState.myMark}); advanceTTT(i,tttState.myMark);
+    };
+    grid.appendChild(c);
+  });
+}
+function advanceTTT(idx,mark) {
+  const win=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].some(l=>l.every(i=>tttState.cells[i]===mark));
+  const full=tttState.cells.every(c=>c);
+  tttState.turn=mark==='X'?'O':'X';
+  if(win){tttState.over=true;renderTTT();const won=mark===tttState.myMark;if(won){gamesScore.ttt=(gamesScore.ttt||0)+10;saveGameScore();}showGameResult(tttState.root,won?'🎉 ¡Ganaste!':'😅 Ganó '+(S.activePartner?.name||'tu contacto'));}
+  else if(full){tttState.over=true;renderTTT();showGameResult(tttState.root,'🤝 Empate');}
+  else renderTTT();
+}
+function handleRemoteTTT(p) { if(tttState.over)return; tttState.cells[p.idx]=p.mark; advanceTTT(p.idx,p.mark); }
+
+// Chess multi
+let chessState = { squares:[...['♜','♞','♝','♛','♚','♝','♞','♜','♟','♟','♟','♟','♟','♟','♟','♟','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','♙','♙','♙','♙','♙','♙','♙','♙','♖','♘','♗','♕','♔','♗','♘','♖']], selected:null, root:null };
+function loadChessMulti(root) {
+  chessState.root=root; chessState.squares=[...chessState.squares]; chessState.selected=null;
+  const info=document.createElement('div');
+  info.style.cssText='text-align:center;font-size:12px;color:var(--t2);margin-bottom:8px;';
+  info.textContent='Jugás con las '+(S.user.id<(S.activePartner?.id||'')?'blancas ♙':'negras ♟');
+  root.appendChild(info);
+  const board=document.createElement('div'); board.className='chess-board'; board.id='chessBoard';
+  root.appendChild(board); renderChessMulti();
+}
+function renderChessMulti() {
+  const board=document.getElementById('chessBoard'); if(!board)return;
+  board.innerHTML='';
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const idx=r*8+c; const cell=document.createElement('div');
+    cell.className='chess-cell '+((r+c)%2===0?'white':'dark');
+    cell.textContent=chessState.squares[idx]||'';
+    if(chessState.selected===idx) cell.style.outline='3px solid var(--emerald)';
+    cell.onclick=()=>{
+      if(chessState.selected===null&&chessState.squares[idx]){chessState.selected=idx;renderChessMulti();}
+      else if(chessState.selected!==null){
+        const from=chessState.selected,to=idx;
+        chessState.squares[to]=chessState.squares[from]; chessState.squares[from]='';
+        chessState.selected=null; sendGameMove({from,to,squares:[...chessState.squares]}); renderChessMulti();
+      }
+    };
+    board.appendChild(cell);
+  }
+}
+function handleRemoteChess(p) { chessState.squares=p.squares; chessState.selected=null; renderChessMulti(); toast('♟️ '+(S.activePartner?.name||'Tu contacto')+' movió'); }
+
+// Memory multi
+let memState = { deck:[],flipped:[],matched:[],scores:{me:0,them:0},myTurn:true,root:null };
+function loadMemoryMulti(root) {
+  memState.root=root; const emojis=['🐶','🐱','🦊','🐻','🐼','🦁','🐨','🐵'];
+  memState.deck=shuffleArr([...emojis,...emojis]); memState.flipped=[]; memState.matched=[];
+  memState.scores={me:0,them:0}; memState.myTurn=S.user.id<(S.activePartner?.id||'');
+  const s=document.createElement('div'); s.id='memScore';
+  s.style.cssText='text-align:center;font-size:13px;color:var(--t2);margin-bottom:10px;';
+  root.appendChild(s);
+  const grid=document.createElement('div'); grid.className='memory-grid'; grid.id='memGrid';
+  root.appendChild(grid); renderMemoryMulti();
+}
+function renderMemoryMulti() {
+  const grid=document.getElementById('memGrid'); const s=document.getElementById('memScore');
+  if(!grid)return;
+  if(s) s.textContent=`Vos: ${memState.scores.me} · ${S.activePartner?.name||'Ellos'}: ${memState.scores.them} · ${memState.myTurn?'🟢 Tu turno':'⏳ Turno del otro'}`;
+  grid.innerHTML='';
+  memState.deck.forEach((sym,i)=>{
+    const card=document.createElement('button'); card.className='mem-card';
+    card.textContent=(memState.flipped.includes(i)||memState.matched.includes(i))?sym:'?';
+    card.onclick=()=>{
+      if(!memState.myTurn||memState.flipped.includes(i)||memState.matched.includes(i)||memState.flipped.length>=2)return;
+      memState.flipped.push(i); sendGameMove({type:'flip',idx:i});
+      if(memState.flipped.length===2){
+        const[a,b]=memState.flipped;
+        if(memState.deck[a]===memState.deck[b]){
+          memState.matched.push(a,b); memState.scores.me++; memState.flipped=[];
+          sendGameMove({type:'match',a,b,scores:memState.scores});
+          if(memState.matched.length===memState.deck.length){const won=memState.scores.me>memState.scores.them;gamesScore.memory=(gamesScore.memory||0)+(won?10:2);saveGameScore();showGameResult(memState.root,won?'🎉 ¡Ganaste!':'😅 Perdiste');}
+        } else {
+          setTimeout(()=>{memState.flipped=[];memState.myTurn=false;sendGameMove({type:'miss'});renderMemoryMulti();},800);
+        }
+      }
+      renderMemoryMulti();
+    };
+    grid.appendChild(card);
+  });
+}
+function handleRemoteMemory(p) {
+  if(p.type==='flip'){if(!memState.flipped.includes(p.idx))memState.flipped.push(p.idx);renderMemoryMulti();}
+  else if(p.type==='match'){memState.matched.push(p.a,p.b);memState.scores.them=p.scores.me;memState.flipped=[];renderMemoryMulti();}
+  else if(p.type==='miss'){memState.flipped=[];memState.myTurn=true;renderMemoryMulti();}
+}
+
 window.addEventListener('load', () => {
   loadLocal();
   loadGameScore();
@@ -4729,18 +4914,17 @@ window.addEventListener('load', () => {
     renderEmergencyContacts();
     initSB();
   } else {
-    // Siempre mostrar landing en primera visita, onboarding si ya visitó
     document.getElementById('onboarding').style.display = 'flex';
     const firstVisit = !localStorage.getItem('novu_visited');
     if (firstVisit) {
       localStorage.setItem('novu_visited', '1');
       document.getElementById('landing').classList.add('open');
     }
-    // Pre-fill if partial data
     if (S.user.name) document.getElementById('obName').value = S.user.name;
     if (S.user.phoneLocal) document.getElementById('obPhone').value = S.user.phoneLocal;
     if (S.user.phoneCountry) document.getElementById('obCountry').value = S.user.phoneCountry;
   }
+  history.pushState(null, '', location.href);
 });
 
 window.addEventListener('beforeunload', () => {
@@ -4749,10 +4933,47 @@ window.addEventListener('beforeunload', () => {
   if (contactsIv) clearInterval(contactsIv);
 });
 
-// Back button → close overlays
-window.addEventListener('popstate', () => {
-  document.querySelectorAll('.ov.open').forEach(el=>el.classList.remove('open'));
-  if (document.getElementById('gamesOv').classList.contains('open')) closeGames();
+// Back button → navigate internally, never exit app
+window.addEventListener('popstate', (e) => {
+  e.preventDefault();
+  // Close overlays in order of priority
+  if (document.getElementById('landing').classList.contains('open')) {
+    closeLanding(); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('crisisOv').classList.contains('open')) {
+    closeCrisis(); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('sosAnsiedad').classList.contains('open')) {
+    closeSosAnsiedad(); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('bateriaBaja').classList.contains('open')) {
+    closeBateriaBaja(); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('luzCompania').classList.contains('open')) {
+    closeLuzCompania(); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('hiloDorado').classList.contains('open')) {
+    closeHiloDorado(); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('arbolFamiliar').classList.contains('open')) {
+    closeArbolFamiliar(); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('gamesOv').classList.contains('open')) {
+    closeGames(); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('voiceOv').classList.contains('open')) {
+    closeVoiceOv(); history.pushState(null, '', location.href); return;
+  }
+  const openOvEl = document.querySelector('.ov.open');
+  if (openOvEl) {
+    openOvEl.classList.remove('open'); history.pushState(null, '', location.href); return;
+  }
+  // Si hay chat abierto → volver a la lista
+  if (S.activePartner) {
+    backToList(); history.pushState(null, '', location.href); return;
+  }
+  // Nada más que cerrar → mantener en la app
+  history.pushState(null, '', location.href);
 });
 </script>
 </body>
