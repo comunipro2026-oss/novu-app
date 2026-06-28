@@ -576,43 +576,45 @@ body.no-anim::before { display: none; }
   gap: 2px;
 }
 
-.msg { display: flex; margin-bottom: 1px; }
+.msg { display: flex; margin-bottom: 3px; }
 .msg.own { justify-content: flex-end; }
 .msg.other { align-items: flex-end; gap: 8px; }
 
 .msg-av {
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 30px; height: 30px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 800; color: white;
-  flex-shrink: 0; margin-bottom: 18px;
+  font-size: 11px; font-weight: 800; color: white;
+  flex-shrink: 0; margin-bottom: 20px;
 }
 
-.msg-wrap { display: flex; flex-direction: column; max-width: 76%; }
+.msg-wrap { display: flex; flex-direction: column; max-width: 80%; }
 .msg.own .msg-wrap { align-items: flex-end; }
 .msg.other .msg-wrap { align-items: flex-start; }
 
 .bbl {
-  padding: 10px 14px;
-  font-size: 14px; line-height: 1.55;
+  padding: 11px 15px;
+  font-size: 15px; line-height: 1.55;
   word-break: break-word;
   position: relative;
 }
 .msg.own .bbl {
   background: var(--me-bg);
-  border-radius: 18px 18px 4px 18px;
+  border-radius: 20px 20px 5px 20px;
   border: 1px solid var(--me-border);
   color: var(--t);
-  box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
 }
 .msg.other .bbl {
   background: var(--other-bg);
-  border-radius: 18px 18px 18px 4px;
+  border-radius: 20px 20px 20px 5px;
   border: 1px solid var(--other-border);
   color: var(--t);
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
 .bbl-tts {
-  background: linear-gradient(135deg, rgba(99,102,241,.25), rgba(139,92,246,.15)) !important;
-  border-color: rgba(99,102,241,.3) !important;
+  background: linear-gradient(135deg, rgba(99,102,241,.3), rgba(139,92,246,.2)) !important;
+  border-color: rgba(99,102,241,.4) !important;
+  font-style: italic;
 }
 .bbl-failed { opacity: .65; border-style: dashed !important; border-color: var(--rose) !important; }
 
@@ -760,9 +762,9 @@ body.no-anim::before { display: none; }
 
 /* ── INPUT AREA ── */
 .input-area {
-  padding: 10px 14px 14px;
+  padding: 8px 12px 10px;
   border-top: 1px solid var(--border);
-  background: rgba(12,12,24,.9);
+  background: rgba(10,10,20,.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   flex-shrink: 0;
@@ -778,7 +780,7 @@ body.no-anim::before { display: none; }
   padding: 11px 16px;
   color: var(--t);
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
   resize: none;
   max-height: 110px;
@@ -796,26 +798,41 @@ body.no-anim::before { display: none; }
   font-size: 18px; display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 4px 16px rgba(99,102,241,.45);
-  transition: all .2s;
+  transition: all .15s;
 }
-.send-btn:hover { transform: scale(1.06); box-shadow: 0 6px 22px rgba(99,102,241,.6); }
-.send-btn:active { transform: scale(.96); }
+.send-btn:hover { transform: scale(1.06); }
+.send-btn:active { transform: scale(.93); }
 .send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
+/* Nueva barra de acciones — iconos grandes en scroll horizontal */
 .action-btns {
-  display: flex; gap: 6px; flex-wrap: wrap;
-  padding: 8px 2px 0;
+  display: flex; gap: 8px;
+  padding: 8px 0 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
+.action-btns::-webkit-scrollbar { display: none; }
+
 .a-btn {
-  display: flex; align-items: center; gap: 5px;
-  padding: 7px 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px;
+  min-width: 58px; height: 58px;
   background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 100px; cursor: pointer;
-  font-size: 12px; font-weight: 600;
-  color: var(--t2); transition: all .15s;
+  border: 1.5px solid var(--border2);
+  border-radius: 16px; cursor: pointer;
+  font-size: 22px; font-weight: 600;
+  color: var(--t2); transition: all .12s;
+  flex-shrink: 0;
+  padding: 6px 4px 4px;
+  position: relative;
 }
-.a-btn:hover { border-color: var(--mode-accent); color: var(--mode-accent); }
+.a-btn span.a-label {
+  font-size: 9px; font-weight: 700; color: var(--t3);
+  text-transform: uppercase; letter-spacing: .3px;
+  line-height: 1;
+}
+.a-btn:active { transform: scale(.92); background: var(--surface2); }
 .a-btn.rec {
   border-color: var(--rose); color: var(--rose);
   background: var(--rose-dim);
@@ -1981,6 +1998,7 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
       <button class="dock-btn" onclick="openLuzCompania()" title="Luz de Compañía">🕯️</button>
       <button class="dock-btn" onclick="openSosAnsiedad()" title="SOS Ansiedad">💚</button>
       <button class="dock-btn" onclick="openArbolFamiliar()" title="Árbol Familiar">🌳</button>
+      <button class="dock-btn" id="drivingBtn" onclick="toggleDrivingMode()" title="Modo Conductor" style="color:#f59e0b">🚗</button>
     </div>
     <div class="sync-dot" id="syncDot" title="Estado de conexión"></div>
     <button class="tb-btn" onclick="openOv('settingsOv')" aria-label="Configuración">⚙️</button>
@@ -2062,17 +2080,17 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
             <button class="send-btn" onclick="sendMsg()" aria-label="Enviar">➤</button>
           </div>
           <div class="action-btns">
-            <button class="a-btn" id="recBtn" onclick="toggleRec()">🎤 Grabar</button>
-            <button class="a-btn" onclick="openOv('ttsOv')">🗣️ Voz</button>
-            <button class="a-btn" onclick="togglePicto()">🖼 Picto</button>
-            <button class="a-btn" onclick="pickImg('environment')">📷 Cámara</button>
-            <button class="a-btn" onclick="pickImg('user')">🤳 Selfie</button>
-            <button class="a-btn" onclick="pickImg(null)">🖼️ Galería</button>
-            <button class="a-btn" onclick="startDictation()">🎙️ Dictar</button>
-            <button class="a-btn" onclick="openGames()">🎮 Jugar</button>
-            <button class="a-btn" onclick="inviteContact()" title="Invitar a NOVU">📨 Invitar</button>
-            <button class="a-btn" onclick="openNumNav()" title="Navegación por números">🔢 Números</button>
-            <button class="a-btn" onclick="transcribirUltimoAudio()" title="Transcripción emocional">📝 Transcribir</button>
+            <button class="a-btn" id="recBtn" onclick="toggleRec()">🎤<span class="a-label">Audio</span></button>
+            <button class="a-btn" onclick="openOv('ttsOv')">🗣️<span class="a-label">Voz</span></button>
+            <button class="a-btn" onclick="togglePicto()">🖼️<span class="a-label">Picto</span></button>
+            <button class="a-btn" onclick="pickImg('environment')">📷<span class="a-label">Cámara</span></button>
+            <button class="a-btn" onclick="pickImg('user')">🤳<span class="a-label">Selfie</span></button>
+            <button class="a-btn" onclick="pickImg(null)">🗂️<span class="a-label">Galería</span></button>
+            <button class="a-btn" onclick="startDictation()">🎙️<span class="a-label">Dictar</span></button>
+            <button class="a-btn" onclick="openGames()">🎮<span class="a-label">Jugar</span></button>
+            <button class="a-btn" onclick="inviteContact()">📨<span class="a-label">Invitar</span></button>
+            <button class="a-btn" onclick="openNumNav()">🔢<span class="a-label">Números</span></button>
+            <button class="a-btn" onclick="transcribirUltimoAudio()">📝<span class="a-label">Analizar</span></button>
           </div>
         </div>
       </div>
@@ -2232,9 +2250,22 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
   <div class="modal">
     <div class="modal-hd">Opciones <button class="modal-close" onclick="closeOv('chatMenuOv')">✕</button></div>
     <div class="modal-body">
-      <div id="contactPhoneInfo" style="background:var(--void3);border:1px solid var(--border2);border-radius:12px;padding:12px;font-size:13px;color:var(--t2);margin-bottom:4px">
-        📱 Teléfono: <span id="contactPhoneDisplay" style="color:var(--t);font-weight:600">—</span>
-        <button onclick="editContactPhone()" style="margin-left:8px;background:none;border:none;color:var(--indigo);cursor:pointer;font-size:12px">✏️ Editar</button>
+      <!-- Avatar del contacto con opción de foto -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div id="contactAvatarPreview" style="width:56px;height:56px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;cursor:pointer;overflow:hidden" onclick="pickContactPhoto()" title="Cambiar foto"></div>
+        <div>
+          <div id="contactNameDisplay" style="font-weight:700;font-size:15px;color:var(--t)">—</div>
+          <div style="font-size:12px;color:var(--t3)">📱 <span id="contactPhoneDisplay">—</span>
+            <button onclick="editContactPhone()" style="margin-left:6px;background:none;border:none;color:var(--indigo);cursor:pointer;font-size:12px">✏️</button>
+          </div>
+          <div style="font-size:11px;color:var(--indigo);margin-top:2px">Tocá la foto para cambiarla</div>
+        </div>
+      </div>
+      <input type="file" id="contactPhotoInput" accept="image/*" style="display:none" onchange="handleContactPhoto(event)">
+      <input type="file" id="contactSelfieInput" accept="image/*" capture="user" style="display:none" onchange="handleContactPhoto(event)">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-g" onclick="document.getElementById('contactPhotoInput').click()" style="flex:1;font-size:12px">🖼️ Galería</button>
+        <button class="btn btn-g" onclick="document.getElementById('contactSelfieInput').click()" style="flex:1;font-size:12px">🤳 Selfie</button>
       </div>
       <button class="btn btn-g" onclick="openLuzCompania();closeOv('chatMenuOv')" style="width:100%">🕯️ Luz de Compañía</button>
       <button class="btn btn-g" onclick="exportChat()" style="width:100%">📥 Exportar conversación</button>
@@ -2279,6 +2310,20 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
 <input type="file" id="imgInput" accept="image/*,video/*" style="display:none" onchange="handleImg(event)">
 <input type="file" id="imgInputCamera" accept="image/*" capture="environment" style="display:none" onchange="handleImg(event)">
 <input type="file" id="imgInputSelfie" accept="image/*" capture="user" style="display:none" onchange="handleImg(event)">
+<!-- MODO CONDUCTOR -->
+<div id="drivingBar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#16213e);border-bottom:2px solid #f59e0b;padding:10px 16px;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)">
+  <span style="font-size:22px">🚗</span>
+  <div style="flex:1">
+    <div style="font-size:12px;font-weight:800;color:#f59e0b;letter-spacing:.5px">MODO CONDUCTOR</div>
+    <div id="drivingStatus" style="font-size:11px;color:rgba(255,255,255,.7)">🎙️ Escuchando…</div>
+  </div>
+  <!-- Botones rápidos -->
+  <button onclick="handleSpotifyCmd('reproducir')" title="Spotify Play/Pausa" style="background:rgba(30,215,96,.15);border:1.5px solid #1ed760;color:#1ed760;border-radius:8px;padding:5px 9px;font-size:14px;cursor:pointer">▶︎</button>
+  <button onclick="handleSpotifyCmd('siguiente')" title="Siguiente canción" style="background:rgba(30,215,96,.10);border:1.5px solid #1ed760;color:#1ed760;border-radius:8px;padding:5px 9px;font-size:13px;cursor:pointer">⏭</button>
+  <button onclick="handleWazeCmd(null)" title="Waze" style="background:rgba(0,210,255,.12);border:1.5px solid #00d2ff;color:#00d2ff;border-radius:8px;padding:5px 9px;font-size:14px;cursor:pointer">🗺️</button>
+  <button onclick="stopDrivingMode()" style="background:rgba(244,63,94,.2);border:1.5px solid #f43f5e;color:#f43f5e;border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer">✕</button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- ══ MÓDULO BATERÍA BAJA ══ -->
@@ -2659,6 +2704,13 @@ let contactsIv = null;
 let onlineUsers = [];
 const localMsgs = {};
 
+// Device ID único por pestaña/dispositivo — permite multi-sesión del mismo usuario
+const DEVICE_ID = sessionStorage.getItem('novu_device_id') || (() => {
+  const id = 'd_' + Math.random().toString(36).slice(2, 10);
+  sessionStorage.setItem('novu_device_id', id);
+  return id;
+})();
+
 const NOVU_URL = 'https://lgpqyjevdwstbnerawmp.supabase.co';
 const NOVU_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncHF5amV2ZHdzdGJuZXJhd21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMzM1OTgsImV4cCI6MjA5MjgwOTU5OH0.GMPbwHdxj_aRLaJgDHCkDA5L1KHAwLJLkO9LYOpI8pA';
 
@@ -2671,6 +2723,7 @@ create table if not exists novu_usuarios (
   ultimo_visto timestamptz default now()
 );
 alter table novu_usuarios add column if not exists telefono text;
+alter table novu_usuarios add column if not exists devices jsonb default '[]'::jsonb;
 create unique index if not exists idx_usuarios_telefono on novu_usuarios(telefono) where telefono is not null;
 create table if not exists novu_mensajes (
   id uuid default gen_random_uuid() primary key,
@@ -2934,6 +2987,7 @@ async function startOnlineMode() {
   await loadContacts();
   renderChats();
   setupIncomingCallListener();
+  await pingPresence(); // registrar device_id inmediatamente al conectar
   presenceIv = setInterval(pingPresence, 20000);
   contactsIv = setInterval(loadContacts, 12000);
 }
@@ -2941,7 +2995,16 @@ async function startOnlineMode() {
 async function pingPresence() {
   if (!db || !S.user.id) return;
   try {
-    await db.from('novu_usuarios').update({ ultimo_visto: new Date().toISOString() }).eq('id', S.user.id);
+    const now = new Date().toISOString();
+    // Registrar este device como activo (con timestamp para limpiar los viejos)
+    // Guardamos en 'devices' un array de {id, ts} — limpiamos los de hace más de 5 min
+    const { data: row } = await db.from('novu_usuarios').select('devices').eq('id', S.user.id).limit(1);
+    let devices = row?.[0]?.devices || [];
+    const cutoff = Date.now() - 5 * 60 * 1000;
+    // Filtrar devices viejos, actualizar o agregar el actual
+    devices = devices.filter(d => d.id !== DEVICE_ID && new Date(d.ts).getTime() > cutoff);
+    devices.push({ id: DEVICE_ID, ts: now });
+    await db.from('novu_usuarios').update({ ultimo_visto: now, devices }).eq('id', S.user.id);
     setSyncDot('ok');
   } catch { setSyncDot('err'); }
 }
@@ -2976,11 +3039,14 @@ async function loadContacts() {
       });
       const registrado = !!u;
       const online = registrado && new Date(u.ultimo_visto) > fiveMinAgo;
+      const photos = JSON.parse(localStorage.getItem('novu_contact_photos')||'{}');
+      const contactId = registrado ? u.id : 'unrg_'+c.id;
       return {
-        id: registrado ? u.id : 'unrg_'+c.id,
+        id: contactId,
         nombre: c.contacto_nombre || (u ? u.nombre : c.contacto_telefono),
         telefono: c.contacto_telefono,
         color: registrado ? u.color : rndColor(),
+        photo: photos[contactId] || null,
         online, registrado,
         contactoId: c.id
       };
@@ -3009,8 +3075,8 @@ function renderChats(q) {
     const preview = last ? msgPreview(last) : (u.registrado ? 'Registrado en NOVU' : 'Invitar a NOVU');
     const active = S.activePartner?.id === u.id ? 'active' : '';
     return `<div class="chat-item ${active}" onclick="openChat('${esc(u.id)}','${esc(u.nombre)}','${esc(u.color)}','${esc(u.telefono)}')">
-      <div class="ci-avatar" style="background:${u.color}">
-        ${initials(u.nombre)}
+      <div class="ci-avatar" style="background:${u.color};overflow:hidden">
+        ${u.photo ? `<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : initials(u.nombre)}
         ${u.online ? '<div class="online-ring"></div>' : ''}
       </div>
       <div class="ci-info">
@@ -3047,15 +3113,22 @@ function fmtTime(ts) {
 // ══════════════════════════════════════════════════
 function openChat(id, name, color, phone) {
   if (!S.user.id) { toast('⚠️ Conectá primero'); return; }
-  S.activePartner = { id, name, color: color || rndColor(), telefono: phone };
+  const photos = JSON.parse(localStorage.getItem('novu_contact_photos')||'{}');
+  const photo = photos[id] || null;
+  S.activePartner = { id, name, color: color || rndColor(), telefono: phone, photo };
   document.getElementById('emptyState').style.display = 'none';
   const cv = document.getElementById('chatView');
   cv.style.display = 'flex';
   cv.style.flexDirection = 'column';
   cv.style.flex = '1';
   cv.style.overflow = 'hidden';
-  document.getElementById('chAvatar').textContent = initials(name);
-  document.getElementById('chAvatar').style.background = color || rndColor();
+  const chAv = document.getElementById('chAvatar');
+  chAv.style.background = color || rndColor();
+  if (photo) {
+    chAv.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  } else {
+    chAv.textContent = initials(name);
+  }
   document.getElementById('chName').textContent = name;
   document.getElementById('chModePill').textContent = MODE_PILLS[S.mode] || 'NOVU';
   refreshChatStatus();
@@ -3144,6 +3217,7 @@ async function loadRealtime() {
           if (S.settings.sounds) playContactChord(S.activePartner.name);
           notifyMsg(S.activePartner.name, msg);
           autoEmotAnalysis(msg);
+          autoReadInDriving(msg);
         }
       })
       .subscribe(async st => {
@@ -3210,7 +3284,9 @@ async function sendMsg() {
     const { data, error } = await db.from('novu_mensajes').insert({ sala_id:room, emisor_id:S.user.id, emisor_nombre:S.user.name, tipo:'texto', contenido:text }).select().single();
     if (error) throw error;
     const idx = localMsgs[room].findIndex(m=>m.id===tempId);
-    if (idx!==-1) localMsgs[room][idx] = {...data,_isTemp:false};
+    if (idx!==-1) {
+      localMsgs[room][idx] = {...data, _isTemp:false, _editableUntil: Date.now()+30000 };
+    }
     renderMsgs();
   } catch(e) {
     console.error('sendMsg error:', e?.message, e?.code, e?.details, e?.hint);
@@ -3219,6 +3295,22 @@ async function sendMsg() {
     if (idx!==-1) localMsgs[room][idx]._failed = true;
     renderMsgs();
   }
+}
+
+async function editMsg(msgId) {
+  const room = activeRoom();
+  if (!room || !localMsgs[room]) return;
+  const msg = localMsgs[room].find(m=>m.id===msgId);
+  if (!msg || msg._editableUntil < Date.now()) { toast('⏱️ Ya no se puede editar'); return; }
+  const newText = prompt('Editar mensaje:', msg.contenido);
+  if (!newText || newText.trim()===msg.contenido) return;
+  try {
+    await db.from('novu_mensajes').update({ contenido: newText.trim() }).eq('id', msgId);
+    msg.contenido = newText.trim();
+    msg._edited = true;
+    renderMsgs();
+    toast('✏️ Mensaje editado');
+  } catch(e) { toast('⚠️ No se pudo editar'); }
 }
 
 async function retryMsg(tempId) {
@@ -3253,11 +3345,19 @@ function renderMsgs() {
       else if (m._isTemp) tick = '<span style="opacity:.4">✓</span>';
       else tick = '<span class="tick-ok">✓✓</span>';
     }
-    const avHtml = !own ? `<div class="msg-av" style="background:${S.activePartner.color}">${initials(S.activePartner.name)}</div>` : '';
+    const avPhoto = S.activePartner.photo;
+    const avHtml = !own
+      ? (avPhoto
+          ? `<div class="msg-av" style="background:${S.activePartner.color};padding:0;overflow:hidden"><img src="${avPhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+          : `<div class="msg-av" style="background:${S.activePartner.color}">${initials(S.activePartner.name)}</div>`)
+      : '';
     const realUrl = (m.contenido&&m.contenido.startsWith('http')) ? m.contenido : (m.mediaUrl||null);
     const previewUrl = realUrl || m.localUrl;
     const retry = (own&&m._failed) ? `<button class="retry-btn" onclick="retryMsg('${m.id}')">Reintentar</button>` : '';
-    const timeHtml = `<div class="mtime">${ts}${tick}</div>${retry}`;
+    const canEdit = own && !m._isTemp && !m._failed && m._editableUntil && m._editableUntil > Date.now();
+    const editBtn = canEdit ? `<button onclick="editMsg('${m.id}')" style="background:none;border:none;color:var(--indigo);font-size:11px;cursor:pointer;padding:0 4px">✏️</button>` : '';
+    const editedMark = m._edited ? `<span style="font-size:10px;color:var(--t3)"> · editado</span>` : '';
+    const timeHtml = `<div class="mtime">${ts}${editedMark}${editBtn}${tick}</div>${retry}`;
 
     let bubble;
     if (m.tipo === 'tts') {
@@ -3338,12 +3438,18 @@ async function sendMedia(tipo, blob, ext, folder, label, extra={}) {
 async function sendTTSMsg(text) {
   if (!S.activePartner || !db) return;
   const room = activeRoom();
-  const msg = { id:'m_'+Date.now(), sala_id:room, emisor_id:S.user.id, emisor_nombre:S.user.name, tipo:'tts', contenido:text, created_at:new Date().toISOString() };
+  const tempId = 'm_'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
+  const msg = { id:tempId, _isTemp:true, sala_id:room, emisor_id:S.user.id, emisor_nombre:S.user.name, tipo:'tts', contenido:text, created_at:new Date().toISOString() };
   if (!localMsgs[room]) localMsgs[room] = [];
   localMsgs[room].push(msg);
   renderMsgs();
-  try { await db.from('novu_mensajes').insert({ sala_id:room, emisor_id:S.user.id, emisor_nombre:S.user.name, tipo:'tts', contenido:text }); }
-  catch(e) { toast('⚠️ No se pudo enviar: '+e.message); }
+  try {
+    const { data, error } = await db.from('novu_mensajes').insert({ sala_id:room, emisor_id:S.user.id, emisor_nombre:S.user.name, tipo:'tts', contenido:text }).select().single();
+    if (error) throw error;
+    const idx = localMsgs[room].findIndex(m=>m.id===tempId);
+    if (idx!==-1) localMsgs[room][idx] = {...data, _isTemp:false};
+    renderMsgs();
+  } catch(e) { toast('⚠️ No se pudo enviar: '+e.message); }
 }
 
 // ══════════════════════════════════════════════════
@@ -3550,21 +3656,392 @@ function closeVoiceOv() {
   document.getElementById('voiceOv').classList.remove('open');
 }
 
+// ══════════════════════════════════════════════════
+// MODO CONDUCTOR — voz continua para manejar
+// ══════════════════════════════════════════════════
+let drivingMode = false;
+let drivingSR = null;
+let drivingListening = false;
+let drivingDictating = false; // esperando el texto del mensaje
+let drivingTarget = null;     // contacto destino del mensaje
+
+function toggleDrivingMode() {
+  if (drivingMode) stopDrivingMode();
+  else startDrivingMode();
+}
+
+function startDrivingMode() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('⚠️ Tu navegador no soporta reconocimiento de voz'); return; }
+  drivingMode = true;
+  document.getElementById('drivingBar').style.display = 'flex';
+  speak('Modo conductor activado. Decí un comando.');
+  drivingListen();
+}
+
+function stopDrivingMode() {
+  drivingMode = false;
+  drivingDictating = false;
+  drivingTarget = null;
+  if (drivingSR) { try { drivingSR.stop(); } catch {} drivingSR = null; }
+  document.getElementById('drivingBar').style.display = 'none';
+  speak('Modo conductor desactivado.');
+}
+
+function drivingListen() {
+  if (!drivingMode) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  drivingSR = new SR();
+  drivingSR.lang = 'es-UY';
+  drivingSR.continuous = false;
+  drivingSR.interimResults = false;
+  drivingListening = true;
+
+  drivingSR.onresult = e => {
+    const cmd = e.results[0][0].transcript.toLowerCase().trim();
+    setDrivingStatus('Escuché: "' + cmd + '"');
+    if (drivingDictating) {
+      handleDrivingDictation(cmd);
+    } else {
+      handleDrivingCommand(cmd);
+    }
+  };
+
+  drivingSR.onerror = err => {
+    if (err.error === 'no-speech') {
+      // silencio — volver a escuchar
+      setTimeout(() => { if (drivingMode) drivingListen(); }, 500);
+    } else {
+      setDrivingStatus('🎙️ Decí un comando…');
+      setTimeout(() => { if (drivingMode) drivingListen(); }, 1000);
+    }
+  };
+
+  drivingSR.onend = () => {
+    drivingListening = false;
+    if (drivingMode) setTimeout(() => drivingListen(), 300);
+  };
+
+  try { drivingSR.start(); setDrivingStatus('🎙️ Escuchando…'); }
+  catch { setTimeout(() => { if (drivingMode) drivingListen(); }, 1000); }
+}
+
+function setDrivingStatus(text) {
+  const el = document.getElementById('drivingStatus');
+  if (el) el.textContent = text;
+}
+
+function handleDrivingCommand(cmd) {
+  // LEER MENSAJES
+  if (cmd.includes('leer') || cmd.includes('leé') || cmd.includes('qué dijeron') || cmd.includes('que dijeron') || cmd.includes('nuevos mensajes')) {
+    readLastMessages();
+    return;
+  }
+
+  // LLAMAR
+  if (cmd.includes('llamar') || cmd.includes('llamá') || cmd.includes('llama')) {
+    const contact = findContactInCmd(cmd, ['llamar a','llamar','llamá a','llamá','llama a']);
+    if (contact) {
+      speak('Llamando a ' + contact.nombre);
+      openChat(contact.id, contact.nombre, contact.color, contact.telefono);
+      setTimeout(() => startCall('audio'), 1000);
+    } else {
+      speak('¿A quién querés llamar? Decí el nombre.');
+      setDrivingStatus('¿A quién llamar?');
+    }
+    return;
+  }
+
+  // ENVIAR MENSAJE — "mandar mensaje a Pa: llegué bien" o "enviar a Pa llegué bien"
+  const sendMatch = cmd.match(/(?:mandar|enviar|decirle a|escribir a|mensaje a)\s+([a-záéíóúñü]+)\s*[:\-,]?\s*(.+)?/i);
+  if (sendMatch) {
+    const nameFragment = sendMatch[1];
+    const msgText = sendMatch[2]?.trim();
+    const contact = onlineUsers.find(u => u.nombre.toLowerCase().includes(nameFragment));
+    if (contact) {
+      openChat(contact.id, contact.nombre, contact.color, contact.telefono);
+      if (msgText) {
+        // Mensaje incluido en el comando
+        setTimeout(() => {
+          sendDrivingMsg(msgText);
+          speak('Mensaje enviado a ' + contact.nombre + ': ' + msgText);
+        }, 500);
+      } else {
+        // Pedir el mensaje
+        drivingTarget = contact;
+        drivingDictating = true;
+        speak('¿Qué le decís a ' + contact.nombre + '?');
+        setDrivingStatus('¿Qué mensaje?');
+      }
+    } else {
+      speak('No encontré ese contacto.');
+    }
+    return;
+  }
+
+  // ABRIR CHAT
+  if (cmd.includes('abrir') || cmd.includes('chat con') || cmd.includes('hablar con')) {
+    const contact = findContactInCmd(cmd, ['abrir chat con','chat con','abrir','hablar con']);
+    if (contact) {
+      openChat(contact.id, contact.nombre, contact.color, contact.telefono);
+      speak('Chat con ' + contact.nombre + ' abierto.');
+    }
+    return;
+  }
+
+  // SPOTIFY — reproducir / pausar / siguiente / anterior
+  if (cmd.includes('spotify') || cmd.includes('música') || cmd.includes('musica') ||
+      cmd.includes('reproducir') || cmd.includes('pausar') || cmd.includes('siguiente canción') ||
+      cmd.includes('siguiente tema') || cmd.includes('anterior canción') || cmd.includes('canción anterior') ||
+      cmd.includes('parar música') || cmd.includes('parar musica')) {
+    handleSpotifyCmd(cmd);
+    return;
+  }
+
+  // WAZE — navegar a [dirección]
+  const wazeMatch = cmd.match(/(?:navegar a|ir a|llevarme a|abrir waze|waze a)\s*(.+)?/i);
+  if (wazeMatch || cmd.includes('waze') || cmd.includes('navegar') || cmd.includes('cómo llego') || cmd.includes('como llego')) {
+    const dest = wazeMatch?.[1]?.trim();
+    handleWazeCmd(dest);
+    return;
+  }
+
+  // ESCUCHAR AUDIO — reproducir último audio recibido
+  if (cmd.includes('escuchar audio') || cmd.includes('oír audio') || cmd.includes('reproducir audio') ||
+      cmd.includes('que dijo') || cmd.includes('qué dijo') || cmd.includes('audio recibido')) {
+    playLastReceivedAudio();
+    return;
+  }
+
+  // SOS
+  if (cmd.includes('sos') || cmd.includes('ayuda') || cmd.includes('emergencia')) {
+    speak('Activando SOS');
+    openCrisis();
+    return;
+  }
+
+  // SALIR
+  if (cmd.includes('salir') || cmd.includes('parar') || cmd.includes('detener') || cmd.includes('apagar')) {
+    stopDrivingMode();
+    return;
+  }
+
+  // No entendido
+  speak('No entendí. Podés decir: leer mensajes, llamar a, enviar mensaje a, Spotify, navegar a, o SOS.');
+  setDrivingStatus('🎙️ Escuchando…');
+}
+
+// ── SPOTIFY ──────────────────────────────────────────────
+function handleSpotifyCmd(cmd) {
+  // Intentar usar Web Playback SDK si está disponible (requiere login previo en Spotify web)
+  // Fallback: deep links spotify: URI para abrir la app
+  if (cmd.includes('pausar') || cmd.includes('parar música') || cmd.includes('parar musica') || cmd.includes('silenciar')) {
+    if (window._spotifyPlayer) {
+      window._spotifyPlayer.pause().then(() => speak('Música pausada.')).catch(() => spotifyDeepLink('pause'));
+    } else {
+      spotifyDeepLink('pause');
+      speak('Pausando Spotify.');
+    }
+    return;
+  }
+  if (cmd.includes('siguiente') || cmd.includes('próxima') || cmd.includes('proxima') || cmd.includes('otra canción') || cmd.includes('otra tema')) {
+    if (window._spotifyPlayer) {
+      window._spotifyPlayer.nextTrack().then(() => speak('Siguiente canción.')).catch(() => spotifyDeepLink('next'));
+    } else {
+      spotifyDeepLink('next');
+      speak('Siguiente canción.');
+    }
+    return;
+  }
+  if (cmd.includes('anterior') || cmd.includes('atrás') || cmd.includes('atras') || cmd.includes('volver')) {
+    if (window._spotifyPlayer) {
+      window._spotifyPlayer.previousTrack().then(() => speak('Canción anterior.')).catch(() => spotifyDeepLink('prev'));
+    } else {
+      spotifyDeepLink('prev');
+      speak('Canción anterior.');
+    }
+    return;
+  }
+  // Buscar artista/canción en el comando: "reproducir [artista/canción]"
+  const playMatch = cmd.match(/(?:reproducir|poner|tocar)\s+(.+)/i);
+  if (playMatch) {
+    const query = playMatch[1].trim();
+    const encoded = encodeURIComponent(query);
+    // Intentar abrir Spotify con búsqueda
+    const uri = 'spotify:search:' + encoded;
+    try {
+      window.open(uri, '_blank');
+      speak('Buscando ' + query + ' en Spotify.');
+    } catch {
+      speak('Abrí Spotify y buscá ' + query);
+    }
+    return;
+  }
+  // Solo "reproducir" / "música" sin especificar → play
+  if (window._spotifyPlayer) {
+    window._spotifyPlayer.resume().then(() => speak('Reproduciendo.')).catch(() => spotifyDeepLink('play'));
+  } else {
+    spotifyDeepLink('play');
+    speak('Reproduciendo Spotify.');
+  }
+}
+
+function spotifyDeepLink(action) {
+  // Spotify no tiene deep links para play/pause/next en todos los OS,
+  // pero podemos intentar abrir la app y el usuario interactúa
+  // En Android se puede usar intents, en iOS la app responde a spotify:
+  try {
+    if (action === 'play' || action === 'pause') {
+      window.open('spotify:', '_blank');
+    } else if (action === 'next') {
+      // No hay deep link directo para next, abrimos la app
+      window.open('spotify:', '_blank');
+      speak('Usá la app de Spotify para cambiar canción.');
+    } else if (action === 'prev') {
+      window.open('spotify:', '_blank');
+      speak('Usá la app de Spotify para volver atrás.');
+    }
+  } catch(e) {
+    speak('Abrí Spotify manualmente.');
+  }
+}
+
+// ── WAZE ──────────────────────────────────────────────────
+function handleWazeCmd(destination) {
+  if (!destination) {
+    speak('¿A dónde querés ir? Decí navegar a y la dirección.');
+    setDrivingStatus('¿A dónde navegar?');
+    // Pedir destino con reconocimiento
+    drivingDictating = true;
+    drivingTarget = { __waze: true };
+    return;
+  }
+  openWaze(destination);
+}
+
+function openWaze(destination) {
+  const encoded = encodeURIComponent(destination);
+  // Deep link de Waze: funciona en Android e iOS si la app está instalada
+  const wazeUrl = 'waze://?q=' + encoded + '&navigate=yes';
+  const fallbackUrl = 'https://waze.com/ul?q=' + encoded + '&navigate=yes';
+  speak('Abriendo Waze hacia ' + destination);
+  setDrivingStatus('🗺️ Abriendo Waze…');
+  // Intentar deep link primero, fallback a web
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+  iframe.src = wazeUrl;
+  setTimeout(() => {
+    document.body.removeChild(iframe);
+    // Si Waze no se abrió (iOS no lanza desde iframe), abrir en nueva pestaña
+  }, 500);
+  setTimeout(() => {
+    window.open(wazeUrl, '_blank') || window.open(fallbackUrl, '_blank');
+  }, 300);
+}
+
+// ── AUDIO RECIBIDO ────────────────────────────────────────
+function playLastReceivedAudio() {
+  const room = activeRoom();
+  const msgs = localMsgs[room] || [];
+  // Buscar último audio recibido (no propio)
+  const audioMsgs = msgs.filter(m => m.emisor_id !== S.user.id && (m.tipo === 'audio' || m.tipo === 'voz'));
+  if (!audioMsgs.length) {
+    speak('No hay audios recibidos en este chat.');
+    return;
+  }
+  const last = audioMsgs[audioMsgs.length - 1];
+  const url = last.url || last.contenido;
+  if (!url) { speak('No pude encontrar el audio.'); return; }
+  speak('Reproduciendo último audio de ' + (S.activePartner?.name || 'tu contacto'));
+  setTimeout(() => {
+    const a = new Audio(url);
+    a.play().catch(() => speak('No se pudo reproducir el audio.'));
+  }, 1500);
+}
+
+function handleDrivingDictation(text) {
+  drivingDictating = false;
+  if (!drivingTarget) return;
+  // Destino Waze
+  if (drivingTarget.__waze) {
+    drivingTarget = null;
+    openWaze(text);
+    return;
+  }
+  sendDrivingMsg(text);
+  speak('Enviado a ' + drivingTarget.nombre + ': ' + text);
+  drivingTarget = null;
+  setDrivingStatus('✅ Enviado. Escuchando…');
+}
+
+function sendDrivingMsg(text) {
+  // Poner el texto en el input y enviar
+  const el = document.getElementById('msgIn');
+  if (el) { el.value = text; sendMsg(); }
+}
+
+function findContactInCmd(cmd, prefixes) {
+  let fragment = cmd;
+  for (const p of prefixes) {
+    fragment = fragment.replace(new RegExp(p + '\\s*', 'i'), '').trim();
+  }
+  return onlineUsers.find(u => u.nombre.toLowerCase().includes(fragment) || fragment.includes(u.nombre.toLowerCase()));
+}
+
+function readLastMessages() {
+  if (!S.activePartner) {
+    // Leer de todos los chats
+    const allNew = [];
+    onlineUsers.forEach(u => {
+      const room = phoneRoomId(S.user.phone, u.telefono) || roomId(S.user.id, u.id);
+      const msgs = localMsgs[room] || [];
+      const last = msgs[msgs.length-1];
+      if (last && last.emisor_id !== S.user.id && last.tipo === 'texto') {
+        allNew.push(u.nombre + ' dice: ' + last.contenido);
+      }
+    });
+    if (allNew.length) {
+      speak(allNew.join('. '));
+    } else {
+      speak('No hay mensajes nuevos.');
+    }
+    return;
+  }
+  const room = activeRoom();
+  const msgs = (localMsgs[room] || []).filter(m => m.emisor_id !== S.user.id && m.tipo === 'texto');
+  if (!msgs.length) { speak('No hay mensajes de ' + S.activePartner.name); return; }
+  const last3 = msgs.slice(-3).map(m => m.contenido).join('. Luego dijo: ');
+  speak(S.activePartner.name + ' dijo: ' + last3);
+}
+
+// Leer mensajes entrantes automáticamente en modo conductor
+function autoReadInDriving(msg) {
+  if (!drivingMode) return;
+  if (msg.emisor_id === S.user.id) return;
+  if (msg.tipo !== 'texto' && msg.tipo !== 'tts') return;
+  const sender = onlineUsers.find(u => u.id === msg.emisor_id)?.nombre || 'Tu contacto';
+  speak(sender + ' dice: ' + msg.contenido);
+}
+
 function handleVoiceCmd(cmd) {
-  if (cmd.includes('sos') || cmd.includes('ayuda')) { closeVoiceOv(); openCrisis(); return; }
-  if (cmd.includes('jugar') || cmd.includes('juego')) { closeVoiceOv(); openGames(); return; }
-  if (cmd.includes('enviar') || cmd.includes('mandar')) {
-    closeVoiceOv(); sendMsg(); return;
-  }
-  if (cmd.includes('abrir') || cmd.includes('hablar')) {
-    const contactName = cmd.replace(/abrir|hablar con|hablar|llamar a|llamar/gi,'').trim();
-    const u = onlineUsers.find(x=>x.nombre.toLowerCase().includes(contactName));
-    if (u) { closeVoiceOv(); openChat(u.id,u.nombre,u.color,u.telefono); return; }
-  }
-  // try to find contact by name in command
-  const u = onlineUsers.find(x => cmd.includes(x.nombre.toLowerCase()));
-  if (u) { closeVoiceOv(); openChat(u.id,u.nombre,u.color,u.telefono); return; }
-  toast('🎙️ No entendí el comando');
+  handleDrivingCommand(cmd);
+}
+
+function openVoiceCmd() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('⚠️ Voz no soportada'); return; }
+  document.getElementById('voiceOv').classList.add('open');
+  voiceCmdSR = new SR();
+  voiceCmdSR.lang = 'es-UY'; voiceCmdSR.continuous = false;
+  voiceCmdSR.onresult = e => {
+    const cmd = e.results[0][0].transcript.toLowerCase().trim();
+    document.getElementById('voiceTranscript').textContent = cmd;
+    handleVoiceCmd(cmd);
+  };
+  voiceCmdSR.onerror = () => document.getElementById('voiceTranscript').textContent = 'No te escuché…';
+  voiceCmdSR.onend = () => setTimeout(closeVoiceOv, 800);
+  voiceCmdSR.start();
 }
 
 // ══════════════════════════════════════════════════
@@ -3770,13 +4247,16 @@ const callState = { active:false, mode:null, role:null, pc:null, localStream:nul
 let incomingCallChannel = null;
 let incomingCallChannelPhone = null; // canal alternativo por teléfono
 
+let incomingCallChannelDevice = null; // canal por device_id para multi-sesión
+
 function setupIncomingCallListener() {
   if (!db || !S.user.id) return;
+  // Canal por user_id (compatibilidad)
   if (incomingCallChannel) incomingCallChannel.unsubscribe();
   incomingCallChannel = db.channel('call:'+S.user.id)
     .on('broadcast',{event:'signal'},({payload})=>handleSignal(payload))
     .subscribe();
-  // Canal adicional por teléfono normalizado (por si el llamador usa teléfono como destino)
+  // Canal por teléfono normalizado
   if (S.user.phone) {
     const phoneKey = S.user.phone.replace(/\D/g,'').slice(-8);
     if (incomingCallChannelPhone) incomingCallChannelPhone.unsubscribe();
@@ -3784,11 +4264,16 @@ function setupIncomingCallListener() {
       .on('broadcast',{event:'signal'},({payload})=>handleSignal(payload))
       .subscribe();
   }
+  // Canal por device_id — garantiza que CADA dispositivo recibe la llamada en multi-sesión
+  if (incomingCallChannelDevice) incomingCallChannelDevice.unsubscribe();
+  incomingCallChannelDevice = db.channel('call:dev:'+DEVICE_ID)
+    .on('broadcast',{event:'signal'},({payload})=>handleSignal(payload))
+    .subscribe();
 }
 
 async function sendSignal(toUserId, data, toPhone) {
   if (!db) return;
-  const payload = {type:'broadcast',event:'signal',payload:{from:S.user.id,fromName:S.user.name,fromColor:S.user.color,...data}};
+  const payload = {type:'broadcast',event:'signal',payload:{from:S.user.id,fromName:S.user.name,fromColor:S.user.color,ts:Date.now(),...data}};
   // Enviar al canal por ID
   const ch = db.channel('call:'+toUserId);
   await new Promise(res => {
@@ -3797,7 +4282,7 @@ async function sendSignal(toUserId, data, toPhone) {
   });
   await ch.send(payload);
   setTimeout(()=>{ try{ch.unsubscribe();}catch{} },3000);
-  // También enviar al canal por teléfono (doble cobertura por si los IDs no coinciden)
+  // También enviar al canal por teléfono (doble cobertura)
   const phoneKey = (toPhone||'').replace(/\D/g,'').slice(-8);
   if (phoneKey) {
     const chTel = db.channel('call:tel:'+phoneKey);
@@ -3808,10 +4293,31 @@ async function sendSignal(toUserId, data, toPhone) {
     await chTel.send(payload);
     setTimeout(()=>{ try{chTel.unsubscribe();}catch{} },3000);
   }
+  // Enviar a todos los devices activos del destinatario (multi-sesión)
+  try {
+    const { data: targetRow } = await db.from('novu_usuarios').select('devices').eq('id', toUserId).limit(1);
+    const targetDevices = targetRow?.[0]?.devices || [];
+    const cutoff = Date.now() - 5 * 60 * 1000;
+    const activeDevices = targetDevices.filter(d => new Date(d.ts).getTime() > cutoff);
+    for (const dev of activeDevices) {
+      const chDev = db.channel('call:dev:'+dev.id);
+      await new Promise(res => {
+        chDev.subscribe(st => { if (st === 'SUBSCRIBED') res(); });
+        setTimeout(res, 1500);
+      });
+      await chDev.send(payload);
+      setTimeout(()=>{ try{chDev.unsubscribe();}catch{} },3000);
+    }
+  } catch(e) { console.warn('multi-device signal error', e); }
 }
 
 async function handleSignal(payload) {
   if (!payload || payload.from===S.user.id) return;
+  // Anti-duplicado multi-device: ignorar si ya procesamos esta señal recientemente
+  const sigKey = (payload.kind||'') + '|' + (payload.from||'') + '|' + (payload.ts||'');
+  if (sigKey && window._lastSigKey === sigKey) return;
+  window._lastSigKey = sigKey;
+  setTimeout(()=>{ if(window._lastSigKey===sigKey) window._lastSigKey=null; }, 3000);
   if (payload.kind==='offer') {
     if (callState.active) { sendSignal(payload.from,{kind:'busy'}); return; }
     showIncomingCall(payload);
@@ -4316,9 +4822,48 @@ function closeSidebar() {
 function openOv(id) {
   document.getElementById(id).classList.add('open');
   if (id === 'chatMenuOv' && S.activePartner) {
-    const el = document.getElementById('contactPhoneDisplay');
-    if (el) el.textContent = S.activePartner.telefono || 'No registrado';
+    const phone = document.getElementById('contactPhoneDisplay');
+    const name  = document.getElementById('contactNameDisplay');
+    const av    = document.getElementById('contactAvatarPreview');
+    if (phone) phone.textContent = S.activePartner.telefono || 'No registrado';
+    if (name)  name.textContent  = S.activePartner.name || '—';
+    if (av) {
+      av.style.background = S.activePartner.color || '#6366f1';
+      if (S.activePartner.photo) {
+        av.innerHTML = `<img src="${S.activePartner.photo}" style="width:100%;height:100%;object-fit:cover">`;
+      } else {
+        av.textContent = initials(S.activePartner.name);
+      }
+    }
   }
+}
+
+function pickContactPhoto() {
+  document.getElementById('contactPhotoInput')?.click();
+}
+
+function handleContactPhoto(event) {
+  const file = event.target.files?.[0];
+  if (!file || !S.activePartner) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    // Guardar en onlineUsers
+    const u = onlineUsers.find(u => u.id === S.activePartner.id);
+    if (u) u.photo = dataUrl;
+    S.activePartner.photo = dataUrl;
+    // Persistir en localStorage por ID del contacto
+    const photos = JSON.parse(localStorage.getItem('novu_contact_photos')||'{}');
+    photos[S.activePartner.id] = dataUrl;
+    localStorage.setItem('novu_contact_photos', JSON.stringify(photos));
+    // Actualizar preview en el modal
+    const av = document.getElementById('contactAvatarPreview');
+    if (av) av.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover">`;
+    renderMsgs();
+    renderChats();
+    toast('✅ Foto actualizada');
+  };
+  reader.readAsDataURL(file);
 }
 function closeOv(id) { document.getElementById(id).classList.remove('open'); }
 function ovClick(e, id) { if(e.target===e.currentTarget) closeOv(id); }
@@ -4407,9 +4952,10 @@ async function sendBateriaPresencia() {
     toast('⚠️ Abrí un chat primero'); return;
   }
   const status = document.getElementById('bbStatusSel').value;
-  const text = '🌙 ' + status;
-  await sendTTSMsg(text);
-  speak(text);
+  // Solo voz — sin texto escrito, sin duplicado
+  speak(status, 'female');
+  // Enviar como mensaje de voz sintética al partner (sin el emoji 🌙 para que suene natural)
+  await sendTTSMsg(status);
   toast('💜 Presencia enviada silenciosamente');
   closeBateriaBaja();
 }
@@ -5103,58 +5649,92 @@ function inviteContact() {
 // JUEGOS MULTIJUGADOR REAL
 // ══════════════════════════════════════════════════
 let gameChannel = null;
-let multiGame = { active:false, type:null };
+let multiGame = { active:false, type:null, isHost:false };
+
+function gamePhoneKey(phone) { return (phone||'').replace(/\D/g,'').slice(-8); }
+function iAmHost() {
+  // El host es quien tiene el número más pequeño (consistente en ambos lados)
+  return gamePhoneKey(S.user.phone) < gamePhoneKey(S.activePartner?.telefono||'');
+}
 
 function openGameMulti(gameType) {
   if (!S.activePartner || !db) return false;
   const chName = 'game:' + (phoneRoomId(S.user.phone, S.activePartner.telefono) || roomId(S.user.id, S.activePartner.id)) + ':' + gameType;
-  if (gameChannel) gameChannel.unsubscribe();
+  if (gameChannel) { try { gameChannel.unsubscribe(); } catch {} }
+  let subscribed = false;
   gameChannel = db.channel(chName)
     .on('broadcast', { event:'move' }, ({ payload }) => { if (payload.from !== S.user.id) handleRemoteMove(payload); })
-    .on('broadcast', { event:'reset' }, () => { toast('🔄 ' + (S.activePartner?.name||'Tu contacto') + ' reinició'); switchGame(multiGame.type, document.querySelector('.game-tab.active')); })
-    .subscribe(st => { if (st==='SUBSCRIBED') toast('✅ Conectado con ' + (S.activePartner?.name||'tu contacto')); });
-  multiGame.active = true; multiGame.type = gameType;
+    .on('broadcast', { event:'invite' }, ({ payload }) => { if (payload.from !== S.user.id) handleGameInvite(payload); })
+    .on('broadcast', { event:'deck' }, ({ payload }) => { if (payload.from !== S.user.id) handleRemoteDeck(payload); })
+    .on('broadcast', { event:'reset' }, ({ payload }) => { if (payload.from !== S.user.id) { toast('🔄 ' + (S.activePartner?.name||'Tu contacto') + ' reinició'); switchGame(multiGame.type, document.querySelector('.game-tab.active')); } })
+    .subscribe(st => {
+      if (st==='SUBSCRIBED' && !subscribed) {
+        subscribed = true;
+        // Enviar invitación al partner
+        gameChannel.send({ type:'broadcast', event:'invite', payload:{ from:S.user.id, fromName:S.user.name, gameType } }).catch(()=>{});
+      }
+    });
+  multiGame.active = true; multiGame.type = gameType; multiGame.isHost = iAmHost();
   return true;
 }
-function sendGameMove(data) { if (!gameChannel) return; gameChannel.send({ type:'broadcast', event:'move', payload:{ from:S.user.id, ...data } }).catch(()=>{}); }
+
+function handleGameInvite(payload) {
+  const gameName = { ttt:'Tres en línea', memory:'Memoria', chess:'Ajedrez' }[payload.gameType] || payload.gameType;
+  if (confirm(`🎮 ${payload.fromName} te invita a jugar ${gameName}. ¿Aceptás?`)) {
+    // Abrir el juego si no está abierto
+    const gameOv = document.getElementById('gameOv');
+    if (!gameOv?.classList.contains('open')) openGames();
+    // Cambiar al tab correcto
+    const tab = document.querySelector(`.game-tab[data-game="${payload.gameType}"]`);
+    if (tab) switchGame(payload.gameType, tab);
+    toast('🎮 ¡Juego iniciado con ' + payload.fromName + '!');
+  }
+}
+
+function sendGameMove(data) {
+  if (!gameChannel) return;
+  gameChannel.send({ type:'broadcast', event:'move', payload:{ from:S.user.id, ...data } }).catch(()=>{});
+}
+
 function handleRemoteMove(p) {
   if (multiGame.type==='ttt') handleRemoteTTT(p);
   else if (multiGame.type==='chess') handleRemoteChess(p);
   else if (multiGame.type==='memory') handleRemoteMemory(p);
 }
 
-// TTT multi
+// TTT multi — myMark basado en teléfono (consistente en ambos lados)
 let tttState = { cells:Array(9).fill(''), turn:'X', over:false, myMark:'X', root:null };
 function loadTTTMulti(root) {
-  tttState.root=root; tttState.myMark=S.user.id<(S.activePartner?.id||'')?'X':'O';
-  tttState.cells=Array(9).fill(''); tttState.turn='X'; tttState.over=false;
-  const info=document.createElement('div'); info.id='tttInfo';
-  info.style.cssText='text-align:center;font-size:13px;color:var(--t2);margin-bottom:10px;';
+  tttState.root = root;
+  tttState.myMark = iAmHost() ? 'X' : 'O';
+  tttState.cells = Array(9).fill(''); tttState.turn = 'X'; tttState.over = false;
+  const info = document.createElement('div'); info.id = 'tttInfo';
+  info.style.cssText = 'text-align:center;font-size:13px;color:var(--t2);margin-bottom:10px;';
   root.appendChild(info);
-  const grid=document.createElement('div'); grid.className='ttt-grid'; grid.id='tttGrid';
+  const grid = document.createElement('div'); grid.className = 'ttt-grid'; grid.id = 'tttGrid';
   root.appendChild(grid); renderTTT();
 }
 function renderTTT() {
-  const grid=document.getElementById('tttGrid'); const info=document.getElementById('tttInfo');
+  const grid = document.getElementById('tttGrid'); const info = document.getElementById('tttInfo');
   if (!grid) return;
-  const myTurn=tttState.turn===tttState.myMark&&!tttState.over;
-  if (info) info.textContent=tttState.over?'':(myTurn?'🟢 Tu turno':'⏳ Turno de '+tttState.turn);
-  grid.innerHTML='';
-  tttState.cells.forEach((v,i)=>{
-    const c=document.createElement('button'); c.className='ttt-cell'; c.textContent=v;
-    c.onclick=()=>{
-      if(tttState.over||tttState.cells[i]||tttState.turn!==tttState.myMark) return;
-      tttState.cells[i]=tttState.myMark; sendGameMove({idx:i,mark:tttState.myMark}); advanceTTT(i,tttState.myMark);
+  const myTurn = tttState.turn === tttState.myMark && !tttState.over;
+  if (info) info.textContent = tttState.over ? '' : (myTurn ? '🟢 Tu turno ('+tttState.myMark+')' : '⏳ Turno de ' + (S.activePartner?.name||'tu contacto'));
+  grid.innerHTML = '';
+  tttState.cells.forEach((v, i) => {
+    const c = document.createElement('button'); c.className = 'ttt-cell'; c.textContent = v;
+    c.onclick = () => {
+      if (tttState.over || tttState.cells[i] || tttState.turn !== tttState.myMark) return;
+      tttState.cells[i] = tttState.myMark; sendGameMove({idx:i, mark:tttState.myMark}); advanceTTT(i, tttState.myMark);
     };
     grid.appendChild(c);
   });
 }
-function advanceTTT(idx,mark) {
-  const win=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].some(l=>l.every(i=>tttState.cells[i]===mark));
-  const full=tttState.cells.every(c=>c);
-  tttState.turn=mark==='X'?'O':'X';
-  if(win){tttState.over=true;renderTTT();const won=mark===tttState.myMark;if(won){gamesScore.ttt=(gamesScore.ttt||0)+10;saveGameScore();}showGameResult(tttState.root,won?'🎉 ¡Ganaste!':'😅 Ganó '+(S.activePartner?.name||'tu contacto'));}
-  else if(full){tttState.over=true;renderTTT();showGameResult(tttState.root,'🤝 Empate');}
+function advanceTTT(idx, mark) {
+  const win = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].some(l=>l.every(i=>tttState.cells[i]===mark));
+  const full = tttState.cells.every(c=>c);
+  tttState.turn = mark==='X' ? 'O' : 'X';
+  if (win) { tttState.over=true; renderTTT(); const won=mark===tttState.myMark; if(won){gamesScore.ttt=(gamesScore.ttt||0)+10;saveGameScore();} showGameResult(tttState.root, won?'🎉 ¡Ganaste!':'😅 Ganó '+(S.activePartner?.name||'tu contacto')); }
+  else if (full) { tttState.over=true; renderTTT(); showGameResult(tttState.root,'🤝 Empate'); }
   else renderTTT();
 }
 function handleRemoteTTT(p) { if(tttState.over)return; tttState.cells[p.idx]=p.mark; advanceTTT(p.idx,p.mark); }
@@ -5162,26 +5742,26 @@ function handleRemoteTTT(p) { if(tttState.over)return; tttState.cells[p.idx]=p.m
 // Chess multi
 let chessState = { squares:[...['♜','♞','♝','♛','♚','♝','♞','♜','♟','♟','♟','♟','♟','♟','♟','♟','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','♙','♙','♙','♙','♙','♙','♙','♙','♖','♘','♗','♕','♔','♗','♘','♖']], selected:null, root:null };
 function loadChessMulti(root) {
-  chessState.root=root; chessState.squares=[...chessState.squares]; chessState.selected=null;
-  const info=document.createElement('div');
-  info.style.cssText='text-align:center;font-size:12px;color:var(--t2);margin-bottom:8px;';
-  info.textContent='Jugás con las '+(S.user.id<(S.activePartner?.id||'')?'blancas ♙':'negras ♟');
+  chessState.root = root; chessState.selected = null;
+  const info = document.createElement('div');
+  info.style.cssText = 'text-align:center;font-size:12px;color:var(--t2);margin-bottom:8px;';
+  info.textContent = 'Jugás con las ' + (iAmHost() ? 'blancas ♙' : 'negras ♟');
   root.appendChild(info);
-  const board=document.createElement('div'); board.className='chess-board'; board.id='chessBoard';
+  const board = document.createElement('div'); board.className = 'chess-board'; board.id = 'chessBoard';
   root.appendChild(board); renderChessMulti();
 }
 function renderChessMulti() {
-  const board=document.getElementById('chessBoard'); if(!board)return;
-  board.innerHTML='';
-  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
-    const idx=r*8+c; const cell=document.createElement('div');
-    cell.className='chess-cell '+((r+c)%2===0?'white':'dark');
-    cell.textContent=chessState.squares[idx]||'';
-    if(chessState.selected===idx) cell.style.outline='3px solid var(--emerald)';
-    cell.onclick=()=>{
-      if(chessState.selected===null&&chessState.squares[idx]){chessState.selected=idx;renderChessMulti();}
-      else if(chessState.selected!==null){
-        const from=chessState.selected,to=idx;
+  const board = document.getElementById('chessBoard'); if (!board) return;
+  board.innerHTML = '';
+  for (let r=0; r<8; r++) for (let c=0; c<8; c++) {
+    const idx = r*8+c; const cell = document.createElement('div');
+    cell.className = 'chess-cell ' + ((r+c)%2===0?'white':'dark');
+    cell.textContent = chessState.squares[idx] || '';
+    if (chessState.selected===idx) cell.style.outline = '3px solid var(--emerald)';
+    cell.onclick = () => {
+      if (chessState.selected===null && chessState.squares[idx]) { chessState.selected=idx; renderChessMulti(); }
+      else if (chessState.selected!==null) {
+        const from=chessState.selected, to=idx;
         chessState.squares[to]=chessState.squares[from]; chessState.squares[from]='';
         chessState.selected=null; sendGameMove({from,to,squares:[...chessState.squares]}); renderChessMulti();
       }
@@ -5191,37 +5771,56 @@ function renderChessMulti() {
 }
 function handleRemoteChess(p) { chessState.squares=p.squares; chessState.selected=null; renderChessMulti(); toast('♟️ '+(S.activePartner?.name||'Tu contacto')+' movió'); }
 
-// Memory multi
-let memState = { deck:[],flipped:[],matched:[],scores:{me:0,them:0},myTurn:true,root:null };
+// Memory multi — el host genera el deck y lo envía al partner
+let memState = { deck:[], flipped:[], matched:[], scores:{me:0,them:0}, myTurn:true, root:null };
 function loadMemoryMulti(root) {
-  memState.root=root; const emojis=['🐶','🐱','🦊','🐻','🐼','🦁','🐨','🐵'];
-  memState.deck=shuffleArr([...emojis,...emojis]); memState.flipped=[]; memState.matched=[];
-  memState.scores={me:0,them:0}; memState.myTurn=S.user.id<(S.activePartner?.id||'');
-  const s=document.createElement('div'); s.id='memScore';
-  s.style.cssText='text-align:center;font-size:13px;color:var(--t2);margin-bottom:10px;';
+  memState.root = root; memState.flipped = []; memState.matched = [];
+  memState.scores = {me:0, them:0}; memState.myTurn = iAmHost();
+  const emojis = ['🐶','🐱','🦊','🐻','🐼','🦁','🐨','🐵'];
+  if (iAmHost()) {
+    // Host genera deck y lo comparte
+    memState.deck = shuffleArr([...emojis,...emojis]);
+    setTimeout(() => {
+      if (gameChannel) gameChannel.send({ type:'broadcast', event:'deck', payload:{ from:S.user.id, deck:memState.deck } }).catch(()=>{});
+    }, 800); // esperar a que el otro se suscriba
+  } else {
+    // Guest espera el deck del host
+    memState.deck = [...emojis,...emojis]; // placeholder hasta recibir
+    toast('⏳ Esperando que ' + (S.activePartner?.name||'tu contacto') + ' prepare el tablero…');
+  }
+  const s = document.createElement('div'); s.id = 'memScore';
+  s.style.cssText = 'text-align:center;font-size:13px;color:var(--t2);margin-bottom:10px;';
   root.appendChild(s);
-  const grid=document.createElement('div'); grid.className='memory-grid'; grid.id='memGrid';
-  root.appendChild(grid); renderMemoryMulti();
+  const grid = document.createElement('div'); grid.className = 'memory-grid'; grid.id = 'memGrid';
+  root.appendChild(grid);
+  if (iAmHost()) renderMemoryMulti();
+}
+function handleRemoteDeck(payload) {
+  memState.deck = payload.deck;
+  toast('✅ ¡Tablero listo!');
+  renderMemoryMulti();
 }
 function renderMemoryMulti() {
-  const grid=document.getElementById('memGrid'); const s=document.getElementById('memScore');
-  if(!grid)return;
-  if(s) s.textContent=`Vos: ${memState.scores.me} · ${S.activePartner?.name||'Ellos'}: ${memState.scores.them} · ${memState.myTurn?'🟢 Tu turno':'⏳ Turno del otro'}`;
-  grid.innerHTML='';
-  memState.deck.forEach((sym,i)=>{
-    const card=document.createElement('button'); card.className='mem-card';
-    card.textContent=(memState.flipped.includes(i)||memState.matched.includes(i))?sym:'?';
-    card.onclick=()=>{
-      if(!memState.myTurn||memState.flipped.includes(i)||memState.matched.includes(i)||memState.flipped.length>=2)return;
-      memState.flipped.push(i); sendGameMove({type:'flip',idx:i});
-      if(memState.flipped.length===2){
-        const[a,b]=memState.flipped;
-        if(memState.deck[a]===memState.deck[b]){
+  const grid = document.getElementById('memGrid'); const s = document.getElementById('memScore');
+  if (!grid) return;
+  if (s) s.textContent = `Vos: ${memState.scores.me} · ${S.activePartner?.name||'Ellos'}: ${memState.scores.them} · ${memState.myTurn?'🟢 Tu turno':'⏳ Turno del otro'}`;
+  grid.innerHTML = '';
+  memState.deck.forEach((sym, i) => {
+    const card = document.createElement('button'); card.className = 'mem-card';
+    const show = memState.flipped.includes(i) || memState.matched.includes(i);
+    card.textContent = show ? sym : '?';
+    if (memState.matched.includes(i)) card.style.opacity = '0.4';
+    card.onclick = () => {
+      if (!memState.myTurn || memState.flipped.includes(i) || memState.matched.includes(i) || memState.flipped.length>=2) return;
+      memState.flipped.push(i); sendGameMove({type:'flip', idx:i});
+      if (memState.flipped.length===2) {
+        const [a,b] = memState.flipped;
+        if (memState.deck[a]===memState.deck[b]) {
           memState.matched.push(a,b); memState.scores.me++; memState.flipped=[];
-          sendGameMove({type:'match',a,b,scores:memState.scores});
-          if(memState.matched.length===memState.deck.length){const won=memState.scores.me>memState.scores.them;gamesScore.memory=(gamesScore.memory||0)+(won?10:2);saveGameScore();showGameResult(memState.root,won?'🎉 ¡Ganaste!':'😅 Perdiste');}
+          sendGameMove({type:'match', a, b, scores:memState.scores});
+          if (memState.matched.length===memState.deck.length) { const won=memState.scores.me>memState.scores.them; gamesScore.memory=(gamesScore.memory||0)+(won?10:2); saveGameScore(); showGameResult(memState.root,won?'🎉 ¡Ganaste!':'😅 Perdiste'); }
         } else {
-          setTimeout(()=>{memState.flipped=[];memState.myTurn=false;sendGameMove({type:'miss'});renderMemoryMulti();},800);
+          setTimeout(()=>{ memState.flipped=[]; memState.myTurn=false; sendGameMove({type:'miss'}); renderMemoryMulti(); },800);
         }
       }
       renderMemoryMulti();
@@ -5230,9 +5829,15 @@ function renderMemoryMulti() {
   });
 }
 function handleRemoteMemory(p) {
-  if(p.type==='flip'){if(!memState.flipped.includes(p.idx))memState.flipped.push(p.idx);renderMemoryMulti();}
-  else if(p.type==='match'){memState.matched.push(p.a,p.b);memState.scores.them=p.scores.me;memState.flipped=[];renderMemoryMulti();}
-  else if(p.type==='miss'){memState.flipped=[];memState.myTurn=true;renderMemoryMulti();}
+  if (p.type==='flip') {
+    if (!memState.flipped.includes(p.idx)) memState.flipped.push(p.idx);
+    renderMemoryMulti();
+  } else if (p.type==='match') {
+    memState.matched.push(p.a, p.b); memState.scores.them = p.scores.me; memState.flipped=[];
+    renderMemoryMulti();
+  } else if (p.type==='miss') {
+    memState.flipped=[]; memState.myTurn=true; renderMemoryMulti();
+  }
 }
 
 window.addEventListener('load', () => {
