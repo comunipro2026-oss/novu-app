@@ -854,7 +854,7 @@ body.no-anim::before { display: none; }
   border-radius: 12px;
   padding: 8px 12px;
   font-size: 13px;
-  color: var(--t1);
+  color: var(--t);
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
@@ -862,7 +862,7 @@ body.no-anim::before { display: none; }
 }
 #msgFilterBar.visible { display: flex; }
 #msgFilterBar .flt-label { color: var(--t3); font-size: 12px; margin-right: 2px; }
-#msgFilterBar .flt-text { flex: 1; color: var(--t1); font-style: italic; }
+#msgFilterBar .flt-text { flex: 1; color: var(--t); font-style: italic; }
 #msgFilterBar .flt-accept {
   background: var(--indigo); color: #fff;
   border: none; border-radius: 8px; padding: 4px 12px; cursor: pointer; font-size: 13px;
@@ -977,51 +977,6 @@ body.no-anim::before { display: none; }
   display: none; position: relative;
 }
 #localVideo { width: 100%; border-radius: 20px; background: #111; }
-
-.call-avatar {
-  width: 130px; height: 130px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 52px; font-weight: 900; color: white;
-  animation: callPulse 1.8s ease-in-out infinite;
-  box-shadow: 0 0 0 0 rgba(99,102,241,.5);
-}
-@keyframes callPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(99,102,241,.55), 0 0 0 0 rgba(99,102,241,0); }
-  40%  { box-shadow: 0 0 0 20px rgba(99,102,241,.12), 0 0 0 40px rgba(99,102,241,.05); }
-  100% { box-shadow: 0 0 0 44px rgba(99,102,241,0), 0 0 0 80px rgba(99,102,241,0); }
-}
-
-.call-name { font-size: 32px; font-weight: 800; color: white; letter-spacing: -.5px; text-align: center; }
-.call-status { font-size: 16px; color: rgba(255,255,255,.55); text-align: center; }
-.call-timer { font-size: 38px; font-weight: 700; font-family: monospace; color: var(--emerald); letter-spacing: 3px; margin-top: 4px; }
-
-/* Actions at bottom — BIG like WhatsApp */
-.call-actions {
-  display: flex; gap: 28px; margin-top: 0;
-  align-items: center; justify-content: center;
-}
-.call-act {
-  width: 80px; height: 80px; border-radius: 50%;
-  border: none; cursor: pointer; font-size: 32px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 8px 28px rgba(0,0,0,.5);
-  transition: transform .15s;
-}
-.call-act:active { transform: scale(.88); }
-.call-act.end { background: var(--rose); color: white; }
-.call-act.mute { background: var(--surface2); color: white; border: 2px solid var(--border2); }
-/* Answer button — green, extra large */
-.call-act.answer {
-  width: 96px; height: 96px; font-size: 40px;
-  background: #22c55e; color: white;
-  animation: answerPulse 1s ease-in-out infinite;
-}
-@keyframes answerPulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.6); }
-  50% { box-shadow: 0 0 0 20px rgba(34,197,94,0); }
-}
-
-
 
 .call-avatar {
   width: 110px; height: 110px; border-radius: 50%;
@@ -2316,10 +2271,10 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
     <button class="game-close" onclick="closeGames()">✕</button>
   </div>
   <div class="game-tabs">
-    <button class="game-tab active" onclick="switchGame('ttt',this)">⭕ 3 en línea</button>
-    <button class="game-tab" onclick="switchGame('memory',this)">🃏 Memoria</button>
-    <button class="game-tab" onclick="switchGame('chess',this)">♟️ Ajedrez</button>
-    <button class="game-tab" onclick="switchGame('wordle',this)">📝 Palabras</button>
+    <button class="game-tab active" data-game="ttt" onclick="switchGame('ttt',this)">⭕ 3 en línea</button>
+    <button class="game-tab" data-game="memory" onclick="switchGame('memory',this)">🃏 Memoria</button>
+    <button class="game-tab" data-game="chess" onclick="switchGame('chess',this)">♟️ Ajedrez</button>
+    <button class="game-tab" data-game="wordle" onclick="switchGame('wordle',this)">📝 Palabras</button>
   </div>
   <div class="game-area" id="gameArea"></div>
 </div>
@@ -3506,9 +3461,9 @@ async function editMsg(msgId) {
   const room = activeRoom();
   if (!room || !localMsgs[room]) return;
   const msg = localMsgs[room].find(m=>m.id===msgId);
-  if (!msg || msg._editableUntil < Date.now()) { toast('⏱️ Ya no se puede editar'); return; }
+  if (!msg || msg._isTemp || msg._failed || msg.tipo !== 'texto') { toast('⚠️ No se puede editar este mensaje'); return; }
   const newText = prompt('Editar mensaje:', msg.contenido);
-  if (!newText || newText.trim()===msg.contenido) return;
+  if (newText === null || newText.trim() === '' || newText.trim() === msg.contenido) return;
   try {
     await db.from('novu_mensajes').update({ contenido: newText.trim() }).eq('id', msgId);
     msg.contenido = newText.trim();
@@ -3559,7 +3514,7 @@ function renderMsgs() {
     const realUrl = (m.contenido&&m.contenido.startsWith('http')) ? m.contenido : (m.mediaUrl||null);
     const previewUrl = realUrl || m.localUrl;
     const retry = (own&&m._failed) ? `<button class="retry-btn" onclick="retryMsg('${m.id}')">Reintentar</button>` : '';
-    const canEdit = own && !m._isTemp && !m._failed && m._editableUntil && m._editableUntil > Date.now();
+    const canEdit = own && !m._isTemp && !m._failed && m.tipo === 'texto';
     const editBtn = canEdit ? `<button onclick="editMsg('${m.id}')" style="background:none;border:none;color:var(--indigo);font-size:11px;cursor:pointer;padding:0 4px">✏️</button>` : '';
     const editedMark = m._edited ? `<span style="font-size:10px;color:var(--t3)"> · editado</span>` : '';
     const timeHtml = `<div class="mtime">${ts}${editedMark}${editBtn}${tick}</div>${retry}`;
@@ -3752,7 +3707,7 @@ async function startRec() {
     recState.iv = setInterval(()=>{
       recState.t++;
       const m=Math.floor(recState.t/60), s=recState.t%60;
-      btn.textContent = `⏹️ ${m}:${String(s).padStart(2,'0')}`;
+      btn.innerHTML=`⏹️<span class="a-label">${m}:${String(s).padStart(2,'0')}</span>`;
     },1000);
     recState.mr.ondataavailable = e => recState.chunks.push(e.data);
     recState.mr.onstop = () => {
@@ -3762,7 +3717,8 @@ async function startRec() {
       sendMedia('audio',blob,'webm','audio','🎙️ Audio',{dur});
       recState.on=false; clearInterval(recState.iv);
       const b=document.getElementById('recBtn');
-      b.classList.remove('rec'); b.textContent='🎤 Grabar';
+      b.classList.remove('rec');
+      b.innerHTML='🎤<span class="a-label">Audio</span>';
     };
     recState.mr.start();
   } catch { toast('❌ Permití el micrófono'); }
@@ -4810,53 +4766,17 @@ function endCall(notify=true) {
   document.getElementById('callScreen').classList.remove('open');
 }
 
-// ══════════════════════════════════════════════════
-// GAMES
-// ══════════════════════════════════════════════════
-let gamesScore = {};
-function loadGameScore() { try { gamesScore=JSON.parse(localStorage.getItem('novu_gscore')||'{}'); } catch{gamesScore={};} }
-function saveGameScore() { localStorage.setItem('novu_gscore',JSON.stringify(gamesScore)); }
-function totalScore() { return Object.values(gamesScore).reduce((a,b)=>a+b,0); }
-
-function openGames() {
-  loadGameScore();
-  document.getElementById('gScore').textContent='🏆 '+totalScore();
-  document.getElementById('gamesOv').classList.add('open');
-  switchGame('ttt', document.querySelector('.game-tab.active'));
-}
-function closeGames() { document.getElementById('gamesOv').classList.remove('open'); }
-
-function switchGame(game, btn) {
-  document.querySelectorAll('.game-tab').forEach(t=>t.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  const area = document.getElementById('gameArea');
-  area.innerHTML = '';
-  const root = document.createElement('div');
-  root.style.width='100%';
-  area.appendChild(root);
-
-  const multi = S.activePartner && db;
-  if (multi) openGameMulti(game);
-
-  if (game==='ttt') { multi ? loadTTTMulti(root) : loadTTT(root); }
-  else if (game==='memory') { multi ? loadMemoryMulti(root) : loadMemory(root); }
-  else if (game==='chess') { multi ? loadChessMulti(root) : loadChess(root); }
-  else if (game==='wordle') loadWordle(root);
-
-  if (multi) {
-    const tag = document.createElement('div');
-    tag.style.cssText = 'text-align:center;font-size:11px;color:var(--emerald);margin-top:10px;font-weight:700;';
-    tag.textContent = '🟢 Jugando con ' + S.activePartner.name + ' en tiempo real';
-    area.appendChild(tag);
-  }
-}
-
 function showGameResult(root, msg) {
   const r=document.createElement('div');
   r.className='game-result'; r.textContent=msg;
   const btn=document.createElement('button');
   btn.className='game-restart-btn'; btn.textContent='Jugar de nuevo';
-  btn.onclick=()=>{ const gt=document.querySelector('.game-tab.active'); switchGame(gt?.dataset?.game||'ttt',gt); };
+  btn.onclick=()=>{
+    const gt = document.querySelector('.game-tab.active');
+    const game = gt?.dataset?.game || multiGame.type || 'ttt';
+    switchGame(game, gt, false); // false = no reenviar invitación al reiniciar
+    if (gameChannel) gameChannel.send({ type:'broadcast', event:'reset', payload:{ from:S.user.id, gameType: game } }).catch(()=>{});
+  };
   root.appendChild(r); root.appendChild(btn);
   document.getElementById('gScore').textContent='🏆 '+totalScore();
 }
@@ -5239,7 +5159,7 @@ function rndColor() {
   return colors[Math.floor(Math.random()*colors.length)];
 }
 // ══════════════════════════════════════════════════════
-// CORRECTOR ORTOGRÁFICO + FILTRO INTELIGENTE DE MENSAJES
+// CORRECTOR ORTOGRÁFICO LOCAL (sin dependencia de API externa)
 // ══════════════════════════════════════════════════════
 let _filterDebounce = null;
 let _pendingFilterText = '';
@@ -5250,7 +5170,22 @@ function dismissFilter() {
   _filterActive = false;
 }
 
-// Muestra/oculta el mensaje original cuando fue filtrado por modo receptor
+function acceptFilter() {
+  const el = document.getElementById('msgIn');
+  el.value = _pendingFilterText;
+  autoH(el);
+  dismissFilter();
+}
+
+function onMsgInput(el) {
+  if (_filterDebounce) clearTimeout(_filterDebounce);
+  dismissFilter();
+  const text = el.value.trim();
+  if (!text || text.length < 6) return;
+  _filterDebounce = setTimeout(() => analyzeAndFilter(text), 1400);
+}
+
+// Muestra/oculta mensaje original filtrado
 function toggleOrigMsg(msgId, el) {
   const room = activeRoom();
   if (!room || !localMsgs[room]) return;
@@ -5262,7 +5197,6 @@ function toggleOrigMsg(msgId, el) {
   } else {
     msg._showingOriginal = true;
     el.textContent = '✨ ver adaptado';
-    // Swap displayed content temporarily via DOM
     const bbl = el.previousElementSibling;
     if (bbl) bbl.textContent = msg._originalContent || msg.contenido;
     return;
@@ -5270,34 +5204,60 @@ function toggleOrigMsg(msgId, el) {
   renderMsgs();
 }
 
+// Correcciones frecuentes en español rioplatense
+const SPELL_FIXES = [
+  // Abreviaturas / jerga digital
+  [/\bq\b/g, 'que'], [/\bxq\b/gi, 'porque'], [/\bpq\b/gi, 'porque'],
+  [/\btb\b/g, 'también'], [/\btmb\b/g, 'también'], [/\btbn\b/g, 'también'],
+  [/\bmsj\b/gi, 'mensaje'], [/\binfo\b/gi, 'información'],
+  [/\bsalu2\b/gi, 'saludos'], [/\bgrax\b/gi, 'gracias'], [/\bxfa\b/gi, 'por favor'],
+  // Errores tipográficos comunes
+  [/\bkiero\b/gi, 'quiero'], [/\bkieres\b/gi, 'quieres'], [/\bkiero\b/gi, 'quiero'],
+  [/\baze\b/gi, 'hace'], [/\bazer\b/gi, 'hacer'], [/\baziendo\b/gi, 'haciendo'],
+  [/\boi\b/g, 'hoy'], [/\bvoi a\b/gi, 'voy a'], [/\bvoi\b/g, 'voy'],
+  [/\bnecesito\b/gi, 'necesito'], [/\bseguramnete\b/gi, 'seguramente'],
+  [/\bmejro\b/gi, 'mejor'], [/\bpuedo\b/gi, 'puedo'],
+  // Acentos muy frecuentes
+  [/\bmas\b(?=\s)/g, 'más'], [/\basi\b(?=\s)/g, 'así'], [/\bque\s+si\b/g, 'que sí'],
+  [/\bnuemero\b/gi, 'número'], [/\btelefono\b/gi, 'teléfono'],
+  // Puntuación: capitalizar después de punto
+  [/([.!?])\s+([a-záéíóúñü])/g, (_, p, l) => p + ' ' + l.toUpperCase()],
+];
 
-function acceptFilter() {
-  const el = document.getElementById('msgIn');
-  el.value = _pendingFilterText;
-  autoH(el);
-  dismissFilter();
-}
+function localTextFilter(text, mode) {
+  let result = text;
 
-function onMsgInput(el) {
-  // Cancelar análisis previo
-  if (_filterDebounce) clearTimeout(_filterDebounce);
-  dismissFilter();
-  const text = el.value.trim();
-  if (!text || text.length < 6) return;
-  // Esperar 1.4s de silencio antes de analizar
-  _filterDebounce = setTimeout(() => analyzeAndFilter(text), 1400);
+  // 1. Todo en MAYÚSCULAS → normalizar
+  const upperRatio = (text.match(/[A-ZÁÉÍÓÚÑ]/g)||[]).length / Math.max(text.length, 1);
+  if (upperRatio > 0.6 && text.length > 8) {
+    result = result.charAt(0).toUpperCase() + result.slice(1).toLowerCase();
+  }
+
+  // 2. Aplicar correcciones de diccionario
+  for (const [re, rep] of SPELL_FIXES) {
+    result = result.replace(re, rep);
+  }
+
+  // 3. Capitalizar primera letra si no lo está
+  if (result.length > 0 && /[a-záéíóúñü]/.test(result[0])) {
+    result = result[0].toUpperCase() + result.slice(1);
+  }
+
+  // 4. Modo DIRECTO: eliminar muletillas innecesarias
+  if (mode === 'directo') {
+    result = result.replace(/\b(la verdad es que|o sea|bueno,?\s*|digamos que|te comento que|básicamente|en realidad)\s*/gi, '').trim();
+  }
+
+  if (result === text) return null;
+  return result;
 }
 
 // Detecta problemas obvios que ameritan sugerencia
 function needsFilter(text) {
-  // Muchas mayúsculas seguidas (ej: TODO EN MAYUSCULAS)
-  const upperRatio = (text.match(/[A-ZÁÉÍÓÚÑ]/g)||[]).length / text.length;
+  const upperRatio = (text.match(/[A-ZÁÉÍÓÚÑ]/g)||[]).length / Math.max(text.length, 1);
   if (upperRatio > 0.6 && text.length > 8) return 'mayusculas';
-  // Muchos signos de exclamación/interrogación
   if ((text.match(/[!?]{2,}/g)||[]).length > 2) return 'intensidad';
-  // Palabras muy agresivas (sin ser crisis)
   if (/imbécil|idiota|estúpid|maldito|inútil|asco|odio que|me tiene harta|me tiene podrido/i.test(text)) return 'tono';
-  // Texto muy confuso (muchas abreviaturas o sin vocales)
   if (text.split(' ').some(w => w.length > 3 && (w.match(/[aeiouáéíóú]/gi)||[]).length === 0)) return 'claridad';
   return null;
 }
@@ -5305,46 +5265,51 @@ function needsFilter(text) {
 async function analyzeAndFilter(text) {
   const mode = document.body.className.match(/mode-(\w+)/)?.[1] || 'conexion';
   const reason = needsFilter(text);
-  // En modo neuro o calma, también corregir ortografía aunque no haya problema obvio
   const shouldCheck = reason || mode === 'neuro' || mode === 'calma';
   if (!shouldCheck) return;
 
-  let systemPrompt = `Eres un asistente de comunicación para una app de mensajería llamada NOVU. Tu tarea es revisar el mensaje del usuario y, SOLO SI ES NECESARIO, devolver una versión mejorada. Reglas:
-- Corregí errores ortográficos y de tipeo evidentes.
-- Si el tono es muy agresivo o difícil de entender, suavizalo levemente manteniendo el sentido.
-- Si el mensaje está en MAYÚSCULAS, convertilo a minúsculas normales.
-- Si el mensaje es claro y correcto, responde exactamente: NO_CHANGE
-- No agregues explicaciones, no cambies el significado, no seas condescendiente.
-- El usuario habla en español rioplatense (Uruguay/Argentina). Responde SOLO con el texto corregido o NO_CHANGE.`;
+  const suggestion = localTextFilter(text, mode);
+  if (!suggestion || suggestion === text) return;
 
-  if (mode === 'directo') {
-    systemPrompt += '\n- Modo DIRECTO: ser breve y claro. Eliminar rodeos innecesarios.';
-  } else if (mode === 'neuro') {
-    systemPrompt += '\n- Modo NEURO: frases simples, sin metáforas, muy literal y claro.';
+  _pendingFilterText = suggestion;
+  _filterActive = true;
+  document.getElementById('fltText').textContent = suggestion;
+  document.getElementById('msgFilterBar').classList.add('visible');
+}
+
+// Filtro local de mensajes recibidos según modo cognitivo del receptor
+async function filterReceivedMsg(msg) {
+  const mode = document.body.className.match(/mode-(\w+)/)?.[1] || 'conexion';
+  if (mode !== 'neuro' && mode !== 'calma') return;
+  if (!msg.contenido || msg.contenido.length < 5) return;
+
+  let result = msg.contenido;
+
+  if (mode === 'neuro') {
+    // Simplificar: eliminar muletillas, acortar frases largas
+    result = result.replace(/\b(la verdad es que|o sea|digamos que|básicamente|en realidad|como te decía|siendo honesto)\s*/gi, '');
+    result = result.replace(/\s+/g, ' ').trim();
   } else if (mode === 'calma') {
-    systemPrompt += '\n- Modo CALMA: tono suave, empático, sin brusquedad.';
+    // Suavizar tono agresivo
+    const aggressiveWords = {
+      'imbécil': 'persona', 'idiota': 'persona', 'estúpid[ao]': 'equivocad$1',
+      'odio': 'no me gusta', 'asco': 'disgusto', 'maldito': '',
+    };
+    for (const [word, replacement] of Object.entries(aggressiveWords)) {
+      result = result.replace(new RegExp('\\b' + word + '\\b', 'gi'), replacement);
+    }
   }
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 200,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: text }]
-      })
-    });
-    const data = await res.json();
-    const suggestion = (data.content?.[0]?.text || '').trim();
-    if (!suggestion || suggestion === 'NO_CHANGE' || suggestion === text) return;
-    // Mostrar sugerencia
-    _pendingFilterText = suggestion;
-    _filterActive = true;
-    document.getElementById('fltText').textContent = suggestion;
-    document.getElementById('msgFilterBar').classList.add('visible');
-  } catch { /* silencioso */ }
+  result = result.replace(/\s+/g, ' ').trim();
+  if (!result || result === msg.contenido) return;
+
+  const room = activeRoom();
+  if (!localMsgs[room]) return;
+  const idx = localMsgs[room].findIndex(m => m.id === msg.id);
+  if (idx === -1) return;
+  localMsgs[room][idx]._filteredContent = result;
+  localMsgs[room][idx]._originalContent = msg.contenido;
+  renderMsgs();
 }
 
 // ══════════════════════════════════════════════════════
@@ -6161,42 +6126,7 @@ function autoEmotAnalysis(msg) {
   }
 }
 
-// Aplica filtro IA al mensaje recibido para suavizarlo/clarificarlo según modo del receptor
-async function filterReceivedMsg(msg) {
-  const mode = document.body.className.match(/mode-(\w+)/)?.[1] || 'conexion';
-  let systemPrompt = '';
-  if (mode === 'neuro') {
-    systemPrompt = `Sos un asistente de comunicación. Recibís un mensaje y tu tarea es simplificarlo para una persona neurodivergente. Reglas: frases cortas y directas, sin metáforas ni sarcasmo, literal y claro, sin jerga, sin groserías. Si el mensaje ya es claro, responde exactamente: NO_CHANGE. Respond only in Spanish. Return ONLY the rewritten message or NO_CHANGE.`;
-  } else if (mode === 'calma') {
-    systemPrompt = `Sos un asistente de comunicación. Recibís un mensaje y si tiene un tono agresivo, brusco o muy intenso, lo suavizás levemente manteniendo el significado central. Si ya es amable o neutro, responde exactamente: NO_CHANGE. No cambies el significado. Respond only in Spanish. Return ONLY the rewritten message or NO_CHANGE.`;
-  } else return;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 200,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: msg.contenido }]
-      })
-    });
-    const data = await res.json();
-    const filtered = (data.content?.[0]?.text || '').trim();
-    if (!filtered || filtered === 'NO_CHANGE' || filtered === msg.contenido) return;
-    // Guardar versión filtrada y el original
-    const room = activeRoom();
-    if (!localMsgs[room]) return;
-    const idx = localMsgs[room].findIndex(m => m.id === msg.id);
-    if (idx === -1) return;
-    localMsgs[room][idx]._filteredContent = filtered;
-    localMsgs[room][idx]._originalContent = msg.contenido;
-    renderMsgs();
-  } catch { /* silencioso */ }
-}
-
-
+// filterReceivedMsg ya definida arriba como versión local sin API externa
 
 // Añade burbuja emocional debajo del mensaje
 function appendEmotToMsg(msgId, tags) {
@@ -6237,43 +6167,78 @@ function inviteContact() {
 // ══════════════════════════════════════════════════
 let gameChannel = null;
 let multiGame = { active:false, type:null, isHost:false };
+let _gameChannelReady = false; // evita enviar múltiples invitaciones
 
 function gamePhoneKey(phone) { return (phone||'').replace(/\D/g,'').slice(-8); }
 function iAmHost() {
-  // El host es quien tiene el número más pequeño (consistente en ambos lados)
   return gamePhoneKey(S.user.phone) < gamePhoneKey(S.activePartner?.telefono||'');
 }
 
-function openGameMulti(gameType) {
+// Crea/reutiliza el canal de juego. Solo envía invitación si sendInvite=true.
+function ensureGameChannel(gameType, sendInvite) {
   if (!S.activePartner || !db) return false;
-  const chName = 'game:' + (phoneRoomId(S.user.phone, S.activePartner.telefono) || roomId(S.user.id, S.activePartner.id)) + ':' + gameType;
-  if (gameChannel) { try { gameChannel.unsubscribe(); } catch {} }
-  let subscribed = false;
+  const chName = 'game:' + (phoneRoomId(S.user.phone, S.activePartner.telefono) || roomId(S.user.id, S.activePartner.id));
+
+  // Si el canal ya está listo, solo notificar el cambio de juego sin nueva invitación
+  if (gameChannel && _gameChannelReady && multiGame.type !== null) {
+    multiGame.type = gameType;
+    if (sendInvite) {
+      // Enviar invitación manual (ej: primer juego de la sesión)
+      gameChannel.send({ type:'broadcast', event:'invite', payload:{ from:S.user.id, fromName:S.user.name, gameType } }).catch(()=>{});
+    } else {
+      // Solo notificar cambio de tab (sin diálogo de confirmación en el receptor)
+      gameChannel.send({ type:'broadcast', event:'gameswitch', payload:{ from:S.user.id, fromName:S.user.name, gameType } }).catch(()=>{});
+    }
+    return true;
+  }
+
+  if (gameChannel) { try { gameChannel.unsubscribe(); } catch {} gameChannel = null; }
+  _gameChannelReady = false;
+  let _inviteSent = false;
+
   gameChannel = db.channel(chName)
     .on('broadcast', { event:'move' }, ({ payload }) => { if (payload.from !== S.user.id) handleRemoteMove(payload); })
     .on('broadcast', { event:'invite' }, ({ payload }) => { if (payload.from !== S.user.id) handleGameInvite(payload); })
+    .on('broadcast', { event:'gameswitch' }, ({ payload }) => {
+      if (payload.from !== S.user.id) {
+        multiGame.type = payload.gameType;
+        const tab = document.querySelector(`.game-tab[data-game="${payload.gameType}"]`);
+        if (tab) switchGame(payload.gameType, tab, false);
+        toast('🎮 ' + (payload.fromName||S.activePartner?.name||'Tu contacto') + ' cambió a ' + ({ ttt:'3 en línea', memory:'Memoria', chess:'Ajedrez', wordle:'Palabras' }[payload.gameType] || payload.gameType));
+      }
+    })
     .on('broadcast', { event:'deck' }, ({ payload }) => { if (payload.from !== S.user.id) handleRemoteDeck(payload); })
-    .on('broadcast', { event:'reset' }, ({ payload }) => { if (payload.from !== S.user.id) { toast('🔄 ' + (S.activePartner?.name||'Tu contacto') + ' reinició'); switchGame(multiGame.type, document.querySelector('.game-tab.active')); } })
+    .on('broadcast', { event:'reset' }, ({ payload }) => {
+      if (payload.from !== S.user.id) {
+        toast('🔄 ' + (S.activePartner?.name||'Tu contacto') + ' reinició');
+        const tab = document.querySelector(`.game-tab[data-game="${multiGame.type}"]`);
+        switchGame(multiGame.type || 'ttt', tab, false);
+      }
+    })
     .subscribe(st => {
-      if (st==='SUBSCRIBED' && !subscribed) {
-        subscribed = true;
-        // Enviar invitación al partner
-        gameChannel.send({ type:'broadcast', event:'invite', payload:{ from:S.user.id, fromName:S.user.name, gameType } }).catch(()=>{});
+      if (st === 'SUBSCRIBED' && !_inviteSent) {
+        _inviteSent = true;
+        _gameChannelReady = true;
+        if (sendInvite) {
+          // Un solo envío garantizado por suscripción
+          gameChannel.send({ type:'broadcast', event:'invite', payload:{ from:S.user.id, fromName:S.user.name, gameType } }).catch(()=>{});
+        }
+      } else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT') {
+        _gameChannelReady = false;
       }
     });
+
   multiGame.active = true; multiGame.type = gameType; multiGame.isHost = iAmHost();
   return true;
 }
 
 function handleGameInvite(payload) {
-  const gameName = { ttt:'Tres en línea', memory:'Memoria', chess:'Ajedrez' }[payload.gameType] || payload.gameType;
+  const gameName = { ttt:'Tres en línea', memory:'Memoria', chess:'Ajedrez', wordle:'Palabras' }[payload.gameType] || payload.gameType;
   if (confirm(`🎮 ${payload.fromName} te invita a jugar ${gameName}. ¿Aceptás?`)) {
-    // Abrir el juego si no está abierto
-    const gameOv = document.getElementById('gameOv');
+    const gameOv = document.getElementById('gamesOv'); // Fix: era 'gameOv'
     if (!gameOv?.classList.contains('open')) openGames();
-    // Cambiar al tab correcto
     const tab = document.querySelector(`.game-tab[data-game="${payload.gameType}"]`);
-    if (tab) switchGame(payload.gameType, tab);
+    if (tab) switchGame(payload.gameType, tab, false); // false = no reenviar invitación
     toast('🎮 ¡Juego iniciado con ' + payload.fromName + '!');
   }
 }
@@ -6287,6 +6252,59 @@ function handleRemoteMove(p) {
   if (multiGame.type==='ttt') handleRemoteTTT(p);
   else if (multiGame.type==='chess') handleRemoteChess(p);
   else if (multiGame.type==='memory') handleRemoteMemory(p);
+}
+
+// ══════════════════════════════════════════════════
+// GAMES UI
+// ══════════════════════════════════════════════════
+let gamesScore = {};
+function loadGameScore() { try { gamesScore=JSON.parse(localStorage.getItem('novu_gscore')||'{}'); } catch{gamesScore={};} }
+function saveGameScore() { localStorage.setItem('novu_gscore',JSON.stringify(gamesScore)); }
+function totalScore() { return Object.values(gamesScore).reduce((a,b)=>a+b,0); }
+
+function openGames() {
+  loadGameScore();
+  document.getElementById('gScore').textContent='🏆 '+totalScore();
+  document.getElementById('gamesOv').classList.add('open');
+  // Resetear canal al abrir nueva sesión de juego
+  if (gameChannel) { try { gameChannel.unsubscribe(); } catch {} gameChannel = null; }
+  _gameChannelReady = false;
+  multiGame = { active:false, type:null, isHost: S.activePartner ? iAmHost() : false };
+  const firstTab = document.querySelector('.game-tab[data-game="ttt"]');
+  switchGame('ttt', firstTab, true); // true = enviar invitación (primera apertura)
+}
+
+function closeGames() {
+  document.getElementById('gamesOv').classList.remove('open');
+  if (gameChannel) { try { gameChannel.unsubscribe(); } catch {} gameChannel = null; }
+  _gameChannelReady = false;
+  multiGame = { active:false, type:null, isHost:false };
+}
+
+// sendInvite=true solo la primera vez que se abre el overlay
+function switchGame(game, btn, sendInvite=false) {
+  document.querySelectorAll('.game-tab').forEach(t=>t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const area = document.getElementById('gameArea');
+  area.innerHTML = '';
+  const root = document.createElement('div');
+  root.style.width='100%';
+  area.appendChild(root);
+
+  const multi = S.activePartner && db;
+  if (multi) ensureGameChannel(game, sendInvite);
+
+  if (game==='ttt') { multi ? loadTTTMulti(root) : loadTTT(root); }
+  else if (game==='memory') { multi ? loadMemoryMulti(root) : loadMemory(root); }
+  else if (game==='chess') { multi ? loadChessMulti(root) : loadChess(root); }
+  else if (game==='wordle') loadWordle(root);
+
+  if (multi) {
+    const tag = document.createElement('div');
+    tag.style.cssText = 'text-align:center;font-size:11px;color:var(--emerald);margin-top:10px;font-weight:700;';
+    tag.textContent = '🟢 Jugando con ' + S.activePartner.name + ' en tiempo real';
+    area.appendChild(tag);
+  }
 }
 
 // TTT multi — myMark basado en teléfono (consistente en ambos lados)
@@ -6365,14 +6383,18 @@ function loadMemoryMulti(root) {
   memState.scores = {me:0, them:0}; memState.myTurn = iAmHost();
   const emojis = ['🐶','🐱','🦊','🐻','🐼','🦁','🐨','🐵'];
   if (iAmHost()) {
-    // Host genera deck y lo comparte
     memState.deck = shuffleArr([...emojis,...emojis]);
-    setTimeout(() => {
-      if (gameChannel) gameChannel.send({ type:'broadcast', event:'deck', payload:{ from:S.user.id, deck:memState.deck } }).catch(()=>{});
-    }, 800); // esperar a que el otro se suscriba
+    // Esperar a que el canal esté listo, luego enviar deck
+    const sendDeck = () => {
+      if (gameChannel && _gameChannelReady) {
+        gameChannel.send({ type:'broadcast', event:'deck', payload:{ from:S.user.id, deck:memState.deck } }).catch(()=>{});
+      } else {
+        setTimeout(sendDeck, 500); // reintentar hasta que el canal esté listo
+      }
+    };
+    setTimeout(sendDeck, 600);
   } else {
-    // Guest espera el deck del host
-    memState.deck = [...emojis,...emojis]; // placeholder hasta recibir
+    memState.deck = [...emojis,...emojis]; // placeholder
     toast('⏳ Esperando que ' + (S.activePartner?.name||'tu contacto') + ' prepare el tablero…');
   }
   const s = document.createElement('div'); s.id = 'memScore';
