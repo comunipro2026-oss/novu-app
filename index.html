@@ -88,11 +88,52 @@
   --mode-glow:   var(--indigo-glow);
 }
 
-/* Mode color overrides */
-body.mode-neuro { --mode-accent:#8b5cf6; --mode-glow:rgba(139,92,246,.35); }
-body.mode-calma { --mode-accent:#10b981; --mode-glow:rgba(16,185,129,.35); }
-body.mode-directo { --mode-accent:#f59e0b; --mode-glow:rgba(245,158,11,.35); }
-body.mode-conexion { --mode-accent:#6366f1; --mode-glow:rgba(99,102,241,.35); }
+/* ── MODOS — color + diferencias visuales reales ── */
+body.mode-neuro {
+  --mode-accent: #8b5cf6; --mode-glow: rgba(139,92,246,.35);
+  /* Neuro: menos estímulos, más espacio, tipografía más grande */
+  font-size: 16px;
+}
+body.mode-neuro .bbl { font-size: 16px; padding: 14px 18px; border-radius: 22px 22px 6px 22px; }
+body.mode-neuro .msg { margin-bottom: 8px; }
+body.mode-neuro .chat-item { padding: 14px 16px; }
+body.mode-neuro .tb-btn { font-size: 13px; padding: 9px 14px; }
+body.mode-neuro .dock-btn { font-size: 22px; padding: 14px; }
+body.mode-neuro #msgIn { font-size: 16px; padding: 13px 16px; }
+/* Ocultar elementos que generan ruido visual en neuro */
+body.mode-neuro .mtime { opacity: 0.5; font-size: 9px; }
+
+body.mode-calma {
+  --mode-accent: #10b981; --mode-glow: rgba(16,185,129,.35);
+  /* Calma: todo más grande, más padding, ritmo lento */
+  font-size: 17px;
+  letter-spacing: 0.01em;
+}
+body.mode-calma .bbl { font-size: 17px; padding: 16px 20px; line-height: 1.7; }
+body.mode-calma .msg { margin-bottom: 12px; }
+body.mode-calma .chat-item { padding: 16px; }
+body.mode-calma .tb-btn { font-size: 14px; padding: 10px 16px; gap: 8px; }
+body.mode-calma .dock-btn { font-size: 24px; padding: 16px; }
+body.mode-calma #msgIn { font-size: 17px; padding: 15px 18px; }
+body.mode-calma #chats { gap: 6px; }
+
+body.mode-directo {
+  --mode-accent: #f59e0b; --mode-glow: rgba(245,158,11,.35);
+  /* Directo: compacto, rápido, botones grandes y visibles */
+  font-size: 15px;
+}
+body.mode-directo .bbl { font-size: 15px; padding: 10px 14px; border-radius: 12px; }
+body.mode-directo .msg { margin-bottom: 2px; }
+body.mode-directo .dock-btn { font-size: 24px; padding: 14px 18px; background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); }
+body.mode-directo .dock-btn:hover { background: rgba(245,158,11,.2); }
+body.mode-directo #sendBtn { background: var(--mode-accent) !important; border-color: var(--mode-accent) !important; font-size: 20px; }
+body.mode-directo .tb-btn { font-size: 14px; font-weight: 700; }
+
+body.mode-conexion {
+  --mode-accent: #6366f1; --mode-glow: rgba(99,102,241,.35);
+  /* Conexión (equilibrado): estándar, sin cambios bruscos */
+  font-size: 15px;
+}
 
 /* Accessibility overrides */
 body.big-text { font-size: 18px; }
@@ -804,7 +845,75 @@ body.no-anim::before { display: none; }
 .send-btn:active { transform: scale(.93); }
 .send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
-/* Nueva barra de acciones — iconos grandes en scroll horizontal */
+/* ── CORRECTOR / FILTRO de mensaje ── */
+#msgFilterBar {
+  display: none;
+  margin: 4px 0 0;
+  background: var(--surface2);
+  border: 1.5px solid var(--indigo);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--t1);
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  animation: fadeIn .2s;
+}
+#msgFilterBar.visible { display: flex; }
+#msgFilterBar .flt-label { color: var(--t3); font-size: 12px; margin-right: 2px; }
+#msgFilterBar .flt-text { flex: 1; color: var(--t1); font-style: italic; }
+#msgFilterBar .flt-accept {
+  background: var(--indigo); color: #fff;
+  border: none; border-radius: 8px; padding: 4px 12px; cursor: pointer; font-size: 13px;
+}
+#msgFilterBar .flt-dismiss {
+  background: none; color: var(--t3);
+  border: none; cursor: pointer; font-size: 18px; line-height: 1; padding: 0 4px;
+}
+
+/* ── FLASH de nuevo mensaje cuando app está en background ── */
+#msgFlash {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(99,102,241,.18);
+  z-index: 9998;
+  pointer-events: none;
+  animation: msgFlashPulse .6s 3;
+}
+@keyframes msgFlashPulse {
+  0%,100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+/* ── BANNER de llamada/mensaje urgente sobre toda la pantalla ── */
+#incomingBanner {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0;
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  border-bottom: 2px solid var(--indigo);
+  z-index: 9000;
+  padding: 14px 20px;
+  align-items: center; gap: 14px;
+  box-shadow: 0 4px 30px rgba(0,0,0,.6);
+  animation: bannerDrop .3s ease;
+}
+@keyframes bannerDrop { from{transform:translateY(-100%)} to{transform:translateY(0)} }
+#incomingBanner.show { display: flex; }
+#incomingBanner .ib-icon { font-size: 32px; }
+#incomingBanner .ib-info { flex: 1; }
+#incomingBanner .ib-name { font-size: 17px; font-weight: 700; color: #fff; }
+#incomingBanner .ib-sub { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 2px; }
+#incomingBanner .ib-open {
+  background: var(--indigo); color: #fff;
+  border: none; border-radius: 10px; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+#incomingBanner .ib-close {
+  background: none; color: rgba(255,255,255,.5);
+  border: none; font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px;
+}
+
+
 .action-btns {
   display: flex; gap: 8px;
   padding: 8px 0 2px;
@@ -848,12 +957,19 @@ body.no-anim::before { display: none; }
 ══════════════════════════════════════════════════════ */
 .call-screen {
   position: fixed; inset: 0;
-  background: linear-gradient(180deg, #0c0c1e 0%, #07070f 100%);
-  z-index: 300; display: none;
+  background: linear-gradient(180deg, #0f0f2a 0%, #07070f 60%, #0a0a1a 100%);
+  z-index: 9999; display: none;
   flex-direction: column; align-items: center;
-  justify-content: center; gap: 20px;
+  justify-content: space-between;
+  padding: 60px 30px 50px;
 }
 .call-screen.open { display: flex; }
+
+/* Caller info at top */
+.call-screen > .call-top {
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  flex: 1; justify-content: center;
+}
 
 #videoArea {
   width: 100%; max-width: 480px;
@@ -861,6 +977,51 @@ body.no-anim::before { display: none; }
   display: none; position: relative;
 }
 #localVideo { width: 100%; border-radius: 20px; background: #111; }
+
+.call-avatar {
+  width: 130px; height: 130px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px; font-weight: 900; color: white;
+  animation: callPulse 1.8s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(99,102,241,.5);
+}
+@keyframes callPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(99,102,241,.55), 0 0 0 0 rgba(99,102,241,0); }
+  40%  { box-shadow: 0 0 0 20px rgba(99,102,241,.12), 0 0 0 40px rgba(99,102,241,.05); }
+  100% { box-shadow: 0 0 0 44px rgba(99,102,241,0), 0 0 0 80px rgba(99,102,241,0); }
+}
+
+.call-name { font-size: 32px; font-weight: 800; color: white; letter-spacing: -.5px; text-align: center; }
+.call-status { font-size: 16px; color: rgba(255,255,255,.55); text-align: center; }
+.call-timer { font-size: 38px; font-weight: 700; font-family: monospace; color: var(--emerald); letter-spacing: 3px; margin-top: 4px; }
+
+/* Actions at bottom — BIG like WhatsApp */
+.call-actions {
+  display: flex; gap: 28px; margin-top: 0;
+  align-items: center; justify-content: center;
+}
+.call-act {
+  width: 80px; height: 80px; border-radius: 50%;
+  border: none; cursor: pointer; font-size: 32px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 28px rgba(0,0,0,.5);
+  transition: transform .15s;
+}
+.call-act:active { transform: scale(.88); }
+.call-act.end { background: var(--rose); color: white; }
+.call-act.mute { background: var(--surface2); color: white; border: 2px solid var(--border2); }
+/* Answer button — green, extra large */
+.call-act.answer {
+  width: 96px; height: 96px; font-size: 40px;
+  background: #22c55e; color: white;
+  animation: answerPulse 1s ease-in-out infinite;
+}
+@keyframes answerPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.6); }
+  50% { box-shadow: 0 0 0 20px rgba(34,197,94,0); }
+}
+
+
 
 .call-avatar {
   width: 110px; height: 110px; border-radius: 50%;
@@ -1784,6 +1945,16 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
 .emot-neg { background: rgba(244,63,94,.12); color: var(--rose); }
 .emot-neu { background: rgba(99,102,241,.12); color: var(--indigo); }
 .emot-laugh { background: rgba(245,158,11,.12); color: var(--amber); }
+.emot-crisis {
+  background: rgba(239,68,68,.2); color: #f87171;
+  border: 1px solid rgba(239,68,68,.4);
+  animation: crisis-pulse 1.2s ease-in-out infinite;
+  font-weight: 700;
+}
+@keyframes crisis-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
 
 /* ══════════════════════════════════════════════════════
    LANDING PAGE
@@ -2075,9 +2246,19 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
           <div class="input-row">
             <textarea class="msg-input" id="msgIn" rows="1"
               placeholder="Escribí un mensaje…"
+              spellcheck="true"
+              autocorrect="on"
+              autocapitalize="sentences"
               onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"
-              oninput="autoH(this)"></textarea>
+              oninput="autoH(this);onMsgInput(this)"></textarea>
             <button class="send-btn" onclick="sendMsg()" aria-label="Enviar">➤</button>
+          </div>
+          <!-- Barra corrector / filtro inteligente -->
+          <div id="msgFilterBar">
+            <span class="flt-label">✨ Sugerencia:</span>
+            <span class="flt-text" id="fltText"></span>
+            <button class="flt-accept" onclick="acceptFilter()">Usar</button>
+            <button class="flt-dismiss" onclick="dismissFilter()">✕</button>
           </div>
           <div class="action-btns">
             <button class="a-btn" id="recBtn" onclick="toggleRec()">🎤<span class="a-label">Audio</span></button>
@@ -2099,12 +2280,26 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
 </div><!-- /app -->
 
 <!-- CALL SCREEN -->
+<!-- Banner de mensaje/llamada entrante (visible aunque estés en otra pestaña o app minimizada) -->
+<div id="msgFlash"></div>
+<div id="incomingBanner">
+  <div class="ib-icon" id="ibIcon">💬</div>
+  <div class="ib-info">
+    <div class="ib-name" id="ibName">Mensaje nuevo</div>
+    <div class="ib-sub" id="ibSub"></div>
+  </div>
+  <button class="ib-open" id="ibAction" onclick="dismissBanner()">Ver</button>
+  <button class="ib-close" onclick="dismissBanner()">✕</button>
+</div>
+
 <div class="call-screen" id="callScreen">
-  <div id="videoArea"><video id="localVideo" autoplay playsinline muted></video></div>
-  <div class="call-avatar" id="callAvatar">?</div>
-  <div class="call-name" id="callName">—</div>
-  <div class="call-status" id="callStatus">Llamando…</div>
-  <div class="call-timer" id="callTimer" style="display:none">0:00</div>
+  <div class="call-top">
+    <div id="videoArea"><video id="localVideo" autoplay playsinline muted></video></div>
+    <div class="call-avatar" id="callAvatar">?</div>
+    <div class="call-name" id="callName">—</div>
+    <div class="call-status" id="callStatus">Llamando…</div>
+    <div class="call-timer" id="callTimer" style="display:none">0:00</div>
+  </div>
   <div class="call-actions" id="callActions">
     <button class="call-act mute" id="muteBtn" onclick="toggleMute()">🎙️</button>
     <button class="call-act end" onclick="endCall()">📵</button>
@@ -2265,7 +2460,7 @@ input[type=range] { width: 100%; accent-color: var(--indigo); }
       <input type="file" id="contactSelfieInput" accept="image/*" capture="user" style="display:none" onchange="handleContactPhoto(event)">
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <button class="btn btn-g" onclick="document.getElementById('contactPhotoInput').click()" style="flex:1;font-size:12px">🖼️ Galería</button>
-        <button class="btn btn-g" onclick="document.getElementById('contactSelfieInput').click()" style="flex:1;font-size:12px">🤳 Selfie</button>
+        <button class="btn btn-g" onclick="openContactCamera()" style="flex:1;font-size:12px">🤳 Selfie</button>
       </div>
       <button class="btn btn-g" onclick="openLuzCompania();closeOv('chatMenuOv')" style="width:100%">🕯️ Luz de Compañía</button>
       <button class="btn btn-g" onclick="exportChat()" style="width:100%">📥 Exportar conversación</button>
@@ -3254,6 +3449,16 @@ async function loadRealtime() {
 }
 
 function notifyMsg(from, msg) {
+  // Banner visual + vibración (funciona aunque la app esté minimizada o en otra pestaña)
+  const preview = msgPreview(msg);
+  showIncomingBanner({
+    icon: '💬',
+    name: from,
+    sub: preview,
+    actionLabel: 'Ver',
+    onAction: () => { /* ya está en el chat activo */ document.getElementById('messages').scrollTop = 1e9; },
+    duration: 5000
+  });
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   const title = '💬 ' + from;
   const body = msgPreview(msg);
@@ -3382,7 +3587,11 @@ function renderMsgs() {
         ? `<div class="media-bbl"><video src="${previewUrl}" controls></video>${m._uploading?'<div class="media-status">subiendo…</div>':''}</div>`
         : `<div class="bbl">🎬 Video</div>`;
     } else {
-      bubble = `<div class="bbl${m._failed?' bbl-failed':''}">${esc(m.contenido||'')}</div>`;
+      const _dc = (!own && m._filteredContent) ? m._filteredContent : (m.contenido||'');
+      const _ot = (!own && m._filteredContent)
+        ? `<div style="font-size:10px;color:var(--t3);margin-top:3px;cursor:pointer" onclick="toggleOrigMsg('${m.id}',this)">✨ adaptado · ver original</div>`
+        : '';
+      bubble = `<div class="bbl${m._failed?' bbl-failed':''}">${esc(_dc)}</div>${_ot}`;
     }
 
     // Transcripción emocional
@@ -4049,13 +4258,99 @@ function openVoiceCmd() {
 // ══════════════════════════════════════════════════
 function pickImg(facing) {
   if (!S.activePartner) { toast('⚠️ Abrí un chat primero'); return; }
-  if (facing === 'environment') {
-    document.getElementById('imgInputCamera').click();
-  } else if (facing === 'user') {
-    document.getElementById('imgInputSelfie').click();
+  if (facing === 'environment' || facing === 'user') {
+    // Intentar getUserMedia real (funciona en Chrome/Android)
+    // En iOS Safari también, pero requiere HTTPS
+    openCameraCapture(facing);
   } else {
     document.getElementById('imgInput').click();
   }
+}
+
+// ── CAPTURA CON getUserMedia ───────────────────────────────
+let _camStream = null;
+
+function openCameraCapture(facing) {
+  // Crear modal de cámara en el DOM si no existe
+  let ov = document.getElementById('camCaptureOv');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'camCaptureOv';
+    ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:9000;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    ov.innerHTML = `
+      <video id="camVideo" autoplay playsinline style="width:100%;max-width:480px;border-radius:12px;object-fit:cover;max-height:60vh;"></video>
+      <canvas id="camCanvas" style="display:none;"></canvas>
+      <div style="display:flex;gap:12px;">
+        <button onclick="capturePhoto()" style="background:#6c63ff;color:#fff;border:none;border-radius:14px;padding:14px 28px;font-size:16px;font-weight:700;cursor:pointer;">📸 Capturar</button>
+        <button onclick="flipCamera()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:14px 20px;font-size:16px;cursor:pointer;">🔄 Girar</button>
+        <button onclick="closeCameraCapture()" style="background:rgba(244,63,94,.2);color:#f43f5e;border:1px solid #f43f5e;border-radius:14px;padding:14px 20px;font-size:16px;cursor:pointer;">✕</button>
+      </div>`;
+    document.body.appendChild(ov);
+  }
+  ov.style.display = 'flex';
+  ov.dataset.facing = facing;
+  startCamStream(facing);
+}
+
+async function startCamStream(facing) {
+  stopCamStream();
+  try {
+    _camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing === 'user' ? 'user' : 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    const video = document.getElementById('camVideo');
+    if (video) { video.srcObject = _camStream; }
+  } catch(e) {
+    closeCameraCapture();
+    // Fallback: input file con capture
+    toast('⚠️ Cámara no disponible, abriendo galería…');
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.setAttribute('capture', facing);
+    inp.onchange = handleImg;
+    inp.click();
+  }
+}
+
+function stopCamStream() {
+  if (_camStream) { _camStream.getTracks().forEach(t => t.stop()); _camStream = null; }
+  const v = document.getElementById('camVideo');
+  if (v) v.srcObject = null;
+}
+
+function flipCamera() {
+  const ov = document.getElementById('camCaptureOv');
+  const facing = ov?.dataset.facing === 'user' ? 'environment' : 'user';
+  if (ov) ov.dataset.facing = facing;
+  startCamStream(facing);
+}
+
+function capturePhoto() {
+  const video = document.getElementById('camVideo');
+  const canvas = document.getElementById('camCanvas');
+  if (!video || !canvas) return;
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+  // Selfie: espejo horizontal
+  const ov = document.getElementById('camCaptureOv');
+  if (ov?.dataset.facing === 'user') {
+    ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+  }
+  ctx.drawImage(video, 0, 0);
+  closeCameraCapture();
+  canvas.toBlob(blob => {
+    if (!blob) { toast('❌ Error al capturar'); return; }
+    const file = new File([blob], 'photo_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+    sendMedia('image', file, 'jpg', 'image', '📷 Foto');
+  }, 'image/jpeg', 0.9);
+}
+
+function closeCameraCapture() {
+  stopCamStream();
+  const ov = document.getElementById('camCaptureOv');
+  if (ov) ov.style.display = 'none';
 }
 function handleImg(e) {
   const file = e.target.files[0];
@@ -4349,9 +4644,14 @@ function showIncomingCall(payload) {
   document.getElementById('videoArea').style.display='none';
   document.getElementById('callActions').innerHTML=`
     <button class="call-act end" onclick="rejectCall()" title="Rechazar">📵</button>
-    <button class="call-act" style="background:var(--emerald)" onclick="acceptCall()" title="Aceptar">📞</button>`;
+    <button class="call-act answer" onclick="acceptCall()" title="Aceptar">📞</button>`;
   // Ringtone siempre (no depende de settings)
   ringtoneLoop();
+  // Vibrar con patrón intenso para que lo sienta el receptor
+  if (navigator.vibrate) navigator.vibrate([500,200,500,200,500,200,1000]);
+  // Flash visual de toda la pantalla
+  const flash = document.getElementById('msgFlash');
+  if (flash) { flash.style.display='block'; setTimeout(()=>{flash.style.display='none';},2000); }
   // Notificación del sistema para cuando la app está en background/pantalla bloqueada
   if ('Notification' in window && Notification.permission === 'granted') {
     const callTitle = '📞 Llamada entrante — NOVU';
@@ -4865,6 +5165,59 @@ function handleContactPhoto(event) {
   };
   reader.readAsDataURL(file);
 }
+function openContactCamera() {
+  // Usar getUserMedia para selfie de contacto
+  let ov = document.getElementById('camCaptureOv');
+  // Patch: al capturar, en vez de sendMedia → handleContactPhotoBlob
+  if (!ov) {
+    // El modal de cámara se crea en startCamStream, lo creamos aquí primero
+    ov = document.createElement('div');
+    ov.id = 'camCaptureOv';
+    ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:9000;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    ov.innerHTML = `
+      <video id="camVideo" autoplay playsinline style="width:100%;max-width:480px;border-radius:12px;object-fit:cover;max-height:60vh;"></video>
+      <canvas id="camCanvas" style="display:none;"></canvas>
+      <div style="display:flex;gap:12px;">
+        <button onclick="captureContactPhoto()" style="background:#6c63ff;color:#fff;border:none;border-radius:14px;padding:14px 28px;font-size:16px;font-weight:700;cursor:pointer;">📸 Capturar</button>
+        <button onclick="flipCamera()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:14px 20px;font-size:16px;cursor:pointer;">🔄 Girar</button>
+        <button onclick="closeCameraCapture()" style="background:rgba(244,63,94,.2);color:#f43f5e;border:1px solid #f43f5e;border-radius:14px;padding:14px 20px;font-size:16px;cursor:pointer;">✕</button>
+      </div>`;
+    document.body.appendChild(ov);
+  } else {
+    // Reemplazar botón Capturar para modo contacto
+    const btn = ov.querySelector('button');
+    if (btn) btn.onclick = captureContactPhoto;
+  }
+  ov.style.display = 'flex';
+  ov.dataset.facing = 'user';
+  ov.dataset.mode = 'contact';
+  startCamStream('user');
+}
+
+function captureContactPhoto() {
+  const video = document.getElementById('camVideo');
+  const canvas = document.getElementById('camCanvas');
+  if (!video || !canvas) return;
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+  ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0);
+  closeCameraCapture();
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+  if (!S.activePartner) return;
+  const u = onlineUsers.find(u => u.id === S.activePartner.id);
+  if (u) u.photo = dataUrl;
+  S.activePartner.photo = dataUrl;
+  const photos = JSON.parse(localStorage.getItem('novu_contact_photos')||'{}');
+  photos[S.activePartner.id] = dataUrl;
+  localStorage.setItem('novu_contact_photos', JSON.stringify(photos));
+  const av = document.getElementById('contactAvatarPreview');
+  if (av) av.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover">`;
+  renderMsgs(); renderChats();
+  toast('✅ Selfie guardada');
+}
+
 function closeOv(id) { document.getElementById(id).classList.remove('open'); }
 function ovClick(e, id) { if(e.target===e.currentTarget) closeOv(id); }
 
@@ -4885,6 +5238,147 @@ function rndColor() {
   const colors=['#6366f1','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#3b82f6','#84cc16','#f97316'];
   return colors[Math.floor(Math.random()*colors.length)];
 }
+// ══════════════════════════════════════════════════════
+// CORRECTOR ORTOGRÁFICO + FILTRO INTELIGENTE DE MENSAJES
+// ══════════════════════════════════════════════════════
+let _filterDebounce = null;
+let _pendingFilterText = '';
+let _filterActive = false;
+
+function dismissFilter() {
+  document.getElementById('msgFilterBar').classList.remove('visible');
+  _filterActive = false;
+}
+
+// Muestra/oculta el mensaje original cuando fue filtrado por modo receptor
+function toggleOrigMsg(msgId, el) {
+  const room = activeRoom();
+  if (!room || !localMsgs[room]) return;
+  const msg = localMsgs[room].find(m => m.id === msgId);
+  if (!msg) return;
+  if (msg._showingOriginal) {
+    msg._showingOriginal = false;
+    el.textContent = '✨ adaptado · ver original';
+  } else {
+    msg._showingOriginal = true;
+    el.textContent = '✨ ver adaptado';
+    // Swap displayed content temporarily via DOM
+    const bbl = el.previousElementSibling;
+    if (bbl) bbl.textContent = msg._originalContent || msg.contenido;
+    return;
+  }
+  renderMsgs();
+}
+
+
+function acceptFilter() {
+  const el = document.getElementById('msgIn');
+  el.value = _pendingFilterText;
+  autoH(el);
+  dismissFilter();
+}
+
+function onMsgInput(el) {
+  // Cancelar análisis previo
+  if (_filterDebounce) clearTimeout(_filterDebounce);
+  dismissFilter();
+  const text = el.value.trim();
+  if (!text || text.length < 6) return;
+  // Esperar 1.4s de silencio antes de analizar
+  _filterDebounce = setTimeout(() => analyzeAndFilter(text), 1400);
+}
+
+// Detecta problemas obvios que ameritan sugerencia
+function needsFilter(text) {
+  // Muchas mayúsculas seguidas (ej: TODO EN MAYUSCULAS)
+  const upperRatio = (text.match(/[A-ZÁÉÍÓÚÑ]/g)||[]).length / text.length;
+  if (upperRatio > 0.6 && text.length > 8) return 'mayusculas';
+  // Muchos signos de exclamación/interrogación
+  if ((text.match(/[!?]{2,}/g)||[]).length > 2) return 'intensidad';
+  // Palabras muy agresivas (sin ser crisis)
+  if (/imbécil|idiota|estúpid|maldito|inútil|asco|odio que|me tiene harta|me tiene podrido/i.test(text)) return 'tono';
+  // Texto muy confuso (muchas abreviaturas o sin vocales)
+  if (text.split(' ').some(w => w.length > 3 && (w.match(/[aeiouáéíóú]/gi)||[]).length === 0)) return 'claridad';
+  return null;
+}
+
+async function analyzeAndFilter(text) {
+  const mode = document.body.className.match(/mode-(\w+)/)?.[1] || 'conexion';
+  const reason = needsFilter(text);
+  // En modo neuro o calma, también corregir ortografía aunque no haya problema obvio
+  const shouldCheck = reason || mode === 'neuro' || mode === 'calma';
+  if (!shouldCheck) return;
+
+  let systemPrompt = `Eres un asistente de comunicación para una app de mensajería llamada NOVU. Tu tarea es revisar el mensaje del usuario y, SOLO SI ES NECESARIO, devolver una versión mejorada. Reglas:
+- Corregí errores ortográficos y de tipeo evidentes.
+- Si el tono es muy agresivo o difícil de entender, suavizalo levemente manteniendo el sentido.
+- Si el mensaje está en MAYÚSCULAS, convertilo a minúsculas normales.
+- Si el mensaje es claro y correcto, responde exactamente: NO_CHANGE
+- No agregues explicaciones, no cambies el significado, no seas condescendiente.
+- El usuario habla en español rioplatense (Uruguay/Argentina). Responde SOLO con el texto corregido o NO_CHANGE.`;
+
+  if (mode === 'directo') {
+    systemPrompt += '\n- Modo DIRECTO: ser breve y claro. Eliminar rodeos innecesarios.';
+  } else if (mode === 'neuro') {
+    systemPrompt += '\n- Modo NEURO: frases simples, sin metáforas, muy literal y claro.';
+  } else if (mode === 'calma') {
+    systemPrompt += '\n- Modo CALMA: tono suave, empático, sin brusquedad.';
+  }
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 200,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+    const data = await res.json();
+    const suggestion = (data.content?.[0]?.text || '').trim();
+    if (!suggestion || suggestion === 'NO_CHANGE' || suggestion === text) return;
+    // Mostrar sugerencia
+    _pendingFilterText = suggestion;
+    _filterActive = true;
+    document.getElementById('fltText').textContent = suggestion;
+    document.getElementById('msgFilterBar').classList.add('visible');
+  } catch { /* silencioso */ }
+}
+
+// ══════════════════════════════════════════════════════
+// BANNER DE MENSAJE/LLAMADA ENTRANTE (visible aunque app esté en segundo plano)
+// ══════════════════════════════════════════════════════
+let _bannerTimeout = null;
+let _bannerAction = null;
+
+function showIncomingBanner({ icon, name, sub, actionLabel, onAction, duration = 6000 }) {
+  if (_bannerTimeout) clearTimeout(_bannerTimeout);
+  document.getElementById('ibIcon').textContent = icon || '💬';
+  document.getElementById('ibName').textContent = name || '';
+  document.getElementById('ibSub').textContent = sub || '';
+  const btn = document.getElementById('ibAction');
+  btn.textContent = actionLabel || 'Ver';
+  _bannerAction = onAction || null;
+  btn.onclick = () => { if (_bannerAction) _bannerAction(); dismissBanner(); };
+  document.getElementById('incomingBanner').classList.add('show');
+  // Vibrar el dispositivo — patrón fuerte para que lo sienta
+  if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
+  // Flash visual de toda la pantalla
+  const flash = document.getElementById('msgFlash');
+  flash.style.display = 'block';
+  setTimeout(() => { flash.style.display = 'none'; }, 1800);
+  // Auto-cerrar después de duration
+  _bannerTimeout = setTimeout(dismissBanner, duration);
+}
+
+function dismissBanner() {
+  if (_bannerTimeout) clearTimeout(_bannerTimeout);
+  document.getElementById('incomingBanner').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════════════
 function autoH(el) {
   el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px';
 }
@@ -5553,25 +6047,61 @@ const _origLoadRealtime = loadRealtime;
 // TRANSCRIPCIÓN EMOCIONAL
 // ══════════════════════════════════════════════════
 
-// Detección de tono simple basada en patrones
+// Detección de tono — patrones ordenados por prioridad (los primeros tienen precedencia)
 const EMOT_PATTERNS = [
-  { re: /ja|je|ji|jij|😂|🤣|😄|haha|jajaj/i,      tag: 'Risas',     cls: 'emot-laugh' },
-  { re: /te quier|amor|cariño|gracias|abrazo|❤️|🥰|💕/i, tag: 'Cariñoso', cls: 'emot-pos' },
-  { re: /urgente|rápido|ya|ahora|emergencia|necesito/i, tag: 'Urgente',  cls: 'emot-neg' },
-  { re: /triste|mal|llor|😢|😭|👎|depri/i,          tag: 'Triste',    cls: 'emot-neg' },
-  { re: /bien|feliz|contento|😊|🎉|genial|excelente/i, tag: 'Positivo', cls: 'emot-pos' },
-  { re: /no sé|quizás|tal vez|creo|puede ser/i,      tag: 'Dudoso',    cls: 'emot-neu' },
-  { re: /espera|calma|tranqui|despacio/i,            tag: 'Tranquilo', cls: 'emot-pos' },
+  // ── CRISIS / ALERTA ROJA ──────────────────────────────────
+  { re: /mat(ar|aré|o|ás)|muer(te|o)|me mato|me quiero morir|voy a morir|me voy a matar|suicid|me hago daño|no quiero vivir/i,
+    tag: '🚨 Crisis', cls: 'emot-crisis', alert: true },
+  { re: /los mato|te mato|voy a matar|mataré a|voy a lastim|voy a hacerle|voy a hacerte|te hago daño|te voy a hacer/i,
+    tag: '🚨 Amenaza', cls: 'emot-crisis', alert: true },
+  { re: /ayuda.*ya|socorro|no aguanto más|no puedo más|me rindo|estoy al límite|me voy|no vuelvo/i,
+    tag: '⚠️ Angustia', cls: 'emot-crisis', alert: true },
+
+  // ── ENOJO / AGRESIÓN ──────────────────────────────────────
+  { re: /odio|asco|me cago|la puta|la concha|qué mierda|me tiene harto|me tiene harta|estoy harto|estoy harta|me rompió|me jode|me jodés|pedazo de|hijo de|imbécil|idiota|estúpid|boludo|hdp|la re concha|la reconcha/i,
+    tag: '😡 Enojo', cls: 'emot-neg' },
+  { re: /enojad|furioso|furiosa|molest|rabia|bronca|indignado|indignada|me enfurec|me enoja/i,
+    tag: '😡 Enojo', cls: 'emot-neg' },
+
+  // ── TRISTEZA / ANGUSTIA ───────────────────────────────────
+  { re: /triste|mal|llor|😢|😭|👎|depri|desanimad|bajoneado|bajoneada|no tengo ganas|sin ganas|agotad|cansad|solo|sola|me siento sol/i,
+    tag: '😔 Triste', cls: 'emot-neg' },
+  { re: /ansiedad|ansiosa|ansioso|nervios|me tiembla|me late el corazón|pánico|angustia|angustiad/i,
+    tag: '😰 Ansioso', cls: 'emot-neg' },
+
+  // ── URGENTE ───────────────────────────────────────────────
+  { re: /urgente|emergencia|ya mismo|ahora mismo|llama|llamá|vení|veni ya|necesito ayuda/i,
+    tag: '❗ Urgente', cls: 'emot-neg' },
+
+  // ── POSITIVO ──────────────────────────────────────────────
+  { re: /te quier|amor|cariño|gracias|abrazo|❤️|🥰|💕|te adoro|te extraño|te extrano|te pienso/i,
+    tag: '💜 Cariñoso', cls: 'emot-pos' },
+  { re: /bien|feliz|contento|contenta|😊|🎉|genial|excelente|perfecto|re bien|muy bien|mejor|más tranquil/i,
+    tag: '😊 Positivo', cls: 'emot-pos' },
+  { re: /ja|je|ji|jij|😂|🤣|😄|haha|jajaj|jeje|jiji|risas/i,
+    tag: '😄 Risas', cls: 'emot-laugh' },
+  { re: /espera|calma|tranqui|despacio|no hay apuro|está bien|ok|dale|bueno/i,
+    tag: '😌 Tranquilo', cls: 'emot-pos' },
+
+  // ── DUDOSO ───────────────────────────────────────────────
+  { re: /no sé|no se|quizás|quizas|tal vez|creo que|puede ser|capaz|no estoy segur/i,
+    tag: '🤔 Dudoso', cls: 'emot-neu' },
 ];
 
 function analyzeEmotion(text) {
-  if (!text) return [];
+  if (!text) return [{ tag: '😐 Neutro', cls: 'emot-neu' }];
+  const t = text.trim();
+  if (!t) return [{ tag: '😐 Neutro', cls: 'emot-neu' }];
   const tags = [];
-  EMOT_PATTERNS.forEach(p => {
-    if (p.re.test(text) && !tags.find(t => t.tag === p.tag)) {
-      tags.push({ tag: p.tag, cls: p.cls });
+  const seenTags = new Set();
+  for (const p of EMOT_PATTERNS) {
+    if (p.re.test(t) && !seenTags.has(p.tag)) {
+      tags.push({ tag: p.tag, cls: p.cls, alert: p.alert || false });
+      seenTags.add(p.tag);
+      if (tags.length >= 3) break; // máx 3 etiquetas
     }
-  });
+  }
+  if (!tags.length) tags.push({ tag: '😐 Neutro', cls: 'emot-neu' });
   return tags;
 }
 
@@ -5584,28 +6114,37 @@ function emotHTML(tags) {
 // Transcribir el último audio recibido (demo: usa SpeechRecognition en mensaje de texto)
 function transcribirUltimoAudio() {
   if (!S.activePartner) { toast('⚠️ Abrí un chat primero'); return; }
+
+  // Primero: analizar lo que estás escribiendo ahora
+  const inputEl = document.getElementById('msgIn');
+  const draftText = inputEl?.value?.trim();
+  if (draftText && draftText.length > 2) {
+    const tags = analyzeEmotion(draftText);
+    const chips = tags.map(t => `<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:13px;margin:2px;" class="${t.cls}">${t.tag}</span>`).join(' ');
+    toast('🎭 Tu mensaje: ' + tags.map(t=>t.tag).join(', '));
+    // Si es crisis, alertar
+    if (tags.some(t => t.alert)) {
+      setTimeout(() => {
+        const ok = confirm('⚠️ NOVU detectó un mensaje de crisis o amenaza en lo que estás escribiendo.\n\n¿Querés abrir el panel de emergencias SOS?');
+        if (ok) openCrisis();
+      }, 300);
+    }
+    return;
+  }
+
+  // Si no hay borrador, analizar el último mensaje recibido
   const room = activeRoom();
   const msgs = localMsgs[room] || [];
-
-  // Buscar el último mensaje de texto/tts del otro
   const lastMsg = [...msgs].reverse().find(m =>
     m.emisor_id !== S.user.id && (m.tipo === 'texto' || m.tipo === 'tts' || m.tipo === 'audio')
   );
 
-  if (!lastMsg) { toast('⚠️ No hay mensajes para transcribir'); return; }
+  if (!lastMsg) { toast('⚠️ No hay mensajes para analizar'); return; }
 
-  if (lastMsg.tipo === 'audio' && lastMsg.mediaUrl) {
-    // Intentar transcribir con Web Speech API reproduciendo el audio
-    toast('🎙️ Analizando audio…');
-    const tags = analyzeEmotion(lastMsg.contenido || '');
-    appendEmotToMsg(lastMsg.id, tags.length ? tags : [{ tag: 'Audio recibido', cls: 'emot-neu' }]);
-  } else {
-    const text = lastMsg.contenido || '';
-    const tags = analyzeEmotion(text);
-    if (!tags.length) { toast('😐 Sin tono emocional detectado'); return; }
-    appendEmotToMsg(lastMsg.id, tags);
-    toast('📝 Transcripción emocional lista');
-  }
+  const text = lastMsg.contenido || '';
+  const tags = analyzeEmotion(text);
+  appendEmotToMsg(lastMsg.id, tags);
+  toast('🎭 Tono: ' + tags.map(t=>t.tag).join(', '));
 }
 
 // Análisis automático de mensajes entrantes de texto
@@ -5615,12 +6154,52 @@ function autoEmotAnalysis(msg) {
   if (tags.length) {
     setTimeout(() => appendEmotToMsg(msg.id, tags), 400);
   }
+  // Filtrar mensaje recibido según el modo del receptor (si neuro o calma)
+  const mode = document.body.className.match(/mode-(\w+)/)?.[1] || 'conexion';
+  if ((mode === 'neuro' || mode === 'calma') && msg.contenido && msg.contenido.length > 4) {
+    filterReceivedMsg(msg);
+  }
 }
+
+// Aplica filtro IA al mensaje recibido para suavizarlo/clarificarlo según modo del receptor
+async function filterReceivedMsg(msg) {
+  const mode = document.body.className.match(/mode-(\w+)/)?.[1] || 'conexion';
+  let systemPrompt = '';
+  if (mode === 'neuro') {
+    systemPrompt = `Sos un asistente de comunicación. Recibís un mensaje y tu tarea es simplificarlo para una persona neurodivergente. Reglas: frases cortas y directas, sin metáforas ni sarcasmo, literal y claro, sin jerga, sin groserías. Si el mensaje ya es claro, responde exactamente: NO_CHANGE. Respond only in Spanish. Return ONLY the rewritten message or NO_CHANGE.`;
+  } else if (mode === 'calma') {
+    systemPrompt = `Sos un asistente de comunicación. Recibís un mensaje y si tiene un tono agresivo, brusco o muy intenso, lo suavizás levemente manteniendo el significado central. Si ya es amable o neutro, responde exactamente: NO_CHANGE. No cambies el significado. Respond only in Spanish. Return ONLY the rewritten message or NO_CHANGE.`;
+  } else return;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 200,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: msg.contenido }]
+      })
+    });
+    const data = await res.json();
+    const filtered = (data.content?.[0]?.text || '').trim();
+    if (!filtered || filtered === 'NO_CHANGE' || filtered === msg.contenido) return;
+    // Guardar versión filtrada y el original
+    const room = activeRoom();
+    if (!localMsgs[room]) return;
+    const idx = localMsgs[room].findIndex(m => m.id === msg.id);
+    if (idx === -1) return;
+    localMsgs[room][idx]._filteredContent = filtered;
+    localMsgs[room][idx]._originalContent = msg.contenido;
+    renderMsgs();
+  } catch { /* silencioso */ }
+}
+
+
 
 // Añade burbuja emocional debajo del mensaje
 function appendEmotToMsg(msgId, tags) {
-  // Buscar el wrap del mensaje en el DOM — necesitamos un data-id
-  // Como los mensajes son innerHTML, re-renderizamos con soporte emocional
   if (!S.activePartner) return;
   const room = activeRoom();
   const msgs = localMsgs[room] || [];
@@ -5628,6 +6207,14 @@ function appendEmotToMsg(msgId, tags) {
   if (idx === -1) return;
   msgs[idx]._emot = tags;
   renderMsgs();
+  // Si hay etiqueta de crisis → mostrar alerta visual
+  const hasCrisis = tags.some(t => t.alert);
+  if (hasCrisis) {
+    setTimeout(() => {
+      const ok = confirm('⚠️ NOVU detectó un mensaje de crisis o amenaza.\n\n¿Querés abrir el panel de emergencias SOS?');
+      if (ok) openCrisis();
+    }, 300);
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -5859,17 +6446,58 @@ window.addEventListener('load', () => {
     Notification.requestPermission().catch(() => {});
   }
 
-  // Registrar Service Worker para notificaciones con pantalla bloqueada
+  // ── SERVICE WORKER EMBEBIDO como Blob (no necesita sw.js externo) ──
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
+    const swCode = `
+// NOVU Service Worker — notificaciones con pantalla bloqueada
+self.addEventListener('install', e => { self.skipWaiting(); });
+self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
+
+self.addEventListener('message', e => {
+  const d = e.data;
+  if (d && d.type === 'NOTIFY') {
+    e.waitUntil(
+      self.registration.showNotification(d.title || 'NOVU', {
+        body: d.body || '',
+        tag: d.tag || 'novu',
+        renotify: true,
+        requireInteraction: d.requireInteraction || false,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        vibrate: d.requireInteraction ? [400,100,400,100,800] : [200,50,200],
+        actions: d.requireInteraction
+          ? [{ action: 'accept', title: '✅ Atender' }, { action: 'reject', title: '❌ Rechazar' }]
+          : [{ action: 'open', title: '💬 Ver' }]
+      })
+    );
+  }
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+      if (clients.length) { clients[0].focus(); }
+      else { self.clients.openWindow('/'); }
+    })
+  );
+});
+`;
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl, { scope: '/' })
       .then(reg => {
-        console.log('SW registrado:', reg.scope);
-        // Pedir permiso de notificaciones automáticamente
+        console.log('SW embebido registrado:', reg.scope);
         if (Notification.permission === 'default') {
           Notification.requestPermission();
         }
       })
-      .catch(err => console.warn('SW no disponible:', err));
+      .catch(err => {
+        console.warn('SW blob falló, intentando sw.js externo:', err.message);
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => { console.log('SW externo OK:', reg.scope); })
+          .catch(() => console.warn('SW no disponible — notificaciones solo cuando app está visible'));
+      });
   }
 
   if (S.user.name && S.user.phone) {
