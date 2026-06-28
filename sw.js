@@ -1,78 +1,51 @@
-// NOVU Service Worker © 2026 Hadrion · Adriana Soba
-const CACHE_NAME = 'novu-v3';
-const OFFLINE_ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './android-chrome-192x192.png',
-];
+const CACHE = 'novu-v1';
 
-// ── Instalación: cachear recursos estáticos ──
-self.addEventListener('install', event => {
+self.addEventListener('install', e => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(OFFLINE_ASSETS).catch(() => {}))
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(clients.claim());
+});
+
+// Notificaciones push (pantalla bloqueada)
+self.addEventListener('push', e => {
+  const d = e.data ? e.data.json() : {};
+  e.waitUntil(self.registration.showNotification(d.title || 'NOVU', {
+    body: d.body || '',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    tag: d.tag || 'novu-msg',
+    renotify: true,
+    requireInteraction: false,
+    vibrate: [200, 100, 200],
+    data: d
+  }));
+});
+
+// Al tocar la notificación → abrir/enfocar la app
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cls => {
+      const novu = cls.find(c => c.url.includes('novu') || c.url.includes('github.io'));
+      if (novu) return novu.focus();
+      return clients.openWindow(self.location.origin);
+    })
   );
 });
 
-// ── Activación: limpiar cachés viejos ──
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-// ── Fetch: servir desde caché con fallback a red ──
-self.addEventListener('fetch', event => {
-  // No interceptar peticiones a Supabase ni a APIs externas
-  if (event.request.url.includes('supabase.co') ||
-      event.request.url.includes('api.anthropic.com') ||
-      event.request.url.includes('tenor.googleapis.com')) {
-    return;
-  }
-  event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
-  );
-});
-
-// ── Notificaciones push (si se implementa Web Push en el futuro) ──
-self.addEventListener('push', event => {
-  if (!event.data) return;
-  let data = {};
-  try { data = event.data.json(); } catch(e) { data = { title: 'NOVU', body: event.data.text() }; }
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'NOVU', {
-      body: data.body || 'Nuevo mensaje',
-      icon: './android-chrome-192x192.png',
-      badge: './android-chrome-192x192.png',
-      tag: 'novu-msg',
+// Mensajes desde la app (para notificar con pantalla bloqueada sin push server)
+self.addEventListener('message', e => {
+  if (e.data?.type === 'NOTIFY') {
+    self.registration.showNotification(e.data.title || 'NOVU', {
+      body: e.data.body || '',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: e.data.tag || 'novu-msg',
       renotify: true,
-      vibrate: [100, 50, 100],
-      data: data
-    })
-  );
-});
-
-// ── Click en notificación: abrir/enfocar la app ──
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
-      // Si ya hay una ventana abierta, enfocarla
-      for (const client of clients) {
-        if ('focus' in client) {
-          client.focus();
-          // Notificar a la app que fue un click de notificación
-          client.postMessage({ type: 'NOTIFICATION_CLICK', data: event.notification.data });
-          return;
-        }
-      }
-      // Si no hay ventana, abrir una nueva
-      if (self.clients.openWindow) {
-        return self.clients.openWindow('./');
-      }
-    })
-  );
+      requireInteraction: false,
+      vibrate: [200, 100, 200]
+    });
+  }
 });
