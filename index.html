@@ -7929,13 +7929,23 @@ function addCustomCrisisMsg() {
   if (S.settings.customCrisisMessages.includes(text) || DEFAULT_CRISIS_MSGS.some(m => m.text === text)) {
     toast('Ese mensaje ya está en la lista');
     inputEl.value = '';
+    // Aunque ya existiera, lo seleccionamos igual: el usuario lo escribió
+    // con intención de usarlo ahora.
+    _crisisSelectedMsg = text;
+    renderCrisisPresets();
     return;
   }
   S.settings.customCrisisMessages.push(text);
   saveLocal();
   inputEl.value = '';
+  // IMPORTANTE: antes el mensaje se agregaba a la lista pero había que
+  // tocarlo aparte para que se usara al enviar. Como el usuario lo escribió
+  // recién para esta emergencia, lo lógico es que quede seleccionado ya
+  // mismo — si no, se manda el mensaje genérico y el mensaje escrito
+  // ("Tengo hambre", por ejemplo) se pierde.
+  _crisisSelectedMsg = text;
   renderCrisisPresets();
-  toast('✅ Mensaje agregado');
+  toast('✅ Mensaje agregado y listo para enviar');
 }
 
 function removeCustomCrisisMsg(text) {
@@ -7992,26 +8002,21 @@ function waitForCrisisLocation(maxMs) {
 }
 
 async function sendSOS(phone, name) {
-  // IMPORTANTE: la pestaña de WhatsApp se abre ACÁ, inmediatamente, dentro
-  // del mismo click del usuario. Antes se abría después de esperar hasta 5s
-  // por la ubicación (await), y para cuando llegaba ese momento el
-  // navegador —sobre todo en el celular— ya no lo consideraba parte del
-  // gesto del usuario y bloqueaba el popup en silencio, así que el mensaje
-  // nunca se mandaba. Por eso ahora se abre una pestaña vacía primero y
-  // se le carga la URL de WhatsApp una vez que está lista.
-  const waWindow = window.open('', '_blank');
+  // IMPORTANTE: antes se abría una pestaña en blanco y se le cargaba la URL
+  // de WhatsApp después. Eso confundía al celular: en vez de entregarle el
+  // link a la app de WhatsApp instalada, mostraba la versión web (que pide
+  // "abrir la app" o "descargar WhatsApp" aunque ya la tengas). La forma
+  // correcta y más confiable en celulares es navegar DIRECTO con
+  // location.href — así el sistema operativo reconoce el link de wa.me y lo
+  // abre en la app instalada. Esto no lo bloquea el navegador (a diferencia
+  // de window.open), así que no hay problema en esperar la ubicación antes.
   const location = await waitForCrisisLocation(9000);
   const loc = location ? `\n📍 Mi ubicación en vivo: https://maps.google.com/?q=${location.coords.latitude},${location.coords.longitude}` : '\n📍 (no se pudo obtener la ubicación — activá el GPS)';
   const situacion = _crisisSelectedMsg ? `\n${_crisisSelectedMsg}` : '';
   const msg = `🆘 NECESITO AYUDA\nSoy ${S.user.name}${situacion}${loc}\nEnviado desde NOVU`;
   const waUrl = safeWhatsAppUrl(phone, msg);
-  if (!waUrl) { toast('⚠️ Número de emergencia no válido'); waWindow?.close(); return; }
-  if (waWindow && !waWindow.closed) {
-    waWindow.location.href = waUrl;
-  } else {
-    // Si el navegador bloqueó igual la ventana vacía, reintentar directo
-    window.open(waUrl, '_blank');
-  }
+  if (!waUrl) { toast('⚠️ Número de emergencia no válido'); return; }
+  window.location.href = waUrl;
   _crisisSelectedMsg = null;
   closeCrisis();
 }
