@@ -6701,36 +6701,67 @@ window.addEventListener('load', () => {
   // podía instalar NOVU como app standalone con ícono propio (a pesar de
   // tener Service Worker completo con cache offline y push). Se genera acá
   // como Blob, igual que el Service Worker, para mantener todo en un único
-  // archivo HTML. El ícono es un SVG inline (data URI) — si más adelante hay
-  // un ícono PNG real, conviene reemplazarlo acá.
-  try {
-    const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-      <rect width="192" height="192" rx="40" fill="#0a0a14"/>
-      <text x="96" y="128" font-family="Inter,sans-serif" font-size="104" font-weight="900" fill="#6366f1" text-anchor="middle">N</text>
-    </svg>`;
-    const iconUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(iconSvg)));
-    const manifest = {
-      name: 'NOVU — Comunicación sin barreras',
-      short_name: 'NOVU',
-      description: 'Comunicación Aumentativa y Alternativa para ELA, afasia y autismo.',
-      start_url: './',
-      scope: './',
-      display: 'standalone',
-      background_color: '#0a0a14',
-      theme_color: '#0a0a14',
-      orientation: 'any',
-      lang: 'es',
-      icons: [
-        { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-        { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-      ]
-    };
-    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-    const link = document.createElement('link');
-    link.rel = 'manifest';
-    link.href = URL.createObjectURL(manifestBlob);
-    document.head.appendChild(link);
-  } catch (e) { console.warn('[PWA] No se pudo generar el manifest:', e); }
+  // archivo HTML.
+  // IMPORTANTE: los íconos ahora se generan como PNG reales (dibujando el
+  // SVG en un <canvas>), no como SVG directo. Android/Chrome son poco
+  // confiables reconociendo íconos SVG en el manifest — con SVG, muchos
+  // celulares "instalan" NOVU como un simple acceso directo del navegador
+  // en vez de como app real, y por eso no se puede activar el permiso de
+  // notificaciones. Con PNG de 192px y 512px, Android lo reconoce como app
+  // instalable de verdad.
+  (async () => {
+    try {
+      function svgToPngBlob(svgMarkup, size) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          const svgBlob = new Blob([svgMarkup], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(svgBlob);
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, size, size);
+            URL.revokeObjectURL(url);
+            canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('toBlob falló')), 'image/png');
+          };
+          img.onerror = reject;
+          img.src = url;
+        });
+      }
+
+      const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+        <rect width="192" height="192" rx="40" fill="#0a0a14"/>
+        <text x="96" y="128" font-family="Inter,sans-serif" font-size="104" font-weight="900" fill="#6366f1" text-anchor="middle">N</text>
+      </svg>`;
+
+      const [png192, png512] = await Promise.all([
+        svgToPngBlob(iconSvg, 192),
+        svgToPngBlob(iconSvg, 512)
+      ]);
+
+      const manifest = {
+        name: 'NOVU — Comunicación sin barreras',
+        short_name: 'NOVU',
+        description: 'Comunicación Aumentativa y Alternativa para ELA, afasia y autismo.',
+        start_url: './',
+        scope: './',
+        display: 'standalone',
+        background_color: '#0a0a14',
+        theme_color: '#0a0a14',
+        orientation: 'any',
+        lang: 'es',
+        icons: [
+          { src: URL.createObjectURL(png192), sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+          { src: URL.createObjectURL(png512), sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+        ]
+      };
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = URL.createObjectURL(manifestBlob);
+      document.head.appendChild(link);
+    } catch (e) { console.warn('[PWA] No se pudo generar el manifest:', e); }
+  })();
 
   if ('serviceWorker' in navigator) {
     // NOTA: antes se intentaba registrar el Service Worker desde una URL
@@ -7930,13 +7961,26 @@ function waitForCrisisLocation(maxMs) {
 }
 
 async function sendSOS(phone, name) {
+  // IMPORTANTE: la pestaña de WhatsApp se abre ACÁ, inmediatamente, dentro
+  // del mismo click del usuario. Antes se abría después de esperar hasta 5s
+  // por la ubicación (await), y para cuando llegaba ese momento el
+  // navegador —sobre todo en el celular— ya no lo consideraba parte del
+  // gesto del usuario y bloqueaba el popup en silencio, así que el mensaje
+  // nunca se mandaba. Por eso ahora se abre una pestaña vacía primero y
+  // se le carga la URL de WhatsApp una vez que está lista.
+  const waWindow = window.open('', '_blank');
   const location = await waitForCrisisLocation(5000);
   const loc = location ? `\n📍 Mi ubicación en vivo: https://maps.google.com/?q=${location.coords.latitude},${location.coords.longitude}` : '\n📍 (no se pudo obtener la ubicación — activá el GPS)';
   const situacion = _crisisSelectedMsg ? `\n${_crisisSelectedMsg}` : '';
   const msg = `🆘 NECESITO AYUDA\nSoy ${S.user.name}${situacion}${loc}\nEnviado desde NOVU`;
   const waUrl = safeWhatsAppUrl(phone, msg);
-  if (!waUrl) { toast('⚠️ Número de emergencia no válido'); return; }
-  window.open(waUrl, '_blank');
+  if (!waUrl) { toast('⚠️ Número de emergencia no válido'); waWindow?.close(); return; }
+  if (waWindow && !waWindow.closed) {
+    waWindow.location.href = waUrl;
+  } else {
+    // Si el navegador bloqueó igual la ventana vacía, reintentar directo
+    window.open(waUrl, '_blank');
+  }
   _crisisSelectedMsg = null;
   closeCrisis();
 }
