@@ -4632,10 +4632,25 @@ function addEmergencyContactSettings() {
   const phoneEl = document.getElementById('emergPhone');
   const relEl = document.getElementById('emergRelation');
   const name = nameEl.value.trim();
-  const phone = phoneEl.value.trim();
+  const rawPhone = phoneEl.value.trim();
   const relation = relEl.value.trim();
   if (!name) { toast('⚠️ Poné un nombre'); nameEl.focus(); return; }
-  if (!phone) { toast('⚠️ Poné un teléfono'); phoneEl.focus(); return; }
+  if (!rawPhone) { toast('⚠️ Poné un teléfono'); phoneEl.focus(); return; }
+  // IMPORTANTE: este campo solo pedía el número local (ej: "099 123 456"),
+  // pero se guardaba tal cual, SIN el código de país (+598). Eso generaba
+  // enlaces de WhatsApp inválidos (wa.me/099123456) que WhatsApp no podía
+  // resolver contra el contacto real, y terminaba sin abrir el chat
+  // correcto. Ahora se normaliza igual que el resto de la app: si ya
+  // empieza con "+" se respeta tal cual, si no, se le agrega el código de
+  // país del usuario (o +598 por defecto) y se le saca el 0 inicial.
+  const phone = rawPhone.startsWith('+')
+    ? normalizePhone(rawPhone)
+    : combinePhone(S.user.phoneCountry || DEFAULT_CC, rawPhone);
+  if (!phone || phone.replace(/\D/g,'').length < 8) {
+    toast('⚠️ Ese teléfono no parece válido — revisá el número');
+    phoneEl.focus();
+    return;
+  }
   const colors = ['#6366f1','#ec4899','#22c55e','#f59e0b','#06b6d4'];
   S.contacts.push({
     id: 'ct_' + Date.now(),
@@ -5809,6 +5824,22 @@ function loadLocal() {
     if (d.mode) S.mode = d.mode;
     if (d.settings) Object.assign(S.settings, d.settings);
     if (d.contacts) S.contacts = d.contacts;
+    // MIGRACIÓN: contactos de emergencia guardados antes de este arreglo
+    // quedaron con el teléfono sin código de país (ej: "099123456" en vez
+    // de "+59899123456"), lo que rompía el enlace de WhatsApp. Se corrigen
+    // acá una sola vez, automáticamente, sin que el usuario tenga que volver
+    // a cargar el contacto.
+    if (Array.isArray(S.contacts)) {
+      let migrated = false;
+      S.contacts = S.contacts.map(c => {
+        if (c && c.phone && !String(c.phone).trim().startsWith('+')) {
+          migrated = true;
+          return { ...c, phone: combinePhone(S.user.phoneCountry || DEFAULT_CC, c.phone) };
+        }
+        return c;
+      });
+      if (migrated) saveLocal();
+    }
     if (d.sb) Object.assign(S.sb, d.sb);
     if (d.tts) Object.assign(S.tts, d.tts);
     if (d.push) Object.assign(S.push, d.push);
@@ -7969,7 +8000,7 @@ async function sendSOS(phone, name) {
   // nunca se mandaba. Por eso ahora se abre una pestaña vacía primero y
   // se le carga la URL de WhatsApp una vez que está lista.
   const waWindow = window.open('', '_blank');
-  const location = await waitForCrisisLocation(5000);
+  const location = await waitForCrisisLocation(9000);
   const loc = location ? `\n📍 Mi ubicación en vivo: https://maps.google.com/?q=${location.coords.latitude},${location.coords.longitude}` : '\n📍 (no se pudo obtener la ubicación — activá el GPS)';
   const situacion = _crisisSelectedMsg ? `\n${_crisisSelectedMsg}` : '';
   const msg = `🆘 NECESITO AYUDA\nSoy ${S.user.name}${situacion}${loc}\nEnviado desde NOVU`;
