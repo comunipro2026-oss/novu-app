@@ -12,6 +12,15 @@ self.addEventListener('activate', e => {
   e.waitUntil(self.clients.claim());
 });
 
+// Chrome/Android exige que el Service Worker tenga un manejador de 'fetch'
+// para considerar la PWA "instalable de verdad" (con permiso de
+// notificaciones incluido). Sin esto, "Agregar a pantalla de inicio" crea
+// solo un acceso directo al navegador, no una app instalada real — por eso
+// el celular no la reconocía como app.
+self.addEventListener('fetch', e => {
+  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+});
+
 // Mensajes desde la página principal (postMessage)
 self.addEventListener('message', e => {
   const d = e.data;
