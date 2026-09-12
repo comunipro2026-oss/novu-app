@@ -5,6 +5,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://openrelay.metered.ca https://stun.l.google.com; img-src 'self' blob: data: https:; media-src 'self' blob: https:; worker-src 'self' blob:; frame-src 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a14">
+<link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1774,6 +1775,9 @@ body::before {
       <button class="btn btn-g" onclick="obBack(2)" aria-label="Volver">← Atrás</button>
       <button class="btn btn-p" style="flex:1" onclick="obNext(2)" aria-label="Continuar">Continuar →</button>
     </div>
+    <button class="btn btn-g" style="width:100%;margin-top:12px" onclick="obQuickStart()" aria-label="Empezar ahora con la configuración recomendada">
+      Empezar ahora con la configuración recomendada
+    </button>
   </div>
 
   <!-- Paso 3: modo -->
@@ -2974,7 +2978,12 @@ function initSB() {
 
 function setSyncDot(state) {
   const d = document.getElementById('syncDot');
-  if (d) d.className = 'sync-dot ' + state;
+  if (d) {
+    d.className = 'sync-dot ' + state;
+    const labels = { ok: 'Conectado', busy: 'Conectando', err: 'Sin conexión' };
+    d.setAttribute('aria-label', labels[state] || 'Estado de conexión');
+    d.title = labels[state] || 'Estado de conexión';
+  }
 }
 
 // ── COLA OFFLINE — disparo automático al recuperar conexión ──────
@@ -3647,7 +3656,7 @@ async function processOfflineQueue() {
 async function sendMsg() {
   const el = document.getElementById('msgIn');
   const raw = el.value.trim();
-  if (!raw || !S.activePartner || !db) return;
+  if (!raw || !S.activePartner) return;
 
   // Rate limiting: evita spam y doble-tap en red lenta
   if (!rateLimiter.allow('sendMsg', 800)) return;
@@ -3732,6 +3741,28 @@ async function sendMsg() {
   dismissFilter(); // cancelar cualquier sugerencia pendiente
   if (S.settings.sounds) beep(700,0.06);
   if (_origBeforeFix) toast('✨ Corregido automáticamente', 1800);
+
+  // Si Supabase todavía no conectó, conservar el mensaje en la cola. Antes
+  // el botón Enviar no hacía nada, que era indistinguible de una app rota.
+  if (!db) {
+    if (SUPPORTS_QUEUE) {
+      await queueAdd({
+        queueId: tempId, room, emisor_id: S.user.id, emisor_nombre: S.user.name,
+        tipo: 'texto', contenido: text, partnerTelefono: S.activePartner?.telefono || '',
+        createdAt: Date.now()
+      });
+      const queued = localMsgs[room].find(m => m.id === tempId);
+      if (queued) queued._queued = true;
+      renderMsgs();
+      toast('📴 Mensaje guardado — se enviará al recuperar conexión', 4000);
+    } else {
+      const pending = localMsgs[room].find(m => m.id === tempId);
+      if (pending) pending._failed = true;
+      renderMsgs();
+      toast('⚠️ Sin conexión — tocá el mensaje para reintentar', 4000);
+    }
+    return;
+  }
   try {
     const { data, error } = await db.from('novu_mensajes').insert({ sala_id:room, emisor_id:S.user.id, emisor_nombre:S.user.name, tipo:'texto', contenido:text }).select().single();
     if (error) throw error;
@@ -4922,7 +4953,11 @@ function insertEmoji(e) {
 async function addContactToDB(name, phone) {
   if (!db || !S.user.id) { toast('⚠️ Sin conexión'); return; }
   try {
-    await db.from('novu_contactos').upsert({ propietario_id:S.user.id, contacto_telefono:phone, contacto_nombre:name });
+    const { error } = await db.from('novu_contactos').upsert(
+      { propietario_id:S.user.id, contacto_telefono:phone, contacto_nombre:name },
+      { onConflict: 'propietario_id,contacto_telefono' }
+    );
+    if (error) throw error;
     toast('✅ Contacto agregado');
     document.getElementById('newContactName').value = '';
     document.getElementById('newContactPhone').value = '';
@@ -5729,7 +5764,7 @@ function captureContactPhoto() {
 /** Botón "Agregar" del panel de nuevo contacto */
 function addContact() {
   const rawName = document.getElementById('newContactName')?.value.trim();
-  const cc      = document.getElementById('newContactCC')?.value || DEFAULT_CC;
+  const cc      = document.getElementById('newContactCountry')?.value || DEFAULT_CC;
   const rawPh   = document.getElementById('newContactPhone')?.value.trim();
 
   const nameV = validateName(rawName);
@@ -7295,10 +7330,8 @@ window.addEventListener('load', async () => {
   applyMode();
   applySettings();
 
-  // Pedir permiso de notificaciones automáticamente (necesario para llamadas y mensajes)
-  if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission().catch(() => {});
-  }
+  // El permiso se solicita solo al tocar el aviso visible. En móviles las
+  // solicitudes automáticas se bloquean y hacen que el inicio parezca roto.
 
   // ══════════════════════════════════════════════════
   // SERVICE WORKER + PUSH NOTIFICATIONS
@@ -7337,7 +7370,7 @@ window.addEventListener('load', async () => {
   // en vez de como app real, y por eso no se puede activar el permiso de
   // notificaciones. Con PNG de 192px y 512px, Android lo reconoce como app
   // instalable de verdad.
-  (async () => {
+  if (!document.querySelector('link[rel="manifest"]')) (async () => {
     try {
       function svgToPngBlob(svgMarkup, size) {
         return new Promise((resolve, reject) => {
@@ -7938,6 +7971,21 @@ function obBack(step) {
     document.getElementById('obStep3').classList.remove('active');
     document.getElementById('obStep2').classList.add('active');
   }
+}
+
+// Permite empezar en dos pasos con una configuración accesible equilibrada.
+// Los ajustes especializados siguen disponibles en Configuración.
+function obQuickStart() {
+  const local = document.getElementById('obPhone').value.trim();
+  if (!local || local.replace(/\D/g,'').length < 6) {
+    toast('⚠️ Revisá el número de teléfono');
+    document.getElementById('obPhone').focus();
+    return;
+  }
+  _obMode = 'conexion';
+  _obAccess = 'normal';
+  _obLevel = 'medio';
+  obFinish();
 }
 
 function obFinish() {
