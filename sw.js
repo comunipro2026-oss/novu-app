@@ -1,15 +1,20 @@
 'use strict';
-// NOVU Service Worker v2 — Notificaciones + Push API
-const CACHE_NAME = 'novu-sw-v2';
+// NOVU Service Worker v3 — PWA offline + notificaciones + Push API
+const CACHE_NAME = 'novu-sw-v3';
+const APP_SHELL = ['./', './index.html', './manifest.json', './android-chrome-192x192.png', './android-chrome-512x512.png'];
 
 self.addEventListener('install', e => {
   console.log('[SW] instalando…');
+  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
   console.log('[SW] activado — controlando clientes');
-  e.waitUntil(self.clients.claim());
+  e.waitUntil(Promise.all([
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))),
+    self.clients.claim()
+  ]));
 });
 
 // Chrome/Android exige que el Service Worker tenga un manejador de 'fetch'
@@ -18,7 +23,18 @@ self.addEventListener('activate', e => {
 // solo un acceso directo al navegador, no una app instalada real — por eso
 // el celular no la reconocía como app.
 self.addEventListener('fetch', e => {
-  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+  if (e.request.method !== 'GET') return;
+  if (e.request.mode === 'navigate') {
+    e.respondWith(fetch(e.request)
+      .then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+        return response;
+      })
+      .catch(() => caches.match('./index.html')));
+    return;
+  }
+  e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request)));
 });
 
 // Mensajes desde la página principal (postMessage)
@@ -33,8 +49,8 @@ self.addEventListener('message', e => {
         tag: d.tag || 'novu',
         renotify: true,
         requireInteraction: !!d.requireInteraction,
-        icon: d.icon || '/favicon.ico',
-        badge: d.badge || '/favicon.ico',
+        icon: d.icon || './android-chrome-192x192.png',
+        badge: d.badge || './android-chrome-192x192.png',
         vibrate: d.requireInteraction ? [400,100,400,100,800] : [200,50,200],
         data: d.data || {},
         actions: d.requireInteraction
@@ -59,8 +75,8 @@ self.addEventListener('push', e => {
     self.registration.showNotification(payload.title || 'NOVU', {
       body: payload.body || '',
       tag: payload.tag || 'novu-push',
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: './android-chrome-192x192.png',
+      badge: './android-chrome-192x192.png',
       renotify: true,
       requireInteraction: !!payload.requireInteraction,
       vibrate: payload.requireInteraction ? [500,200,500,200,1000] : [200,100,200],
@@ -92,7 +108,7 @@ self.addEventListener('notificationclick', e => {
           existing.postMessage({ type: 'REJECT_CALL', from: data.callFrom });
         }
       } else {
-        self.clients.openWindow('/');
+        self.clients.openWindow('./');
       }
     })
   );
