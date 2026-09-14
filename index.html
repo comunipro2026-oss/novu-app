@@ -161,7 +161,7 @@
 
 /* NIVEL BÁSICO: solo lo esencial para comunicar ya —
    picto, audio, SOS y llamada de voz. Todo lo demás queda oculto. */
-body.ui-basico .action-btns .a-btn:not(#recBtn):not([onclick*="togglePicto"]) { display: none; }
+body.ui-basico .action-btns .a-btn:not(#recBtn):not([onclick*="togglePicto"]):not([onclick*="ttsOv"]) { display: none; }
 body.ui-basico .dock-btn:not([onclick*="openSosAnsiedad"]) { display: none; }
 body.ui-basico .ch-btn.video { display: none; }
 body.ui-basico .module-dock { max-width: none; }
@@ -4115,6 +4115,9 @@ let currentPhrase = [];
 function addToPhrase(emoji, label) {
   currentPhrase.push({emoji,label});
   renderPhrase();
+  // En la interfaz básica cada selección también se dice en voz alta: una
+  // persona que no lee puede confirmar lo que eligió sin ayuda externa.
+  if ((S.settings.uiLevel || 'medio') === 'basico') speak(label, S.tts.voice);
 }
 
 function renderPhrase() {
@@ -4129,9 +4132,9 @@ function renderPhrase() {
   strip.classList.add('show');
   actions.classList.add('show');
   strip.innerHTML = currentPhrase.map((p,i)=>`
-    <div class="p-chip">
+    <div class="phrase-token">
       <span>${p.emoji} ${p.label}</span>
-      <span class="p-chip-x" onclick="removeChip(${i})">×</span>
+      <button type="button" onclick="removeChip(${i})" aria-label="Quitar ${esc(p.label)}">×</button>
     </div>`).join('');
 }
 
