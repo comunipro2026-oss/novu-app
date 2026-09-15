@@ -1916,6 +1916,7 @@ body::before {
           </div>
           <div class="mode-pill" id="chModePill" aria-label="Modo activo"></div>
           <button class="ch-btn voice" onclick="startCall('voice')" title="Llamada de voz" aria-label="Llamada de voz">📞</button>
+          <button class="ch-btn video" onclick="startCall('video')" title="Videollamada" aria-label="Videollamada dentro de NOVU">📹</button>
           <button class="ch-btn" onclick="openOv('chatMenuOv')" title="Más opciones" aria-label="Más opciones del chat" aria-haspopup="menu">⋯</button>
         </div>
 
@@ -2425,8 +2426,13 @@ body::before {
   <div class="modal">
     <div class="modal-hd">Opciones del chat <button class="modal-close" onclick="closeOv('chatMenuOv')" aria-label="Cerrar">✕</button></div>
     <div class="modal-body" style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:var(--fs-xs);font-weight:800;color:var(--text-3);letter-spacing:.04em">COMUNICARSE</div>
+      <button class="btn btn-p" onclick="closeOv('chatMenuOv');startCall('voice')" aria-label="Llamar con NOVU">📞 Llamar con NOVU</button>
+      <button class="btn btn-p" onclick="closeOv('chatMenuOv');startCall('video')" aria-label="Hacer videollamada con NOVU">📹 Videollamada con NOVU</button>
+      <button class="btn btn-g" onclick="closeOv('chatMenuOv');callByPhone()" aria-label="Llamar por teléfono">☎️ Llamar por teléfono</button>
+      <button class="btn btn-g" onclick="closeOv('chatMenuOv');openWhatsAppChat()" aria-label="Abrir conversación en WhatsApp">💬 Abrir WhatsApp</button>
+      <div style="font-size:var(--fs-xs);font-weight:800;color:var(--text-3);letter-spacing:.04em;margin-top:6px">APOYO Y OPCIONES</div>
       <button class="btn btn-g" onclick="closeOv('chatMenuOv');openLuzCompania()" aria-label="Luz de Compañía">🕯️ Luz de Compañía</button>
-      <button class="btn btn-g" onclick="closeOv('chatMenuOv');startCall('video')" aria-label="Videollamada">📹 Videollamada</button>
       <button class="btn btn-g" onclick="closeOv('chatMenuOv');openOv('emojiOv')" aria-label="Personalizar con emojis">😊 Personalizar contacto</button>
       <button class="btn btn-g" onclick="closeOv('chatMenuOv');startVoiceCmd()" aria-label="Comando de voz">🎤 Comando de voz</button>
       <button class="btn btn-g" onclick="loadMoreMsgs();closeOv('chatMenuOv')" aria-label="Cargar mensajes anteriores">⬆ Cargar mensajes anteriores</button>
@@ -2731,6 +2737,25 @@ function safeWhatsAppUrl(rawPhone, text) {
   const digits = String(rawPhone || '').replace(/\D/g, '');
   if (digits.length < 7 || digits.length > 15) return null;
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+}
+
+// Alternativas universales: funcionan aunque el contacto todavía no use NOVU.
+function callByPhone() {
+  const digits = String(S.activePartner?.telefono || '').replace(/\D/g, '');
+  if (digits.length < 7 || digits.length > 15) {
+    toast('⚠️ Este contacto no tiene un teléfono válido');
+    return;
+  }
+  window.location.href = 'tel:+' + digits;
+}
+
+function openWhatsAppChat() {
+  const url = safeWhatsAppUrl(S.activePartner?.telefono, 'Hola ' + sanitizeText(S.activePartner?.name || '', 60) + ' 👋');
+  if (!url) {
+    toast('⚠️ Este contacto no tiene un teléfono válido');
+    return;
+  }
+  window.location.href = url;
 }
 
 /**
@@ -3277,7 +3302,8 @@ function fmtTime(ts) {
 function openChat(id, name, color, phone) {
   if (!S.user.id) { toast('⚠️ Conectá primero'); return; }
   const photo = getContactPhotoUrl(id);
-  S.activePartner = { id, name, color: safeColor(color), telefono: phone, photo };
+  const knownContact = onlineUsers.find(u => u.id === id || normalizePhone(u.telefono) === normalizePhone(phone));
+  S.activePartner = { id, name, color: safeColor(color), telefono: phone, photo, registrado: !!knownContact?.registrado };
   document.getElementById('emptyState').style.display = 'none';
   const cv = document.getElementById('chatView');
   cv.style.display = 'flex';
@@ -5593,6 +5619,11 @@ function onCallAccepted() {
 
 async function startCall(mode) {
   if (!S.activePartner) { toast('⚠️ Abrí un chat primero'); return; }
+  if (S.activePartner.registrado === false) {
+    toast('ℹ️ Este contacto aún no usa NOVU. Elegí teléfono o WhatsApp.');
+    openOv('chatMenuOv');
+    return;
+  }
   if (!db) { toast('⚠️ Sin conexión'); return; }
   const {id,name,color} = S.activePartner;
   Object.assign(callState,{mode,role:'caller',partnerId:id,partnerName:name,partnerColor:color,timer:0,active:false});
