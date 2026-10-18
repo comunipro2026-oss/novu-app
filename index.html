@@ -1972,8 +1972,6 @@ body::before {
               autocapitalize="sentences"
               onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"
               oninput="autoH(this);onMsgInput(this)"
-              onfocus="document.getElementById('sosFab').style.display='none'"
-              onblur="document.getElementById('sosFab').style.display=''"
               enterkeyhint="send"></textarea>
             <button class="send-btn" id="sendBtn" onclick="sendMsg()" aria-label="Enviar mensaje" title="Enviar (Enter)">➤</button>
           </div>
@@ -2068,6 +2066,7 @@ body::before {
     <p>Elegí a quién avisarle — NOVU manda tu ubicación por WhatsApp</p>
   </div>
 
+  <a class="crisis-call-ps" href="tel:08000767" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#7c3aed;color:#fff;font-weight:800;font-size:15px;padding:12px;border-radius:14px;text-decoration:none;margin-bottom:10px" aria-label="Llamar a la línea de prevención del suicidio 0800 0767, gratis, 24 horas">💜 Prevención del suicidio: 0800 0767 (gratis, 24 h)</a>
   <a class="crisis-call911" href="tel:911" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#dc2626;color:#fff;font-weight:800;font-size:16px;padding:14px;border-radius:14px;text-decoration:none;margin-bottom:10px" aria-label="Llamar al 911 ahora">📞 Llamar al 911 ahora</a>
 
   <div id="crisisLocStatus" style="text-align:center;font-size:12px;color:var(--text-3);margin-bottom:14px" aria-live="polite">📍 Obteniendo tu ubicación exacta…</div>
