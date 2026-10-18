@@ -8469,16 +8469,20 @@ function renderHeartList() {
   el.innerHTML = contacts.map(c => `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <div style="flex:1;display:flex;align-items:center;gap:10px;font-weight:700">
-        <span style="font-size:24px">${c.emoji || '👤'}</span>
+        <span style="font-size:24px">${esc(c.emoji || '👤')}</span>
         <span>${esc(c.name)}</span>
       </div>
       <button class="btn btn-g" style="padding:8px 14px" onclick="sendHeart('${esc(c.phone)}','${esc(c.name)}')" aria-label="Mandar un corazón a ${esc(c.name)}">💜 Enviar</button>
     </div>`).join('');
 }
 
+// Los teléfonos se guardan en formatos distintos (+598..., 09... local), así que
+// se compara por los últimos 8 dígitos, igual que en sendSignal.
 async function findUserIdByPhone(phone) {
   if (!db || !phone) return null;
-  const { data } = await db.from('novu_usuarios').select('id').eq('telefono', phone).limit(1);
+  const key = String(phone).replace(/\D/g, '').slice(-8);
+  if (key.length < 8) return null;
+  const { data } = await db.from('novu_usuarios').select('id, telefono').like('telefono', '%' + key).limit(5);
   return data?.[0]?.id || null;
 }
 
