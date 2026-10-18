@@ -1972,8 +1972,6 @@ body::before {
               autocapitalize="sentences"
               onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"
               oninput="autoH(this);onMsgInput(this)"
-              onfocus="document.getElementById('sosFab').style.display='none'"
-              onblur="document.getElementById('sosFab').style.display=''"
               enterkeyhint="send"></textarea>
             <button class="send-btn" id="sendBtn" onclick="sendMsg()" aria-label="Enviar mensaje" title="Enviar (Enter)">➤</button>
           </div>
@@ -2114,9 +2112,9 @@ body::before {
     <h2 style="font-size:var(--fs-lg);font-weight:800;margin-bottom:8px">💜 Presencia</h2>
     <p style="color:var(--text-3);font-size:var(--fs-sm);margin-bottom:var(--gap);line-height:1.6">Formas de acompañar o avisar cómo estás, sin exigir respuesta.</p>
     <div style="display:flex;flex-direction:column;gap:10px">
-      <button onclick="presenciaLuz()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;border:1px solid var(--border,#333);background:var(--surface-2,rgba(255,255,255,.04));cursor:pointer;text-align:left" aria-label="Llama compartida — Luz de Compañía">
-        <span style="font-size:24px">🕯️</span>
-        <div><div style="font-weight:700">Llama compartida</div><div style="font-size:var(--fs-xs);color:var(--text-3)">Presencia silenciosa en tiempo real</div></div>
+      <button onclick="presenciaLuz()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;border:1px solid var(--border,#333);background:var(--surface-2,rgba(255,255,255,.04));cursor:pointer;text-align:left" aria-label="Mandar un corazón a contactos">
+        <span style="font-size:24px">💜</span>
+        <div><div style="font-weight:700">Mandar un corazón</div><div style="font-size:var(--fs-xs);color:var(--text-3)">Avisale a alguien que pensás en él o ella</div></div>
       </button>
       <button onclick="presenciaBateria()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;border:1px solid var(--border,#333);background:var(--surface-2,rgba(255,255,255,.04));cursor:pointer;text-align:left" aria-label="Avisar que estoy con poca energía">
         <span style="font-size:24px">🌙</span>
@@ -2127,16 +2125,15 @@ body::before {
   </div>
 </div>
 
-<!-- LUZ DE COMPAÑÍA -->
-<div class="module-ov" id="luzCompaniaOv" role="dialog" aria-modal="true" aria-label="Luz de Compañía">
-  <div class="module-sheet" style="text-align:center">
+<!-- MANDAR CORAZÓN (antes Luz de Compañía) -->
+<div class="module-ov" id="luzCompaniaOv" role="dialog" aria-modal="true" aria-label="Mandar un corazón">
+  <div class="module-sheet">
     <button class="module-close" onclick="closeLuzCompania()" aria-label="Cerrar">✕</button>
-    <h2 style="font-size:var(--fs-lg);font-weight:800;margin-bottom:8px">🕯️ Luz de Compañía</h2>
-    <p style="color:var(--text-3);font-size:var(--fs-sm);margin-bottom:var(--gap);line-height:1.6">Presencia silenciosa. Solo una llama compartida.</p>
-    <canvas id="luzCanvas" aria-label="Llama animada de compañía"></canvas>
-    <p id="lcWith" style="font-size:var(--fs-sm);color:var(--amber);min-height:20px;margin-top:6px" aria-live="polite"></p>
-    <p style="font-size:var(--fs-xs);color:var(--text-3);margin-top:var(--gap-sm)">Tu contacto verá esta misma llama en tiempo real</p>
-    <p style="font-size:var(--fs-xs);color:var(--text-3);margin-top:4px;opacity:.85">🔕 No requiere respuesta</p>
+    <h2 style="font-size:var(--fs-lg);font-weight:800;margin-bottom:8px;text-align:center">💜 Mandar un corazón</h2>
+    <p style="color:var(--text-3);font-size:var(--fs-sm);margin-bottom:var(--gap);line-height:1.6;text-align:center">Tu contacto recibe un aviso para saber que estás pensando en él o ella. No necesita responder.</p>
+    <div id="heartList" role="list" aria-label="Contactos a quienes mandar un corazón"></div>
+    <button class="btn btn-p" id="heartAllBtn" style="width:100%;margin-top:10px" onclick="sendHeartToAll()" aria-label="Mandar un corazón a todos mis contactos">💜 Mandar a todos</button>
+    <p id="heartStatus" style="font-size:var(--fs-sm);color:var(--amber);min-height:20px;margin-top:10px;text-align:center" aria-live="polite"></p>
   </div>
 </div>
 
@@ -2432,7 +2429,7 @@ body::before {
       <button class="btn btn-g" onclick="closeOv('chatMenuOv');callByPhone()" aria-label="Llamar por teléfono">☎️ Llamar por teléfono</button>
       <button class="btn btn-g" onclick="closeOv('chatMenuOv');openWhatsAppChat()" aria-label="Abrir conversación en WhatsApp">💬 Abrir WhatsApp</button>
       <div style="font-size:var(--fs-xs);font-weight:800;color:var(--text-3);letter-spacing:.04em;margin-top:6px">APOYO Y OPCIONES</div>
-      <button class="btn btn-g" onclick="closeOv('chatMenuOv');openLuzCompania()" aria-label="Luz de Compañía">🕯️ Luz de Compañía</button>
+      <button class="btn btn-g" onclick="closeOv('chatMenuOv');openLuzCompania()" aria-label="Mandar un corazón">💜 Mandar un corazón</button>
       <button class="btn btn-g" onclick="closeOv('chatMenuOv');openOv('emojiOv')" aria-label="Personalizar con emojis">😊 Personalizar contacto</button>
       <button class="btn btn-g" onclick="closeOv('chatMenuOv');startVoiceCmd()" aria-label="Comando de voz">🎤 Comando de voz</button>
       <button class="btn btn-g" onclick="loadMoreMsgs();closeOv('chatMenuOv')" aria-label="Cargar mensajes anteriores">⬆ Cargar mensajes anteriores</button>
@@ -8446,15 +8443,80 @@ function batSend(phone, name) {
 // ── LUZ DE COMPAÑÍA (canvas animado) ───────────────
 function openLuzCompania() {
   openModuleOv('luzCompaniaOv');
-  startCandleAnim();
-  const lcWith = document.getElementById('lcWith');
-  if (lcWith) lcWith.textContent = '';
-  startLuzChannel();
+  renderHeartList();
+  const st = document.getElementById('heartStatus');
+  if (st) st.textContent = '';
 }
 function closeLuzCompania() {
   closeModuleOv('luzCompaniaOv');
-  if (luzChannel) { try { luzChannel.unsubscribe(); } catch {} luzChannel = null; }
-  if (luzIv) { clearInterval(luzIv); luzIv = null; }
+}
+
+// ── Mandar un corazón a contactos ──
+// Usa el mismo envío de notificaciones que el chat (novu-push).
+// El destinatario lo recibe aunque NOVU esté cerrado, si tiene notificaciones activadas.
+function renderHeartList() {
+  const el = document.getElementById('heartList');
+  if (!el) return;
+  const contacts = S.contacts || [];
+  if (!contacts.length) {
+    el.innerHTML = '<p style="color:var(--text-3);font-size:var(--fs-sm);text-align:center">Todavía no tenés contactos. Agregá uno para poder mandarle un corazón.</p>';
+    const all = document.getElementById('heartAllBtn');
+    if (all) all.style.display = 'none';
+    return;
+  }
+  const all = document.getElementById('heartAllBtn');
+  if (all) all.style.display = '';
+  el.innerHTML = contacts.map(c => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="flex:1;display:flex;align-items:center;gap:10px;font-weight:700">
+        <span style="font-size:24px">${esc(c.emoji || '👤')}</span>
+        <span>${esc(c.name)}</span>
+      </div>
+      <button class="btn btn-g" style="padding:8px 14px" onclick="sendHeart('${esc(c.phone)}','${esc(c.name)}')" aria-label="Mandar un corazón a ${esc(c.name)}">💜 Enviar</button>
+    </div>`).join('');
+}
+
+// Los teléfonos se guardan en formatos distintos (+598..., 09... local), así que
+// se compara por los últimos 8 dígitos, igual que en sendSignal.
+async function findUserIdByPhone(phone) {
+  if (!db || !phone) return null;
+  const key = String(phone).replace(/\D/g, '').slice(-8);
+  if (key.length < 8) return null;
+  const { data } = await db.from('novu_usuarios').select('id, telefono').like('telefono', '%' + key).limit(5);
+  return data?.[0]?.id || null;
+}
+
+async function sendHeart(phone, name) {
+  const st = document.getElementById('heartStatus');
+  if (st) st.textContent = 'Enviando…';
+  try {
+    const id = await findUserIdByPhone(phone);
+    if (!id) {
+      if (st) st.textContent = name + ' todavía no usa NOVU.';
+      return;
+    }
+    await sendRemotePush(
+      id,
+      '💜 ' + (S.user.name || 'Alguien'),
+      (S.user.name || 'Alguien') + ' está pensando en vos.',
+      'novu-heart-' + S.user.id,
+      { kind: 'heart' }
+    );
+    if (st) st.textContent = '💜 Corazón enviado a ' + name;
+  } catch (e) {
+    logError('sendHeart', e);
+    if (st) st.textContent = 'No se pudo enviar. Probá de nuevo.';
+  }
+}
+
+async function sendHeartToAll() {
+  const contacts = (S.contacts || []).slice();
+  const st = document.getElementById('heartStatus');
+  if (!contacts.length) return;
+  if (st) st.textContent = 'Enviando a todos…';
+  const results = await Promise.all(contacts.map(c => sendHeart(c.phone, c.name).then(() => true).catch(() => false)));
+  const ok = results.filter(Boolean).length;
+  if (st) st.textContent = '💜 Corazones enviados a ' + ok + ' de ' + contacts.length;
 }
 
 function startCandleAnim() {
