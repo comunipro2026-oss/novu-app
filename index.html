@@ -6016,31 +6016,7 @@ function closeSidebar() {
 
 
 
-function captureContactPhoto() {
-  const video = document.getElementById('camVideo');
-  const canvas = document.getElementById('camCanvas');
-  if (!video || !canvas) return;
-  canvas.width = video.videoWidth || 640;
-  canvas.height = video.videoHeight || 480;
-  const ctx = canvas.getContext('2d');
-  ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0);
-  closeCameraCapture();
-  if (!S.activePartner) return;
-  canvas.toBlob(async (blob) => {
-    if (!blob) { toast('❌ Error al capturar la foto'); return; }
-    const ok = await saveContactPhoto(S.activePartner.id, blob);
-    if (!ok) return;
-    const photoUrl = getContactPhotoUrl(S.activePartner.id);
-    const u = onlineUsers.find(u => u.id === S.activePartner.id);
-    if (u) u.photo = photoUrl;
-    S.activePartner.photo = photoUrl;
-    const av = document.getElementById('contactAvatarPreview');
-    if (av) av.innerHTML = `<img src="${safeImg(photoUrl)}" alt="Foto del contacto" style="width:100%;height:100%;object-fit:cover">`;
-    renderMsgs(); renderChats();
-    toast('✅ Selfie guardada');
-  }, 'image/jpeg', 0.9);
-}
+/* captureContactPhoto: quitada (sin uso) */
 
 // closeOv() y ovClick() — ver definición única en "APERTURA/CIERRE OVERLAYS" más abajo.
 
@@ -6793,21 +6769,8 @@ let bateriaBajaActive = false;
 function closeBateriaBaja() {
   closeModuleOv('bateriaBajaOv');
 }
-function updateBBStatus(val) {
-  document.getElementById('bbStatusText').textContent = '"' + val + '"';
-}
-async function sendBateriaPresencia() {
-  if (!S.activePartner || !db) {
-    toast('⚠️ Abrí un chat primero'); return;
-  }
-  const status = document.getElementById('bbStatusSel').value;
-  // Solo voz — sin texto escrito, sin duplicado
-  speak(status, 'female');
-  // Enviar como mensaje de voz sintética al partner (sin el emoji 🌙 para que suene natural)
-  await sendTTSMsg(status);
-  toast('💜 Presencia enviada silenciosamente');
-  closeBateriaBaja();
-}
+/* updateBBStatus: quitada (sin uso) */
+/* sendBateriaPresencia: quitada (sin uso) */
 
 // ══════════════════════════════════════════════════
 // MÓDULO LUZ DE COMPAÑÍA
@@ -6818,24 +6781,7 @@ let luzIv = null;
 // Presencia compartida en tiempo real: avisa por Supabase Realtime cuando
 // la otra persona también tiene Luz de Compañía abierta. Se activa desde
 // openLuzCompania() y se limpia en closeLuzCompania().
-function startLuzChannel() {
-  if (!db || !S.activePartner || !S.user.id) return;
-  const ch = 'luz:' + (phoneRoomId(S.user.phone, S.activePartner.telefono) || [S.user.id, S.activePartner.id].sort().join('_'));
-  if (luzChannel) luzChannel.unsubscribe();
-  luzChannel = db.channel(ch)
-    .on('broadcast', { event: 'luz' }, ({ payload }) => {
-      if (payload.from !== S.user.id) {
-        document.getElementById('lcWith').textContent = payload.name + ' también está aquí 🕯️';
-      }
-    })
-    .subscribe();
-  // Ping every 10s
-  const ping = () => {
-    if (luzChannel) luzChannel.send({ type: 'broadcast', event: 'luz', payload: { from: S.user.id, name: S.user.name } }).catch(() => {});
-  };
-  ping();
-  luzIv = setInterval(ping, 10000);
-}
+/* startLuzChannel: quitada (sin uso) */
 
 // ══════════════════════════════════════════════════
 // MÓDULO SOS ANSIEDAD
@@ -6866,38 +6812,7 @@ function showSaPhase(id) {
 }
 
 
-function runBreathStep(cycleIdx, elapsed) {
-  const step = BREATH_CYCLES[cycleIdx];
-  if (!step) { stopBreathing(); return; }
-  const orb = document.getElementById('saBreathOrb');
-  const instr = document.getElementById('saBreathInstr');
-  const count = document.getElementById('saBreathCount');
-  const guide = document.getElementById('saBreathGuide');
-  const fill = document.getElementById('saProgressFill');
-
-  instr.textContent = step.label;
-  guide.textContent = step.guide;
-  instr.style.color = step.color;
-  orb.className = 'sa-orb ' + step.phase;
-
-  let t = step.duration;
-  count.textContent = t;
-  fill.style.width = '0%';
-
-  if (breathIv) clearInterval(breathIv);
-  breathIv = setInterval(() => {
-    t--;
-    count.textContent = Math.max(0, t);
-    fill.style.width = ((step.duration - t) / step.duration * 100) + '%';
-    if (t <= 0) {
-      clearInterval(breathIv);
-      const next = (cycleIdx + 1) % BREATH_CYCLES.length;
-      if (next === 0) breathCycle++;
-      if (breathCycle >= 4) { stopBreathing(); toast('🌿 Ciclo completo. Respirás bien.'); return; }
-      setTimeout(() => runBreathStep(next, 0), 300);
-    }
-  }, 1000);
-}
+/* runBreathStep: quitada (sin uso) */
 
 function stopBreathing() {
   if (breathIv) { clearInterval(breathIv); breathIv = null; }
@@ -6905,14 +6820,7 @@ function stopBreathing() {
   breathCycle = 0;
 }
 
-function renderGroundStep() {
-  const s = GROUND_STEPS[groundStep];
-  if (!s) { stopGrounding(); toast('🌿 ¡Excelente! Estás anclado/a al presente.'); return; }
-  document.getElementById('saGroundIcon').textContent = s.icon;
-  document.getElementById('saGroundInstr').textContent = 'Nombrá ' + s.count + ' cosas que ' + s.sense;
-  document.getElementById('saGroundCount').textContent = s.count;
-  document.getElementById('saGroundGuide').textContent = s.guide;
-}
+/* renderGroundStep: quitada (sin uso) */
 function stopGrounding() {
   groundStep = 0;
   saGo(1);
@@ -7058,24 +6966,7 @@ function closeAlarmaHumanizada() {
 }
 
 
-function confirmCreateAlarma() {
-  const msg = document.getElementById('alarmaMsg').value.trim();
-  const time = document.getElementById('alarmaTime').value.trim();
-  const test = document.getElementById('alarmaTest').checked;
-  if (!msg) { toast('⚠️ Escribí el mensaje de la alarma'); return; }
-  if (!time) { toast('⚠️ Seleccioná la hora'); return; }
-  document.getElementById('addAlarmaOv').classList.remove('open');
-  alarmas.push({ msg, time, active: true, id: 'al_'+Date.now() });
-  saveFamilyData();
-  toast('⏰ Alarma creada para las ' + time);
-  if (test) {
-    speak(msg);
-    document.getElementById('ahMessage').textContent = '"' + msg + '"';
-    openModuleOv('alarmaHumanizadaOv');
-  }
-  renderAlarmaHumanizada();
-  startAlarmPolling(); // asegurar que el polling esté activo
-}
+/* confirmCreateAlarma: quitada (sin uso) */
 
 // Polling de alarmas humanizadas — revisa cada 30 segundos
 let _alarmPollIv = null;
@@ -8792,88 +8683,7 @@ async function sendHeartToAll() {
   if (st) st.textContent = '💜 Corazones enviados a ' + ok + ' de ' + contacts.length;
 }
 
-function startCandleAnim() {
-  const canvas = document.getElementById('luzCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  // FIX: el canvas nunca tenía seteada su resolución interna (canvas.width/
-  // canvas.height), así que usaba el default del navegador (300×150) y el
-  // CSS lo estiraba a 300×300 → todo salía deformado en vertical (por eso
-  // la llama se veía como una pelota de rugby). Ahora igualamos la
-  // resolución interna al tamaño real renderizado (con devicePixelRatio
-  // para que se vea nítido también en pantallas retina).
-  const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  const cssW = rect.width || 300, cssH = rect.height || 300;
-  canvas.width = cssW * dpr;
-  canvas.height = cssH * dpr;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  let frame = 0;
-  const animate = () => {
-    if (!document.getElementById('luzCompaniaOv').classList.contains('open')) return;
-    const w = cssW, h = cssH;
-    ctx.clearRect(0,0,w,h);
-    const cx = w/2, baseY = h*0.72;
-    const flicker = Math.sin(frame*0.09)*3 + Math.random()*2.5;
-
-    // Vela (cuerpo de cera)
-    const candleW = Math.min(w*0.18, 34), candleH = h*0.22;
-    const cGrad = ctx.createLinearGradient(cx-candleW/2, 0, cx+candleW/2, 0);
-    cGrad.addColorStop(0, '#e8dfd0');
-    cGrad.addColorStop(0.5, '#f8f2e6');
-    cGrad.addColorStop(1, '#d9cfbd');
-    ctx.fillStyle = cGrad;
-    ctx.beginPath();
-    ctx.roundRect(cx-candleW/2, baseY, candleW, candleH, 3);
-    ctx.fill();
-
-    // Mecha
-    ctx.beginPath();
-    ctx.moveTo(cx, baseY-2);
-    ctx.lineTo(cx+1, baseY-16);
-    ctx.strokeStyle = '#5c4a2a';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-
-    // Resplandor difuso alrededor de la llama
-    const glowR = 55 + flicker;
-    const glow = ctx.createRadialGradient(cx, baseY-30, 4, cx, baseY-30, glowR);
-    glow.addColorStop(0, 'rgba(255,200,90,0.35)');
-    glow.addColorStop(1, 'rgba(255,140,0,0)');
-    ctx.beginPath();
-    ctx.arc(cx, baseY-30, glowR, 0, Math.PI*2);
-    ctx.fillStyle = glow;
-    ctx.fill();
-
-    // Llama — forma de gota (teardrop) en vez de óvalo estirado
-    const flameH = 46 + flicker, flameW = 16 + flicker*0.4;
-    const tipY = baseY - 16 - flameH;
-    ctx.beginPath();
-    ctx.moveTo(cx, tipY);
-    ctx.bezierCurveTo(cx+flameW, tipY+flameH*0.45, cx+flameW*0.9, baseY-16, cx, baseY-16);
-    ctx.bezierCurveTo(cx-flameW*0.9, baseY-16, cx-flameW, tipY+flameH*0.45, cx, tipY);
-    ctx.closePath();
-    const fGrad = ctx.createLinearGradient(cx, tipY, cx, baseY-16);
-    fGrad.addColorStop(0, 'rgba(255,240,180,0.95)');
-    fGrad.addColorStop(0.45, 'rgba(255,170,40,0.95)');
-    fGrad.addColorStop(1, 'rgba(255,90,10,0.9)');
-    ctx.fillStyle = fGrad;
-    ctx.fill();
-
-    // Núcleo azul-blanco de la base de la llama
-    ctx.beginPath();
-    ctx.ellipse(cx, baseY-20, flameW*0.28, flameH*0.22, 0, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,250,230,0.85)';
-    ctx.fill();
-
-    frame++;
-    requestAnimationFrame(animate);
-  };
-  animate();
-}
+/* startCandleAnim: quitada (sin uso) */
 
 // ── ÁRBOL FAMILIAR ─────────────────────────────────
 function openArbolFamiliar() {
