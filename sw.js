@@ -1,6 +1,6 @@
 'use strict';
 // NOVU Service Worker v3 — PWA offline + notificaciones + Push API
-const CACHE_NAME = 'novu-sw-v3';
+const CACHE_NAME = 'novu-sw-v4';
 const APP_SHELL = ['./', './index.html', './manifest.json', './android-chrome-192x192.png', './android-chrome-512x512.png'];
 
 self.addEventListener('install', e => {
@@ -25,13 +25,33 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (e.request.mode === 'navigate') {
-    e.respondWith(fetch(e.request)
-      .then(response => {
+    // Red primero, pero sin esperar más de 3 s: con mala señal se abre la
+    // versión guardada al instante (como WhatsApp) y se actualiza en segundo plano.
+    const network = fetch(e.request).then(response => {
+      if (response && response.ok) {
         const copy = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
-        return response;
-      })
-      .catch(() => caches.match('./index.html')));
+      }
+      return response;
+    });
+    const timeout = new Promise(resolve => setTimeout(resolve, 3000)).then(() => caches.match('./index.html'));
+    e.respondWith(
+      Promise.race([network.catch(() => caches.match('./index.html')), timeout])
+        .then(r => r || network)
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+  const url = new URL(e.request.url);
+  // Librería de conexión y fuentes: se guardan para poder abrir NOVU sin señal.
+  if (url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+    e.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(e.request).then(cached => {
+      const fresh = fetch(e.request).then(res => {
+        if (res && (res.ok || res.type === 'opaque')) cache.put(e.request, res.clone());
+        return res;
+      }).catch(() => cached);
+      return cached || fresh;
+    })));
     return;
   }
   e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request)));
